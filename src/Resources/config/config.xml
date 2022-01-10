@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/trunk/src/Core/System/SystemConfig/Schema/config.xsd">
+    <card>
+        <title>Account Number</title>
+        <input-field>
+            <name>accountNumber</name>
+        </input-field>
+    </card>
+    <card>
+        <title>License Key</title>
+        <input-field>
+            <name>licenseKey</name>
+        </input-field>
+    </card>
+    <card>
+        <title>Service URL</title>
+        <input-field>
+            <name>serviceUrl</name>
+        </input-field>
+    </card>
+    <card>
+        <title>Company Code Lookup</title>
+        <input-field>
+            <name>companyCode</name>
+        </input-field>
+    </card>
+</config>
