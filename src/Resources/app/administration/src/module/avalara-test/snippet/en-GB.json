@@ -4,7 +4,7 @@
             "mainMenuItemGeneral": "Avalara"
         },
         "page": {
-            "addButtonText": "Testverbindung"
+            "addButtonText": "Test connection"
         }
     }
 }

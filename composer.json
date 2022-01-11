@@ -10,7 +10,7 @@
         }
     ],
     "extra": {
-        "shopware-plugin-class": "Avalara\\Avalara",
+        "shopware-plugin-class": "MoptAvalara6\\MoptAvalara6",
         "label": {
             "de-DE": "Der angezeigte lesbare Name für das Plugin",
             "en-GB": "The displayed readable name Avalara plugin"
@@ -22,7 +22,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Avalara\\": "src/"
+            "MoptAvalara6\\": "src/"
         }
     },
     "require": {

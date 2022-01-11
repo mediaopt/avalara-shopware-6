@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Avalara\Controller;
+namespace MoptAvalara6\Controller;
 
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;

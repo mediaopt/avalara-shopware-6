@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Avalara\Subscriber;
+namespace MoptAvalara6\Subscriber;
 
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -27,8 +27,5 @@ class MySubscriber implements EventSubscriberInterface
     public function onProductsLoaded(EntityLoadedEvent $event): void
     {
         $exampleConfig = $this->systemConfigService->get('Avalara.config.example');
-        /*echo('<pre>');
-        var_dump($exampleConfig);
-        echo('</pre>');*/
     }
 }

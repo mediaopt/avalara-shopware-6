@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Avalara;
+namespace MoptAvalara6;
 
 use Shopware\Core\Framework\Plugin;
 
-class Avalara extends Plugin
+class MoptAvalara6 extends Plugin
 {
 }

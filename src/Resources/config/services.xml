@@ -5,12 +5,12 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
-        <service id="Avalara\Subscriber\MySubscriber">
+        <service id="MoptAvalara6\Subscriber\MySubscriber">
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <tag name="kernel.event_subscriber"/>
         </service>
 
-        <service id="Avalara\Controller\TestConnection" public="true">
+        <service id="MoptAvalara6\Controller\TestConnection" public="true">
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>
