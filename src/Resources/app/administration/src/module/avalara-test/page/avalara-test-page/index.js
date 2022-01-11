@@ -62,11 +62,7 @@ Component.register('avalara-test-page', {
     methods: {
         onClick() {
             this.AvalaraService.testConnection().then((result) => {
-                if(result.result === true) {
-                    alert("Connection Successful");
-                } else {
-                    alert("We got a problem");
-                }
+                alert(result.message);
             });
         }
     }

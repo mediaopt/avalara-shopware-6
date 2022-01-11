@@ -11,6 +11,7 @@
         </service>
 
         <service id="MoptAvalara6\Controller\TestConnection" public="true">
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>

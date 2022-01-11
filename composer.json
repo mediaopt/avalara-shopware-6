@@ -26,7 +26,6 @@
         }
     },
     "require": {
-        "guzzlehttp/log-subscriber": "^1.0",
         "avalara/avataxclient": "*"
     }
 }
