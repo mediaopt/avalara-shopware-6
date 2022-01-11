@@ -9,5 +9,11 @@
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <tag name="kernel.event_subscriber"/>
         </service>
+
+        <service id="Avalara\Controller\TestConnection" public="true">
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
     </services>
 </container>

@@ -7,7 +7,8 @@ Component.register('avalara-test-page', {
     template,
 
     inject: [
-        'repositoryFactory'
+        'repositoryFactory',
+        'AvalaraService',
     ],
 
     data() {
@@ -56,5 +57,17 @@ Component.register('avalara-test-page', {
             .then((result) => {
                 this.bundles = result;
             });
+    },
+
+    methods: {
+        onClick() {
+            this.AvalaraService.testConnection().then((result) => {
+                if(result.result === true) {
+                    alert("Connection Successful");
+                } else {
+                    alert("We got a problem");
+                }
+            });
+        }
     }
 });
