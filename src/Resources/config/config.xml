@@ -2,27 +2,22 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/trunk/src/Core/System/SystemConfig/Schema/config.xsd">
     <card>
-        <title>Account Number</title>
         <input-field>
             <name>accountNumber</name>
+            <label>Account Number</label>
         </input-field>
-    </card>
-    <card>
-        <title>License Key</title>
         <input-field>
             <name>licenseKey</name>
+            <label>License Key</label>
         </input-field>
-    </card>
-    <card>
-        <title>Service URL</title>
-        <input-field>
-            <name>serviceUrl</name>
+        <input-field type="bool">
+            <name>isLiveMode</name>
+            <defaultValue>false</defaultValue>
+            <label>Is live mode</label>
         </input-field>
-    </card>
-    <card>
-        <title>Company Code Lookup</title>
         <input-field>
             <name>companyCode</name>
+            <label>Company Code Lookup</label>
         </input-field>
     </card>
 </config>
