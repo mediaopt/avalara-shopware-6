@@ -21,5 +21,10 @@
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <tag name="kernel.event_subscriber"/>
         </service>
+
+        <service id="MoptAvalara6\Core\Checkout\Cart\OverwritePriceProcessor">
+            <argument type="service" id="Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator"/>
+            <tag name="shopware.cart.processor" priority="-5200" />
+        </service>
     </services>
 </container>
