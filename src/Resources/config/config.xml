@@ -2,6 +2,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/trunk/src/Core/System/SystemConfig/Schema/config.xsd">
     <card>
+        <title>Avalara credentials</title>
         <input-field>
             <name>accountNumber</name>
             <label>Account Number</label>
@@ -18,6 +19,37 @@
         <input-field>
             <name>companyCode</name>
             <label>Company Code Lookup</label>
+        </input-field>
+    </card>
+    <card>
+        <title>Origin address</title>
+        <input-field>
+            <name>addressLine1</name>
+            <label>Address Line 1</label>
+        </input-field>
+        <input-field>
+            <name>addressLine2</name>
+            <label>Address Line 2</label>
+        </input-field>
+        <input-field>
+            <name>addressLine3</name>
+            <label>Address Line 3</label>
+        </input-field>
+        <input-field>
+            <name>city</name>
+            <label>City</label>
+        </input-field>
+        <input-field>
+            <name>postCode</name>
+            <label>Post code</label>
+        </input-field>
+        <input-field>
+            <name>region</name>
+            <label>Region</label>
+        </input-field>
+        <input-field>
+            <name>country</name>
+            <label>Country</label>
         </input-field>
     </card>
 </config>
