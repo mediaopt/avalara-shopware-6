@@ -8,6 +8,8 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 use MoptAvalara6\Bootstrap\Form;
 use MoptAvalara6\MoptAvalara6;
 use Avalara\AvaTaxClient;
+use MoptAvalara6\Adapter\Factory\AbstractFactory;
+use MoptAvalara6\Service\AbstractService;
 
 /**
  * This is the adaptor for avalara's API
@@ -17,6 +19,16 @@ use Avalara\AvaTaxClient;
  */
 class AvalaraSDKAdapter implements AdapterInterface
 {
+    /**
+     * @var string
+     */
+    const SEVICES_NAMESPACE = '\MoptAvalara6\Service\\';
+
+    /**
+     * @var string
+     */
+    const FACTORY_NAMESPACE = '\MoptAvalara6\Adapter\Factory\\';
+
     /**
      * @var string
      */
@@ -124,4 +136,32 @@ class AvalaraSDKAdapter implements AdapterInterface
         return self::MACHINE_NAME;
     }
 
+    /**
+     * Get service by type
+     *
+     * @param string $type
+     * @return AbstractService
+     */
+    public function getService($type)
+    {
+        if (!isset($this->services[$type])) {
+            $name = self::SEVICES_NAMESPACE . ucfirst($type);
+            $this->services[$type] = new $name($this);
+        }
+
+        return $this->services[$type];
+    }
+
+    /**
+     * return factory
+     *
+     * @param string $type
+     * @return AbstractFactory
+     */
+    public function getFactory($type)
+    {
+        $name = self::FACTORY_NAMESPACE . ucfirst($type);
+
+        return new $name($this);
+    }
 }
