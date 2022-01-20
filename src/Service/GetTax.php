@@ -14,25 +14,10 @@ use MoptAvalara6\Adapter\AdapterInterface;
 
 /**
  * @author derksen mediaopt GmbH
- * @package Shopware\Plugins\MoptAvalara\Service
+ * @package MoptAvalara6\Service
  */
 class GetTax extends AbstractService
 {
-    /**
-     * @var string Item ID in Avalara response
-     */
-    const IMPORT_FEES_LINE = 'ImportFees';
-
-    /**
-     * @var string Item ID in Avalara response
-     */
-    const IMPORT_DUTIES_LINE = 'ImportDuties';
-
-    /**
-     * Array containing the user data
-     * @var array
-     */
-    protected $userData;
 
     /**
      *

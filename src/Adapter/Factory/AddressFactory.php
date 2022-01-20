@@ -17,7 +17,7 @@ use Shopware\Core\Checkout\Cart\Cart;
  *
  * @author derksen mediaopt GmbH
  *
- * @package Shopware\Plugins\MoptAvalara\Adapter\Factory
+ * @package MoptAvalara6\Adapter\Factory
  */
 class AddressFactory extends AbstractFactory
 {

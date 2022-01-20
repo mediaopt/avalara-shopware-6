@@ -6,50 +6,73 @@
  */
 
 namespace MoptAvalara6\Subscriber;
+require_once  __DIR__ . '/../../vendor/autoload.php';
 
+use Avalara\TransactionBuilder;
+use Avalara\TransactionAddressType;
+use MoptAvalara6\Adapter\AvalaraSDKAdapter;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
-use Shopware\Storefront\Page\Checkout\Cart\CheckoutCartPageLoadedEvent;
 use Shopware\Storefront\Page\Checkout\Confirm\CheckoutConfirmPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\Session\Session;
+use MoptAvalara6\Bootstrap\Form;
 
 class CheckoutSubscriber implements EventSubscriberInterface
 {
     private SystemConfigService $systemConfigService;
 
+    private Session $session;
+
+    /**
+     * @param SystemConfigService $systemConfigService
+     */
     public function __construct(
-        SystemConfigService $systemConfigService
+        SystemConfigService $systemConfigService,
+        Session $session
     ) {
         $this->systemConfigService = $systemConfigService;
+        $this->session = $session;
     }
 
+    /**
+     * @return array[]
+     */
     public static function getSubscribedEvents(): array
     {
+        //todo make a commit call to Avalara on "thank you page"
         return [
             CheckoutConfirmPageLoadedEvent::class => ['onConfirmPageLoaded', 1],
-            CheckoutCartPageLoadedEvent::class => ['onCartPageLoaded', 1],
         ];
     }
 
+    /**
+     * @param CheckoutConfirmPageLoadedEvent $event
+     * @return void
+     */
     public function onConfirmPageLoaded(CheckoutConfirmPageLoadedEvent $event): void
     {
         //@TODO: config getTax Call enabled
         //@TODO: if $service->isGetTaxEnabled() BasketSubscriber.php on SW5
-        //@TODO: only make call if cart changed or we don't have a saved response
         $cart = $event->getPage()->getCart();
-        $lineItems = $cart->getLineItems();
-        $customer = $event->getSalesChannelContext()->getCustomer();
-        $shippingCountry = $customer->getActiveShippingAddress()->getCountry()->getIso();
-        //@TODO: check shippingCountry could be also a call to $service->isGetTaxDisabledForCountry()
-        if ($shippingCountry !== 'US' and $shippingCountry !== 'CA') {
-            //@TODO: getTaxCall($linesItems)
+        $cartKey = md5(json_encode($cart));
+        $sessionCartKey = $this->session->get(Form::SESSION_CART_KEY);
+        if ($sessionCartKey === $cartKey){
+            return;
         }
-        //@TODO: save response to session?
-        var_dump($shippingCountry);die;
-    }
+        $this->session->set(Form::SESSION_CART_KEY, $cartKey);
 
-    public function onCartPageLoaded(CheckoutCartPageLoadedEvent $event): void
-    {
-        $cart = $event->getPage()->getCart();
-        var_dump($cart);die;
+        $customerId = $event->getSalesChannelContext()->getCustomer()->getId();
+        $shippingCountry = $cart->getDeliveries()->getAddresses()->getCountries()->first()->getIso3();
+
+        //@TODO: check shippingCountry could be also a call to $service->isGetTaxDisabledForCountry()
+        if ($shippingCountry !== 'USA' and $shippingCountry !== 'CAN') {
+            return;
+        }
+
+        $adapter =new AvalaraSDKAdapter($this->systemConfigService);
+        $model = $adapter->getFactory('OrderTransactionModelFactory')->build($cart, $customerId);
+        $service = $adapter->getService('GetTax');
+        $response = $service->calculate($model);
+        $this->session->set(Form::SESSION_AVALARA_TAXES, $response);
     }
 }

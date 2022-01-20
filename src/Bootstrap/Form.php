@@ -12,7 +12,7 @@ namespace MoptAvalara6\Bootstrap;
  * This class will represent the plugin config options
  *
  * @author derksen mediaopt GmbH
- * @package Shopware\Plugins\MoptAvalara\Bootstrap
+ * @package MoptAvalara6\Bootstrap
  */
 class Form
 {
@@ -70,4 +70,14 @@ class Form
      * @var string Field name for the plugin config
      */
     const ORIGIN_COUNTRY_FIELD = 'MoptAvalara6.config.country';
+
+    /**
+     * @var string Field name for the plugin config
+     */
+    const SESSION_CART_KEY = 'cartKey';
+
+    /**
+     * @var string Field name for the plugin config
+     */
+    const SESSION_AVALARA_TAXES = 'avalaraTaxes';
 }

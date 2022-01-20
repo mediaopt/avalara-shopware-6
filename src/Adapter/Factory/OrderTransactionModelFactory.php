@@ -11,8 +11,8 @@ namespace MoptAvalara6\Adapter\Factory;
 use Avalara\CreateTransactionModel;
 use Avalara\AddressesModel;
 use Avalara\DocumentType;
+use Avalara\LineItemModel;
 use Shopware\Core\Checkout\Cart\Cart;
-use Shopware\Plugins\MoptAvalara\Adapter\Factory\AddressFactory;
 
 /**
  *
@@ -27,29 +27,20 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
 {
     /**
      * @param Cart $cart
+     * @param string $customerId
      * @return CreateTransactionModel
      */
-    public function build(Cart $cart)
+    public function build(Cart $cart, string $customerId): CreateTransactionModel
     {
-        //$user = $this->getUserData(); todo
-
         $model = new CreateTransactionModel();
-        //$model->businessIdentificationNo = $user['billingaddress']['ustid']; todo
         $model->commit = false;
-        //$model->customerCode = $user['additional']['user']['id']; todo
+        $model->customerCode = $customerId;
         $model->date = date(DATE_W3C);
-        //$model->discount = $this->getDiscount();
         $model->type = DocumentType::C_SALESORDER;
         $model->currencyCode = 'USD'; //todo
         $model->addresses = $this->getAddressesModel($cart);
-
-        //$model->lines = $this->getLineModels(); //todo
-        //$model->companyCode = $this->getCompanyCode(); //todo
-        //$model->parameters = $this->getTransactionParameters(); //todo
-
-        /*if (!empty($user['additional']['user']['mopt_avalara_exemption_code'])) {
-            $model->customerUsageType = $user['additional']['user']['mopt_avalara_exemption_code']; todo
-        }*/
+        $model->lines = $this->getLineModels($cart);
+        // todo: currency, companyCode, parameters, customerUsageType, discount
 
         return $model;
     }
@@ -58,9 +49,9 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
      * @param Cart $cart
      * @return \Avalara\AddressesModel
      */
-    protected function getAddressesModel(Cart $cart)
+    protected function getAddressesModel(Cart $cart): AddressesModel
     {
-        /* @var $addressFactory AddressFactory */
+        /* @var $addressFactory \MoptAvalara6\Adapter\Factory\AddressFactory\AddressFactory */
         $addressFactory = $this->getAddressFactory();
 
         $addressesModel = new AddressesModel();
@@ -68,5 +59,14 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
         $addressesModel->shipTo = $addressFactory->buildDeliveryAddress($cart);
 
         return $addressesModel;
+    }
+
+    /**
+     * @param Cart $cart
+     * @return LineItemModel[]
+     */
+    protected function getLineModels(Cart $cart)
+    {
+        return parent::getLineModels($cart);
     }
 }

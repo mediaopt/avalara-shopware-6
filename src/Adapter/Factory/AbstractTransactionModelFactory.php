@@ -9,8 +9,6 @@
 namespace MoptAvalara6\Adapter\Factory;
 
 use Avalara\LineItemModel;
-use MoptAvalara6\Bootstrap\Form;
-//use MoptAvalara6\LandedCost\LandedCostRequestParams;
 use Shopware\Core\Checkout\Cart\Cart;
 
 /**
@@ -34,5 +32,59 @@ abstract class AbstractTransactionModelFactory extends AbstractFactory
     protected function getAddressFactory()
     {
         return $this->getAdapter()->getFactory('AddressFactory');
+    }
+
+    /**
+     * @param Cart $cart
+     * @return LineItemModel[]
+     */
+    protected function getLineModels(Cart $cart)
+    {
+        $lineFactory = $this->getLineFactory();
+        $lines = [];
+
+        foreach ($cart->getLineItems()->getFlat() as $lineItem) {
+            $lines[] = $lineFactory->build($lineItem);
+        }
+
+        if ($shippingModel = $this->getShippingModel($cart)) {
+            $lines[] = $shippingModel;
+        }
+
+        return $lines;
+    }
+
+    /**
+     * get shipment information
+     *
+     * @return LineItemModel
+     */
+    protected function getShippingModel(Cart $cart)
+    {
+        $price = $cart->getShippingCosts()->getUnitPrice();
+        if (null === $price) {
+            return null;
+        }
+
+        return $this
+            ->getShippingFactory()
+            ->build($price)
+            ;
+    }
+
+    /**
+     * @return \MoptAvalara6\Adapter\Factory\LineFactory
+     */
+    protected function getLineFactory()
+    {
+        return $this->getAdapter()->getFactory('LineFactory');
+    }
+
+    /**
+     * @return \MoptAvalara6\Adapter\Factory\ShippingFactory
+     */
+    protected function getShippingFactory()
+    {
+        return $this->getAdapter()->getFactory('ShippingFactory');
     }
 }

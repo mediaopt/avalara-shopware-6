@@ -56,13 +56,11 @@ class AvalaraSDKAdapter implements AdapterInterface
     protected $avaTaxClient;
 
     /**
-     *
      * @var string
      */
     protected $pluginName;
 
     /**
-     *
      * @var string
      */
     protected $pluginVersion;
