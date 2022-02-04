@@ -5,11 +5,6 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
-        <service id="MoptAvalara6\Subscriber\MySubscriber">
-            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
-            <tag name="kernel.event_subscriber"/>
-        </service>
-
         <service id="MoptAvalara6\Controller\TestConnection" public="true">
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <call method="setContainer">
@@ -19,11 +14,14 @@
 
         <service id="MoptAvalara6\Subscriber\CheckoutSubscriber">
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
-            <tag name="kernel.event_subscriber"/>
+            <argument type="service" id="session" />
+            <argument type="service" id="logger" />
+            <tag name="kernel.event_subscriber" priority="-5100" />
         </service>
 
         <service id="MoptAvalara6\Core\Checkout\Cart\OverwritePriceProcessor">
             <argument type="service" id="Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator"/>
+            <argument type="service" id="session" />
             <tag name="shopware.cart.processor" priority="-5200" />
         </service>
     </services>

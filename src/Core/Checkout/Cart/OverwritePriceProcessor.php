@@ -2,6 +2,7 @@
 
 namespace MoptAvalara6\Core\Checkout\Cart;
 
+use MoptAvalara6\Bootstrap\Form;
 use Shopware\Core\Checkout\Cart\Cart;
 use Shopware\Core\Checkout\Cart\CartBehavior;
 use Shopware\Core\Checkout\Cart\CartProcessorInterface;
@@ -12,23 +13,29 @@ use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTax;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 class OverwritePriceProcessor implements CartProcessorInterface
 {
     private QuantityPriceCalculator $calculator;
 
-    public function __construct(QuantityPriceCalculator $calculator) {
+    private Session $session;
+
+    private array $avalaraTaxes;
+
+    public function __construct(QuantityPriceCalculator $calculator, Session $session) {
         $this->calculator = $calculator;
+        $this->session = $session;
+        $this->avalaraTaxes = $this->session->get(Form::SESSION_AVALARA_TAXES_TRANSFORMED);
     }
 
     public function process(CartDataCollection $data, Cart $original, Cart $toCalculate, SalesChannelContext $context, CartBehavior $behavior): void
     {
-        $this->changeTaxes($toCalculate);
-        $this->changeShippingCosts($toCalculate);
-
-
-        $toCalculate->getShippingCosts();
-
+        if ($this->avalaraTaxes) {
+            $this->changeTaxes($toCalculate);
+            $this->changeShippingCosts($toCalculate);
+            $toCalculate->getShippingCosts();
+        }
     }
 
     private function changeTaxes(Cart $toCalculate)
@@ -37,10 +44,14 @@ class OverwritePriceProcessor implements CartProcessorInterface
         $products = $toCalculate->getLineItems()->filterType(LineItem::PRODUCT_LINE_ITEM_TYPE);
 
         foreach ($products as $product) {
+            $productId = $product->getId();
+            if (!array_key_exists($productId, $this->avalaraTaxes)) {
+                continue;
+            }
+
             $originalPrice = $product->getPrice();
-            //@TODO: Find avalara product results and replace it here
-            $avalaraTaxAmount = 11.11;
-            $avalaraTaxRate = 2.22;
+            $avalaraTaxAmount = $this->avalaraTaxes[$productId]['tax'];
+            $avalaraTaxRate = $this->avalaraTaxes[$productId]['rate'] * 100;
 
             $avalaraCalculatedTax = new CalculatedTax(
                 $avalaraTaxAmount,
@@ -73,10 +84,19 @@ class OverwritePriceProcessor implements CartProcessorInterface
     {
         //@TODO: check if we are using always the first delivery for request and display
         $delivery = $toCalculate->getDeliveries()->first();
+
+        if ($delivery === null) {
+            return;
+        }
+
+        if ($this->avalaraTaxes['Shipping']['tax'] == 0) {
+            return;
+        }
+
         $shippingCosts = $delivery->getShippingCosts();
 
-        $avalaraShippingTaxAmount = 4.44;
-        $avalaraShippingTaxRate = 5.55;
+        $avalaraShippingTaxAmount = $this->avalaraTaxes['Shipping']['tax'];
+        $avalaraShippingTaxRate = $this->avalaraTaxes['Shipping']['rate'];
 
         $avalaraCalculatedTax = new CalculatedTax(
             $avalaraShippingTaxAmount,

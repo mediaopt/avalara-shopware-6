@@ -39,6 +39,20 @@ class Form
     /**
      * @var string Field name for the plugin config
      */
+    const TAX_COUNTRY_RESTRICTION = 'MoptAvalara6.config.taxCountryRestriction';
+
+    /**
+     * Values and options
+     */
+    const DELIVERY_COUNTRY_NO_VALIDATION = 1;
+    const DELIVERY_COUNTRY_USA = 2;
+    const DELIVERY_COUNTRY_CANADA = 3;
+    const DELIVERY_COUNTRY_USA_AND_CANADA = 4;
+
+
+    /**
+     * @var string Field name for the plugin config
+     */
     const ORIGIN_ADDRESS_LINE_1_FIELD = 'MoptAvalara6.config.addressLine1';
 
     /**
@@ -72,12 +86,22 @@ class Form
     const ORIGIN_COUNTRY_FIELD = 'MoptAvalara6.config.country';
 
     /**
-     * @var string Field name for the plugin config
+     * @var string Field name for the plugin session key
      */
-    const SESSION_CART_KEY = 'cartKey';
+    const SESSION_CART_UPDATED = 'cartUpdated';
 
     /**
-     * @var string Field name for the plugin config
+     * @var string Field name for the plugin session key
      */
     const SESSION_AVALARA_TAXES = 'avalaraTaxes';
+
+    /**
+     * @var string Field name for the plugin session key
+     */
+    const SESSION_AVALARA_TAXES_TRANSFORMED = 'avalaraTaxesTransformed';
+
+    /**
+     * @var string Field name for the plugin session key
+     */
+    const SESSION_AVALARA_MODEL = 'avalaraModel';
 }

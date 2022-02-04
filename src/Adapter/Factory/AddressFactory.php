@@ -24,12 +24,12 @@ class AddressFactory extends AbstractFactory
     /**
      * @var string
      */
-    const COUNTRY_CODE__US = 'US';
+    const COUNTRY_CODE__USA = 'USA';
 
     /**
      * @var string
      */
-    const COUNTRY_CODE__CA = 'CA';
+    const COUNTRY_CODE__CAN = 'CAN';
 
     /**
      * build Address-model based on delivery address
@@ -74,5 +74,41 @@ class AddressFactory extends AbstractFactory
         //todo: should we fix country code/region, like in shopware5?
 
         return $address;
+    }
+
+    /**
+     * @param string $country
+     * @return bool
+     */
+    public function checkCountryRestriction(string $country): bool
+    {
+        $countriesForDelivery = $this->getPluginConfig(Form::TAX_COUNTRY_RESTRICTION);
+
+        switch ($countriesForDelivery) {
+            case Form::DELIVERY_COUNTRY_NO_VALIDATION:
+                return false;
+            case Form::DELIVERY_COUNTRY_USA:
+                if ($country === AddressFactory::COUNTRY_CODE__USA) {
+                    return true;
+                }
+                break;
+            case Form::DELIVERY_COUNTRY_CANADA:
+                if ($country === AddressFactory::COUNTRY_CODE__CAN) {
+                    return true;
+                }
+                break;
+            case Form::DELIVERY_COUNTRY_USA_AND_CANADA:
+                $usaAndCanada = [
+                    AddressFactory::COUNTRY_CODE__CAN,
+                    AddressFactory::COUNTRY_CODE__USA
+                ];
+
+                if (in_array($country, $usaAndCanada, true)) {
+                    return true;
+                }
+                break;
+        }
+
+        return false;
     }
 }
