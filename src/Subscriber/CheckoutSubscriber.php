@@ -42,8 +42,6 @@ class CheckoutSubscriber implements EventSubscriberInterface
         return [
             CheckoutFinishPageLoadedEvent::class => ['makeAvalaraCommitCall', 1],
             CartChangedEvent::class => ['onCartChangedEvent', 1],
-            OrderStateChangeCriteriaEvent::class => ['onOrderChangeEvent', 1],
-            StorefrontRenderEvent::class => ['onStorefrontRender', 1],
         ];
     }
 
@@ -55,9 +53,12 @@ class CheckoutSubscriber implements EventSubscriberInterface
     {
         $this->session->set(Form::SESSION_CART_UPDATED, true);
         $cart = $event->getCart();
-        $customerId = $event->getContext()->getCustomer()->getId();
-        $currencyIso = $event->getContext()->getCurrency()->getIsoCode();
-        $this->makeAvalaraCall($cart, $customerId, $currencyIso);
+        $customer = $event->getContext()->getCustomer();
+        if ($customer) {
+            $customerId = $customer->getId();
+            $currencyIso = $event->getContext()->getCurrency()->getIsoCode();
+            $this->makeAvalaraCall($cart, $customerId, $currencyIso);
+        }
     }
 
     /**
@@ -89,7 +90,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
 
         $transformedTaxes = $this->transformResponseForOverwrite($response);
         $this->session->set(Form::SESSION_AVALARA_TAXES_TRANSFORMED, $transformedTaxes);
-        $this->session->set(Form::SESSION_AVALARA_MODEL, $model);
+        $this->session->set(Form::SESSION_AVALARA_MODEL, serialize($model));
         $this->session->set(Form::SESSION_AVALARA_TAXES, $response);
         $this->session->set(Form::SESSION_CART_UPDATED, false);
     }
@@ -100,7 +101,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
     public function makeAvalaraCommitCall(): void
     {
         /* @var CreateTransactionModel */
-        $avalaraModel = $this->session->get(Form::SESSION_AVALARA_MODEL);
+        $avalaraModel = unserialize($this->session->get(Form::SESSION_AVALARA_MODEL));
 
         if (!empty($avalaraModel)) {
             $avalaraModel->commit = true;
@@ -108,6 +109,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
             $adapter = new AvalaraSDKAdapter($this->systemConfigService);
             $service = $adapter->getService('GetTax');
             $response = $service->calculate($avalaraModel);
+            $this->debug(json_encode($response));
             //todo log response
             $this->session->set(Form::SESSION_AVALARA_MODEL, null);
         }
@@ -127,7 +129,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
             }
             $transformedTax[$line->itemCode] = [
                 'tax' => $line->tax * $line->quantity,
-                'rate' => $rate,
+                'rate' => $rate * 100,
             ];
         }
 

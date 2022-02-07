@@ -21,7 +21,7 @@ class OverwritePriceProcessor implements CartProcessorInterface
 
     private Session $session;
 
-    private array $avalaraTaxes;
+    private $avalaraTaxes;
 
     public function __construct(QuantityPriceCalculator $calculator, Session $session) {
         $this->calculator = $calculator;
@@ -51,7 +51,7 @@ class OverwritePriceProcessor implements CartProcessorInterface
 
             $originalPrice = $product->getPrice();
             $avalaraTaxAmount = $this->avalaraTaxes[$productId]['tax'];
-            $avalaraTaxRate = $this->avalaraTaxes[$productId]['rate'] * 100;
+            $avalaraTaxRate = $this->avalaraTaxes[$productId]['rate'];
 
             $avalaraCalculatedTax = new CalculatedTax(
                 $avalaraTaxAmount,
@@ -86,10 +86,6 @@ class OverwritePriceProcessor implements CartProcessorInterface
         $delivery = $toCalculate->getDeliveries()->first();
 
         if ($delivery === null) {
-            return;
-        }
-
-        if ($this->avalaraTaxes['Shipping']['tax'] == 0) {
             return;
         }
 
