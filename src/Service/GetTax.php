@@ -36,6 +36,7 @@ class GetTax extends AbstractService
     public function calculate(CreateTransactionModel $model)
     {
         $client = $this->getAdapter()->getAvaTaxClient();
+        $model->date = date(DATE_W3C);
         return $client->createTransaction(null, $model);
     }
 }

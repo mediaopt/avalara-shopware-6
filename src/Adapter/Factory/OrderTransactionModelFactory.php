@@ -38,7 +38,6 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
         $model->companyCode = $this->getPluginConfig(Form::COMPANY_CODE_FIELD);
         $model->commit = false;
         $model->customerCode = $customerId;
-        $model->date = date(DATE_W3C);
         $model->type = DocumentType::C_SALESINVOICE;
         $model->currencyCode = $currencyIso;
         $model->addresses = $this->getAddressesModel($cart);

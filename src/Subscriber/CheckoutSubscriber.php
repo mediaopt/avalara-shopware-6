@@ -6,14 +6,10 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 use Avalara\CreateTransactionModel;
 use MoptAvalara6\Adapter\AvalaraSDKAdapter;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
-use Shopware\Core\Checkout\Cart\Event\CartChangedEvent;
 use Shopware\Storefront\Page\Checkout\Finish\CheckoutFinishPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Session\Session;
 use MoptAvalara6\Bootstrap\Form;
-use Shopware\Core\Checkout\Cart\Cart;
-use Shopware\Core\Checkout\Order\Event\OrderStateChangeCriteriaEvent;
-use Shopware\Storefront\Event\StorefrontRenderEvent;
 
 class CheckoutSubscriber implements EventSubscriberInterface
 {
@@ -41,58 +37,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
     {
         return [
             CheckoutFinishPageLoadedEvent::class => ['makeAvalaraCommitCall', 1],
-            CartChangedEvent::class => ['onCartChangedEvent', 1],
         ];
-    }
-
-    /**
-     * @param CartChangedEvent $event
-     * @return void
-     */
-    public function onCartChangedEvent(CartChangedEvent $event)
-    {
-        $this->session->set(Form::SESSION_CART_UPDATED, true);
-        $cart = $event->getCart();
-        $customer = $event->getContext()->getCustomer();
-        if ($customer) {
-            $customerId = $customer->getId();
-            $currencyIso = $event->getContext()->getCurrency()->getIsoCode();
-            $this->makeAvalaraCall($cart, $customerId, $currencyIso);
-        }
-    }
-
-    /**
-     * @param Cart $cart
-     * @param $customerId
-     * @param $currencyIso
-     * @return void
-     */
-    public function makeAvalaraCall(Cart $cart, $customerId, $currencyIso): void
-    {
-        if (!$this->session->get(Form::SESSION_CART_UPDATED)) {
-            return;
-        }
-
-        $shippingCountry = $cart->getDeliveries()->getAddresses()->getCountries()->first();
-        if (is_null($shippingCountry)) {
-            return;
-        }
-        $shippingCountryIso3 = $shippingCountry->getIso3();
-
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService);
-        if (!$adapter->getFactory('AddressFactory')->checkCountryRestriction($shippingCountryIso3)) {
-            return;
-        }
-
-        $model = $adapter->getFactory('OrderTransactionModelFactory')->build($cart, $customerId, $currencyIso);
-        $service = $adapter->getService('GetTax');
-        $response = $service->calculate($model);
-
-        $transformedTaxes = $this->transformResponseForOverwrite($response);
-        $this->session->set(Form::SESSION_AVALARA_TAXES_TRANSFORMED, $transformedTaxes);
-        $this->session->set(Form::SESSION_AVALARA_MODEL, serialize($model));
-        $this->session->set(Form::SESSION_AVALARA_TAXES, $response);
-        $this->session->set(Form::SESSION_CART_UPDATED, false);
     }
 
     /**
@@ -101,38 +46,18 @@ class CheckoutSubscriber implements EventSubscriberInterface
     public function makeAvalaraCommitCall(): void
     {
         /* @var CreateTransactionModel */
-        $avalaraModel = unserialize($this->session->get(Form::SESSION_AVALARA_MODEL));
+        $sessionModel = $this->session->get(Form::SESSION_AVALARA_MODEL);
 
-        if (!empty($avalaraModel)) {
-            $avalaraModel->commit = true;
+        if (!empty($sessionModel)) {
+            $avalaraRequestModel = unserialize($sessionModel);
+            $avalaraRequestModel->commit = true;
+            $avalaraRequestModel->date = date(DATE_W3C);
 
             $adapter = new AvalaraSDKAdapter($this->systemConfigService);
             $service = $adapter->getService('GetTax');
-            $response = $service->calculate($avalaraModel);
-            $this->debug(json_encode($response));
+            $response = $service->calculate($avalaraRequestModel);
             //todo log response
             $this->session->set(Form::SESSION_AVALARA_MODEL, null);
         }
-    }
-
-    /**
-     * @param \stdClass $response
-     * @return array
-     */
-    public function transformResponseForOverwrite(\stdClass $response): array
-    {
-        $transformedTax = [];
-        foreach ($response->lines as $line) {
-            $rate = 0;
-            foreach ($line->details as $detail) {
-                $rate += $detail->rate;
-            }
-            $transformedTax[$line->itemCode] = [
-                'tax' => $line->tax * $line->quantity,
-                'rate' => $rate * 100,
-            ];
-        }
-
-        return $transformedTax;
     }
 }

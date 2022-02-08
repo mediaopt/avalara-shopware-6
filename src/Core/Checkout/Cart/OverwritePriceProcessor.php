@@ -13,24 +13,33 @@ use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTax;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\HttpFoundation\Session\Session;
+use MoptAvalara6\Adapter\AvalaraSDKAdapter;
 
 class OverwritePriceProcessor implements CartProcessorInterface
 {
     private QuantityPriceCalculator $calculator;
 
+    private SystemConfigService $systemConfigService;
+
     private Session $session;
 
     private $avalaraTaxes;
 
-    public function __construct(QuantityPriceCalculator $calculator, Session $session) {
+    public function __construct(QuantityPriceCalculator $calculator, SystemConfigService $systemConfigService, Session $session) {
         $this->calculator = $calculator;
+        $this->systemConfigService = $systemConfigService;
         $this->session = $session;
         $this->avalaraTaxes = $this->session->get(Form::SESSION_AVALARA_TAXES_TRANSFORMED);
     }
 
     public function process(CartDataCollection $data, Cart $original, Cart $toCalculate, SalesChannelContext $context, CartBehavior $behavior): void
     {
+        if ($this->isTaxesUpdateNeeded()) {
+           $this->avalaraTaxes = $this->getAvalaraTaxes($original, $context);
+        }
+
         if ($this->avalaraTaxes) {
             $this->changeTaxes($toCalculate);
             $this->changeShippingCosts($toCalculate);
@@ -38,6 +47,10 @@ class OverwritePriceProcessor implements CartProcessorInterface
         }
     }
 
+    /**
+     * @param Cart $toCalculate
+     * @return void
+     */
     private function changeTaxes(Cart $toCalculate)
     {
         // get all product line items
@@ -80,6 +93,10 @@ class OverwritePriceProcessor implements CartProcessorInterface
         }
     }
 
+    /**
+     * @param Cart $toCalculate
+     * @return void
+     */
     private function changeShippingCosts(Cart $toCalculate)
     {
         //@TODO: check if we are using always the first delivery for request and display
@@ -115,5 +132,112 @@ class OverwritePriceProcessor implements CartProcessorInterface
             $shippingCosts->getListPrice()
         );
         $delivery->setShippingCosts($avalaraShippingCalculated);
+    }
+
+    /**
+     * @return bool
+     */
+    private function isTaxesUpdateNeeded()
+    {
+        $pagesForUpdate = [
+            'checkout/cart',
+            'checkout/confirm',
+        ];
+
+        $currentPage = $_SERVER['REQUEST_URI'];
+
+        foreach ($pagesForUpdate as $page) {
+            if (strripos($currentPage, $page)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Cart $cart
+     * @param SalesChannelContext $context
+     * @return array|mixed
+     */
+    private function getAvalaraTaxes(Cart $cart, SalesChannelContext $context)
+    {
+        $customer = $context->getCustomer();
+        if ($customer) {
+            $customerId = $customer->getId();
+            $currencyIso = $context->getCurrency()->getIsoCode();
+            $avalaraRequest = $this->prepeareAvalaraRequest($cart, $customerId, $currencyIso);
+            if ($avalaraRequest) {
+                $avalaraRequestKey = md5(json_encode($avalaraRequest));
+                $sessionAvalaraRequestKey = $this->session->get(Form::SESSION_AVALARA_MODEL_KEY);
+                if ($avalaraRequestKey != $sessionAvalaraRequestKey) {
+                    $this->session->set(Form::SESSION_AVALARA_MODEL, serialize($avalaraRequest));
+                    $this->session->set(Form::SESSION_AVALARA_MODEL_KEY, $avalaraRequestKey);
+                    return $this->makeAvalaraCall($avalaraRequest);
+                }
+            }
+        }
+        return $this->avalaraTaxes;
+    }
+
+    /**
+     * @param Cart $cart
+     * @param $customerId
+     * @param $currencyIso
+     * @return mixed
+     */
+    private function prepeareAvalaraRequest(Cart $cart, $customerId, $currencyIso)
+    {
+        $shippingCountry = $cart->getDeliveries()->getAddresses()->getCountries()->first();
+        if (is_null($shippingCountry)) {
+            return false;
+        }
+        $shippingCountryIso3 = $shippingCountry->getIso3();
+
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService);
+        if (!$adapter->getFactory('AddressFactory')->checkCountryRestriction($shippingCountryIso3)) {
+            return false;
+        }
+
+        return $adapter->getFactory('OrderTransactionModelFactory')->build($cart, $customerId, $currencyIso);
+    }
+
+    /**
+     * @param $avalaraRequest
+     * @return array
+     */
+    private function makeAvalaraCall($avalaraRequest)
+    {
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService);
+        $service = $adapter->getService('GetTax');
+        $response = $service->calculate($avalaraRequest);
+
+        $transformedTaxes = $this->transformResponse($response);
+
+        $this->session->set(Form::SESSION_AVALARA_TAXES, $response);
+        $this->session->set(Form::SESSION_AVALARA_TAXES_TRANSFORMED, $transformedTaxes);
+
+        return $transformedTaxes;
+    }
+
+    /**
+     * @param mixed $response
+     * @return array
+     */
+    private function transformResponse($response): array
+    {
+        $transformedTax = [];
+        foreach ($response->lines as $line) {
+            $rate = 0;
+            foreach ($line->details as $detail) {
+                $rate += $detail->rate;
+            }
+            $transformedTax[$line->itemCode] = [
+                'tax' => $line->tax * $line->quantity,
+                'rate' => $rate * 100,
+            ];
+        }
+
+        return $transformedTax;
     }
 }

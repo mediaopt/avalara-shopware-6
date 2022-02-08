@@ -88,11 +88,6 @@ class Form
     /**
      * @var string Field name for the plugin session key
      */
-    const SESSION_CART_UPDATED = 'cartUpdated';
-
-    /**
-     * @var string Field name for the plugin session key
-     */
     const SESSION_AVALARA_TAXES = 'avalaraTaxes';
 
     /**
@@ -104,4 +99,9 @@ class Form
      * @var string Field name for the plugin session key
      */
     const SESSION_AVALARA_MODEL = 'avalaraModel';
+
+    /**
+     * @var string Field name for the plugin session key
+     */
+    const SESSION_AVALARA_MODEL_KEY = 'avalaraModelKey';
 }
