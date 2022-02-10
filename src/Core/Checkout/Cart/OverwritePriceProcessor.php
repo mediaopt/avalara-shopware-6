@@ -57,14 +57,14 @@ class OverwritePriceProcessor implements CartProcessorInterface
         $products = $toCalculate->getLineItems()->filterType(LineItem::PRODUCT_LINE_ITEM_TYPE);
 
         foreach ($products as $product) {
-            $productId = $product->getId();
-            if (!array_key_exists($productId, $this->avalaraTaxes)) {
+            $productNumber = $product->getPayloadValue('productNumber');
+            if (!array_key_exists($productNumber, $this->avalaraTaxes)) {
                 continue;
             }
 
             $originalPrice = $product->getPrice();
-            $avalaraTaxAmount = $this->avalaraTaxes[$productId]['tax'];
-            $avalaraTaxRate = $this->avalaraTaxes[$productId]['rate'];
+            $avalaraTaxAmount = $this->avalaraTaxes[$productNumber]['tax'];
+            $avalaraTaxRate = $this->avalaraTaxes[$productNumber]['rate'];
 
             $avalaraCalculatedTax = new CalculatedTax(
                 $avalaraTaxAmount,

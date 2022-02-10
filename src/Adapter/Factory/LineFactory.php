@@ -29,8 +29,8 @@ class LineFactory extends AbstractFactory
     public function build($lineItem)
     {
         $line = new LineItemModel();
-        $line->number = $lineItem->getId();
-        $line->itemCode = $lineItem->getId();
+        $line->number = $lineItem->getPayloadValue('productNumber');
+        $line->itemCode = $lineItem->getPayloadValue('productNumber');
         $line->amount = $lineItem->getPrice()->getUnitPrice();
         $line->quantity = $lineItem->getPrice()->getQuantity();
         $line->description = $lineItem->getLabel();
