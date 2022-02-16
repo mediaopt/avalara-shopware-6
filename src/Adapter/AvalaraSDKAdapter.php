@@ -68,14 +68,14 @@ class AvalaraSDKAdapter implements AdapterInterface
     /**
      * @var SystemConfigService
      */
-    private $cachedConfigService;
+    private $systemConfigService;
 
     /**
      * @param SystemConfigService $cachedConfigService
      */
     public function __construct(SystemConfigService $cachedConfigService)
     {
-        $this->cachedConfigService = $cachedConfigService;
+        $this->systemConfigService = $cachedConfigService;
     }
 
     /**
@@ -112,7 +112,7 @@ class AvalaraSDKAdapter implements AdapterInterface
      */
     public function getPluginConfig($key)
     {
-        return $this->cachedConfigService->get($key);
+        return $this->systemConfigService->get($key);
     }
 
     /**

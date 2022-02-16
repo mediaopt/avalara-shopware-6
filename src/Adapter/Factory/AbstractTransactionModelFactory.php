@@ -8,6 +8,7 @@
 
 namespace MoptAvalara6\Adapter\Factory;
 
+use Avalara\AddressLocationInfo;
 use Avalara\LineItemModel;
 use Shopware\Core\Checkout\Cart\Cart;
 
@@ -36,15 +37,16 @@ abstract class AbstractTransactionModelFactory extends AbstractFactory
 
     /**
      * @param Cart $cart
+     * @param AddressLocationInfo $deliveryAddress
      * @return LineItemModel[]
      */
-    protected function getLineModels(Cart $cart)
+    protected function getLineModels(Cart $cart, AddressLocationInfo $deliveryAddress)
     {
         $lineFactory = $this->getLineFactory();
         $lines = [];
 
         foreach ($cart->getLineItems()->getFlat() as $lineItem) {
-            $lines[] = $lineFactory->build($lineItem);
+            $lines[] = $lineFactory->build($lineItem, $deliveryAddress);
         }
 
         if ($shippingModel = $this->getShippingModel($cart)) {
@@ -66,10 +68,9 @@ abstract class AbstractTransactionModelFactory extends AbstractFactory
             return null;
         }
 
-        return $this
-            ->getShippingFactory()
-            ->build($price)
-            ;
+        $shippingMethod = $cart->getDeliveries()->first()->getShippingMethod();
+
+        return $this->getShippingFactory()->build($shippingMethod, $price);
     }
 
     /**

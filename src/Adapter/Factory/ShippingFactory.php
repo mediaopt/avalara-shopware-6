@@ -9,6 +9,8 @@
 namespace MoptAvalara6\Adapter\Factory;
 
 use Avalara\LineItemModel;
+use MoptAvalara6\Bootstrap\Form;
+use Shopware\Core\Checkout\Shipping\ShippingMethodEntity;
 
 /**
  * @author derksen mediaopt GmbH
@@ -22,24 +24,30 @@ class ShippingFactory extends AbstractFactory
     const ARTICLE_ID = 'Shipping';
 
     /**
-     * @var string Avalara default taxcode for a voucher
+     * @var string Avalara default taxcode for a shipping
      */
-    const TAXCODE = 'FR010000';
+    const TAXCODE = 'FR000000';
 
     /**
      * build Line-model based on passed in lineData
+     * @param ShippingMethodEntity $shippingMethod
      * @param float $price
      * @return LineItemModel
      */
-    public function build($price)
+    public function build(ShippingMethodEntity $shippingMethod, float $price)
     {
+        $customFields = $shippingMethod->getCustomFields();
+        $taxCode = array_key_exists(Form::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE, $customFields)
+            ? $customFields[Form::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE]
+            : self::TAXCODE;
+
         $line = new LineItemModel();
         $line->number = self::ARTICLE_ID;
         $line->itemCode = self::ARTICLE_ID;
         $line->amount = $price;
         $line->quantity = 1;
         $line->description = self::ARTICLE_ID;
-        $line->taxCode = self::TAXCODE;
+        $line->taxCode = $taxCode;
         $line->discounted = false;
         $line->taxIncluded = false;
 

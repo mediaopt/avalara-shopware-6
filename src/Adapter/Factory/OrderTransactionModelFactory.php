@@ -8,6 +8,7 @@
 
 namespace MoptAvalara6\Adapter\Factory;
 
+use Avalara\AddressLocationInfo;
 use Avalara\CreateTransactionModel;
 use Avalara\AddressesModel;
 use Avalara\DocumentType;
@@ -34,14 +35,16 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
      */
     public function build(Cart $cart, string $customerId, $currencyIso): CreateTransactionModel
     {
+        $addresses = $this->getAddressesModel($cart);
+
         $model = new CreateTransactionModel();
         $model->companyCode = $this->getPluginConfig(Form::COMPANY_CODE_FIELD);
         $model->commit = false;
         $model->customerCode = $customerId;
         $model->type = DocumentType::C_SALESINVOICE;
         $model->currencyCode = $currencyIso;
-        $model->addresses = $this->getAddressesModel($cart);
-        $model->lines = $this->getLineModels($cart);
+        $model->addresses = $addresses;
+        $model->lines = $this->getLineModels($cart, $addresses->shipTo);
         // todo: parameters, customerUsageType, discount
         return $model;
     }
@@ -64,10 +67,11 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
 
     /**
      * @param Cart $cart
+     * @param AddressLocationInfo $deliveryAddress
      * @return LineItemModel[]
      */
-    protected function getLineModels(Cart $cart)
+    protected function getLineModels(Cart $cart, AddressLocationInfo $deliveryAddress)
     {
-        return parent::getLineModels($cart);
+        return parent::getLineModels($cart, $deliveryAddress);
     }
 }

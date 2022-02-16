@@ -104,4 +104,19 @@ class Form
      * @var string Field name for the plugin session key
      */
     const SESSION_AVALARA_MODEL_KEY = 'avalaraModelKey';
+
+    /**
+     * @var string Field name for the plugin custom field
+     */
+    const CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE = 'avalara_shipping_tax_code';
+
+    /**
+     * @var string Fieldset name for the plugin custom field
+     */
+    const CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE_FIELDSET = 'avalara_shipping_tax_code_fieldset';
+
+    /**
+     * @var string Field name for the vlck plugin custom field
+     */
+    const CUSTOM_FIELD_PRODUCT_WAREHOUSE = 'vlck_warehouse_id';
 }

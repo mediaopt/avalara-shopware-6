@@ -233,7 +233,7 @@ class OverwritePriceProcessor implements CartProcessorInterface
                 $rate += $detail->rate;
             }
             $transformedTax[$line->itemCode] = [
-                'tax' => $line->tax * $line->quantity,
+                'tax' => $line->tax,
                 'rate' => $rate * 100,
             ];
         }
