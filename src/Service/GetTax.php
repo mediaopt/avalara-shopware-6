@@ -10,6 +10,7 @@ namespace MoptAvalara6\Service;
 
 use Avalara\CreateTransactionModel;
 use Avalara\TransactionModel;
+use Monolog\Logger;
 use MoptAvalara6\Adapter\AdapterInterface;
 
 /**
@@ -29,14 +30,17 @@ class GetTax extends AbstractService
     }
 
     /**
-     *
      * @param CreateTransactionModel $model
+     * @param Logger $logger
      * @return TransactionModel
      */
-    public function calculate(CreateTransactionModel $model)
+    public function calculate(CreateTransactionModel $model, Logger $logger)
     {
         $client = $this->getAdapter()->getAvaTaxClient();
         $model->date = date(DATE_W3C);
-        return $client->createTransaction(null, $model);
+        $this->log($logger, 'Avalara request', $model);
+        $response = $client->createTransaction(null, $model);
+        $this->log($logger, 'Avalara response', $response);
+        return $response;
     }
 }

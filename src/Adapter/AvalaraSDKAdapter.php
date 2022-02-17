@@ -99,10 +99,6 @@ class AvalaraSDKAdapter implements AdapterInterface
         $avaClient->withSecurity($accountNumber, $licenseKey);
         $this->avaTaxClient = $avaClient;
 
-        // Attach a handler to log all requests
-        //todo: logger
-        //$avaClient->getHttpClient()->getEmitter()->attach($this->getLogSubscriber());
-
         return $this->avaTaxClient;
     }
 

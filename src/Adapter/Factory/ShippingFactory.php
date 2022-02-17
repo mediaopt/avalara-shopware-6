@@ -37,9 +37,11 @@ class ShippingFactory extends AbstractFactory
     public function build(ShippingMethodEntity $shippingMethod, float $price)
     {
         $customFields = $shippingMethod->getCustomFields();
-        $taxCode = array_key_exists(Form::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE, $customFields)
-            ? $customFields[Form::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE]
-            : self::TAXCODE;
+        if (is_array($customFields) && array_key_exists(Form::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE, $customFields)) {
+            $taxCode = $customFields[Form::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE];
+        } else {
+            $taxCode = self::TAXCODE;
+        }
 
         $line = new LineItemModel();
         $line->number = self::ARTICLE_ID;

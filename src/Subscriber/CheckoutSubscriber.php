@@ -10,6 +10,7 @@ use Shopware\Storefront\Page\Checkout\Finish\CheckoutFinishPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Session\Session;
 use MoptAvalara6\Bootstrap\Form;
+use Monolog\Logger;
 
 class CheckoutSubscriber implements EventSubscriberInterface
 {
@@ -17,16 +18,20 @@ class CheckoutSubscriber implements EventSubscriberInterface
 
     private Session $session;
 
+    private Logger $logger;
+
     /**
      * @param SystemConfigService $systemConfigService
      * @param Session $session
      */
     public function __construct(
         SystemConfigService $systemConfigService,
+        Logger $loggerMonolog,
         Session $session
     )
     {
         $this->systemConfigService = $systemConfigService;
+        $this->logger = $loggerMonolog;
         $this->session = $session;
     }
 
@@ -54,8 +59,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
 
             $adapter = new AvalaraSDKAdapter($this->systemConfigService);
             $service = $adapter->getService('GetTax');
-            $response = $service->calculate($avalaraRequestModel);
-            //todo log response
+            $service->calculate($avalaraRequestModel, $this->logger);
             $this->session->set(Form::SESSION_AVALARA_MODEL, null);
         }
     }

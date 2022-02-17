@@ -9,6 +9,7 @@
 namespace MoptAvalara6\Service;
 
 use MoptAvalara6\Adapter\AdapterInterface;
+use Monolog\Logger;
 
 /**
  * @author derksen mediaopt GmbH
@@ -17,7 +18,6 @@ use MoptAvalara6\Adapter\AdapterInterface;
 abstract class AbstractService
 {
     /**
-     *
      * @var AdapterInterface
      */
     protected $adapter;
@@ -39,5 +39,23 @@ abstract class AbstractService
     public function getAdapter()
     {
         return $this->adapter;
+    }
+
+    /**
+     * @param Logger $logger
+     * @param $message
+     * @param $additionalData
+     * @return void
+     */
+    public function log(Logger $logger, $message, $additionalData) {
+        $logger->addRecord(
+            Logger::INFO,
+            $message,
+            [
+                'source' => 'Avalara',
+                'environment' => 'env',
+                'additionalData' => json_encode($additionalData),
+            ]
+        );
     }
 }
