@@ -48,7 +48,7 @@ class ShippingFactory extends AbstractFactory
         $line->itemCode = self::ARTICLE_ID;
         $line->amount = $price;
         $line->quantity = 1;
-        $line->description = self::ARTICLE_ID;
+        $line->description = $shippingMethod->getName();
         $line->taxCode = $taxCode;
         $line->discounted = false;
         $line->taxIncluded = false;

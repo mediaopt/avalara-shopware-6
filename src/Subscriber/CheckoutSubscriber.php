@@ -22,16 +22,17 @@ class CheckoutSubscriber implements EventSubscriberInterface
 
     /**
      * @param SystemConfigService $systemConfigService
+     * @param Logger $logger
      * @param Session $session
      */
     public function __construct(
         SystemConfigService $systemConfigService,
-        Logger $loggerMonolog,
+        Logger $logger,
         Session $session
     )
     {
         $this->systemConfigService = $systemConfigService;
-        $this->logger = $loggerMonolog;
+        $this->logger = $logger;
         $this->session = $session;
     }
 

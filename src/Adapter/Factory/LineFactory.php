@@ -56,7 +56,9 @@ class LineFactory extends AbstractFactory
     /**
      * @param LineItem $lineItem
      * @param AddressLocationInfo $deliveryAddress
-     * @return mixed
+     * @return AddressesModel|false
+     * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws \Doctrine\DBAL\Exception
      */
     private function getWarehouse(LineItem $lineItem, AddressLocationInfo $deliveryAddress)
     {

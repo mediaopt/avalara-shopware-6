@@ -43,11 +43,11 @@ abstract class AbstractService
 
     /**
      * @param Logger $logger
-     * @param $message
-     * @param $additionalData
+     * @param string $message
+     * @param mixed $additionalData
      * @return void
      */
-    public function log(Logger $logger, $message, $additionalData) {
+    public function log(Logger $logger, string $message, $additionalData = '') {
         $logger->addRecord(
             Logger::INFO,
             $message,

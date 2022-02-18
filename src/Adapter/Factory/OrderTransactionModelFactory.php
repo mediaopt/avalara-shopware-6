@@ -60,7 +60,8 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
 
         $addressesModel = new AddressesModel();
         $addressesModel->shipFrom = $addressFactory->buildOriginAddress();
-        $addressesModel->shipTo = $addressFactory->buildDeliveryAddress($cart);
+        $customerAddress = $cart->getDeliveries()->getAddresses()->first();
+        $addressesModel->shipTo = $addressFactory->buildDeliveryAddress($customerAddress);
 
         return $addressesModel;
     }

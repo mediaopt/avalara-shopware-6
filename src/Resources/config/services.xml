@@ -16,7 +16,7 @@
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="monolog.logger" />
             <argument type="service" id="session" />
-            <tag name="kernel.event_subscriber" priority="-5100" />
+            <tag name="kernel.event_subscriber"/>
         </service>
 
         <service id="MoptAvalara6\Core\Checkout\Cart\OverwritePriceProcessor">
@@ -24,7 +24,7 @@
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="monolog.logger" />
             <argument type="service" id="session" />
-            <tag name="shopware.cart.processor" priority="-5200" />
+            <tag name="shopware.cart.processor"/>
         </service>
     </services>
 </container>

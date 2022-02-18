@@ -10,7 +10,7 @@ namespace MoptAvalara6\Adapter\Factory;
 
 use Avalara\AddressLocationInfo;
 use MoptAvalara6\Bootstrap\Form;
-use Shopware\Core\Checkout\Cart\Cart;
+use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 
 /**
  *
@@ -34,23 +34,19 @@ class AddressFactory extends AbstractFactory
     /**
      * build Address-model based on delivery address
      *
-     * @param Cart $cart
+     * @param CustomerAddressEntity $cart
      * @return AddressLocationInfo
      */
-    public function buildDeliveryAddress(Cart $cart)
+    public function buildDeliveryAddress(CustomerAddressEntity $customerAddress)
     {
-        $customerAddress = $cart->getDeliveries()->getAddresses()->first();
-        $customerCountry = $cart->getDeliveries()->getAddresses()->getCountries()->first();
-        $customerState = $cart->getDeliveries()->getAddresses()->getCountryStates()->first();
-
         $address = new AddressLocationInfo();
-        $address->city = $customerAddress->getCity();
-        $address->country = $customerCountry->getIso3();
         $address->line1 = $customerAddress->getStreet();
+        $address->line2 = $customerAddress->getAdditionalAddressLine1();
+        $address->line3 = $customerAddress->getAdditionalAddressLine2();
+        $address->city = $customerAddress->getCity();
         $address->postalCode = $customerAddress->getZipcode();
-        if ($region = $customerState->getName()) {
-            $address->region = $region;
-        }
+        $address->region = $customerAddress->getCountryState()->getName();
+        $address->country = $customerAddress->getCountry()->getIso3();
 
         return $address;
     }
