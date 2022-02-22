@@ -42,6 +42,11 @@ class Form
     const TAX_COUNTRY_RESTRICTION = 'MoptAvalara6.config.taxCountryRestriction';
 
     /**
+     * @var string Field name for the plugin config
+     */
+    const ADDRESS_VALIDATION_REQUIRED_FIELD = 'MoptAvalara6.config.addressValidationRequired';
+
+    /**
      * Values and options
      */
     const DELIVERY_COUNTRY_NO_VALIDATION = 1;
@@ -104,6 +109,11 @@ class Form
      * @var string Field name for the plugin session key
      */
     const SESSION_AVALARA_MODEL_KEY = 'avalaraModelKey';
+
+    /**
+     * @var string Field name for the plugin session key
+     */
+    const SESSION_AVALARA_ADDRESS_KEY = 'avalaraAddressKey';
 
     /**
      * @var string Field name for the plugin custom field

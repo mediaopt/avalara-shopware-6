@@ -11,6 +11,7 @@ namespace MoptAvalara6\Adapter\Factory;
 use Avalara\AddressLocationInfo;
 use MoptAvalara6\Bootstrap\Form;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 /**
  *
@@ -124,5 +125,39 @@ class AddressFactory extends AbstractFactory
         }
 
         return false;
+    }
+
+    /**
+     * check if address has aready been validated
+     * @param \Avalara\AddressLocationInfo $address
+     * @param Session
+     * @return boolean
+     */
+    public function isAddressToBeValidated(AddressLocationInfo $address, $session)
+    {
+        if (!$this->checkCountryRestriction($address->country)) {
+            return false;
+        }
+
+        if (!$this->getPluginConfig(Form::ADDRESS_VALIDATION_REQUIRED_FIELD)) {
+            return false;
+        }
+
+        if ($session->get(Form::SESSION_AVALARA_ADDRESS_KEY) !== $this->getAddressHash($address)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * get hash of given address
+     *
+     * @param \Avalara\AddressLocationInfo $address
+     * @return string
+     */
+    public function getAddressHash(AddressLocationInfo $address)
+    {
+        return md5(serialize($address));
     }
 }

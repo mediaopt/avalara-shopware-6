@@ -43,6 +43,11 @@
             <defaultValue>1</defaultValue>
             <label>Work mode</label>
         </input-field>
+        <input-field type="bool">
+            <name>addressValidationRequired</name>
+            <defaultValue>false</defaultValue>
+            <label>Is customer address validation required</label>
+        </input-field>
     </card>
     <card>
         <title>Origin address</title>
@@ -63,7 +68,7 @@
             <label>City</label>
         </input-field>
         <input-field>
-            <name>postCode</name>
+            <name>postalCode</name>
             <label>Post code</label>
         </input-field>
         <input-field>
