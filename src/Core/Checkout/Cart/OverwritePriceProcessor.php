@@ -45,9 +45,11 @@ class OverwritePriceProcessor implements CartProcessorInterface
 
     public function process(CartDataCollection $data, Cart $original, Cart $toCalculate, SalesChannelContext $context, CartBehavior $behavior): void
     {
-        if ($this->isTaxesUpdateNeeded()) {
-           $this->avalaraTaxes = $this->getAvalaraTaxes($original, $context);
+        if (!$this->isTaxesUpdateNeeded()) {
+            return;
         }
+
+        $this->getAvalaraTaxes($original, $context);
 
         if ($this->avalaraTaxes) {
             $this->changeTaxes($toCalculate);
@@ -170,14 +172,14 @@ class OverwritePriceProcessor implements CartProcessorInterface
         if ($customer) {
             $customerId = $customer->getId();
             $currencyIso = $context->getCurrency()->getIsoCode();
-            $avalaraRequest = $this->prepeareAvalaraRequest($cart, $customerId, $currencyIso);
+            $avalaraRequest = $this->prepareAvalaraRequest($cart, $customerId, $currencyIso);
             if ($avalaraRequest) {
                 $avalaraRequestKey = md5(json_encode($avalaraRequest));
                 $sessionAvalaraRequestKey = $this->session->get(Form::SESSION_AVALARA_MODEL_KEY);
                 if ($avalaraRequestKey != $sessionAvalaraRequestKey) {
                     $this->session->set(Form::SESSION_AVALARA_MODEL, serialize($avalaraRequest));
                     $this->session->set(Form::SESSION_AVALARA_MODEL_KEY, $avalaraRequestKey);
-                    return $this->makeAvalaraCall($avalaraRequest);
+                    $this->avalaraTaxes = $this->makeAvalaraCall($avalaraRequest);
                 }
             }
         }
@@ -190,7 +192,7 @@ class OverwritePriceProcessor implements CartProcessorInterface
      * @param $currencyIso
      * @return mixed
      */
-    private function prepeareAvalaraRequest(Cart $cart, $customerId, $currencyIso)
+    private function prepareAvalaraRequest(Cart $cart, $customerId, $currencyIso)
     {
         $shippingCountry = $cart->getDeliveries()->getAddresses()->getCountries()->first();
         if (is_null($shippingCountry)) {
@@ -198,7 +200,7 @@ class OverwritePriceProcessor implements CartProcessorInterface
         }
         $shippingCountryIso3 = $shippingCountry->getIso3();
 
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService);
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
         if (!$adapter->getFactory('AddressFactory')->checkCountryRestriction($shippingCountryIso3)) {
             return false;
         }
@@ -212,9 +214,9 @@ class OverwritePriceProcessor implements CartProcessorInterface
      */
     private function makeAvalaraCall($avalaraRequest)
     {
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService);
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
         $service = $adapter->getService('GetTax');
-        $response = $service->calculate($avalaraRequest, $this->logger);
+        $response = $service->calculate($avalaraRequest);
 
         $transformedTaxes = $this->transformResponse($response);
 
@@ -231,9 +233,14 @@ class OverwritePriceProcessor implements CartProcessorInterface
     private function transformResponse($response): array
     {
         $transformedTax = [];
+        if (!is_object($response)) {
+            return $transformedTax;
+        }
+
         if (is_null($response->lines)) {
             return $transformedTax;
         }
+
         foreach ($response->lines as $line) {
             $rate = 0;
             foreach ($line->details as $detail) {

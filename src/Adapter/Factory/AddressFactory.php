@@ -67,8 +67,6 @@ class AddressFactory extends AbstractFactory
         $address->region = $this->getPluginConfig(Form::ORIGIN_REGION_FIELD);
         $address->country = $this->getPluginConfig(Form::ORIGIN_COUNTRY_FIELD);
 
-        //todo: should we fix country code/region, like in shopware5?
-
         return $address;
     }
 

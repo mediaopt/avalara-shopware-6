@@ -63,7 +63,7 @@
             <label>City</label>
         </input-field>
         <input-field>
-            <name>postCode</name>
+            <name>postalCode</name>
             <label>Post code</label>
         </input-field>
         <input-field>

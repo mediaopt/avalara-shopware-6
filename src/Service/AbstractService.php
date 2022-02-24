@@ -23,12 +23,18 @@ abstract class AbstractService
     protected $adapter;
 
     /**
+     * @var Logger
+     */
+    protected $logger;
+
+    /**
      *
      * @param AdapterInterface $adapter
      */
-    public function __construct(AdapterInterface $adapter)
+    public function __construct(AdapterInterface $adapter, Logger $logger)
     {
         $this->adapter = $adapter;
+        $this->logger = $logger;
     }
 
     /**
@@ -42,13 +48,12 @@ abstract class AbstractService
     }
 
     /**
-     * @param Logger $logger
      * @param string $message
      * @param mixed $additionalData
      * @return void
      */
-    public function log(Logger $logger, string $message, $additionalData = '') {
-        $logger->addRecord(
+    public function log(string $message, $additionalData = '') {
+        $this->logger->addRecord(
             Logger::INFO,
             $message,
             [

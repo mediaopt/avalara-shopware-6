@@ -58,7 +58,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
             $avalaraRequestModel = unserialize($sessionModel);
             $avalaraRequestModel->commit = true;
 
-            $adapter = new AvalaraSDKAdapter($this->systemConfigService);
+            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
             $service = $adapter->getService('GetTax');
             $service->calculate($avalaraRequestModel, $this->logger);
             $this->session->set(Form::SESSION_AVALARA_MODEL, null);
