@@ -1,0 +1,10 @@
+{
+    "avalara-test": {
+        "general": {
+            "mainMenuItemGeneral": "Avalara"
+        },
+        "page": {
+            "addButtonText": "Testverbindung"
+        }
+    }
+}

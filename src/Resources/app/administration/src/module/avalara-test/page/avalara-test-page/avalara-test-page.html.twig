@@ -1,0 +1,23 @@
+{% block avalara_test_page %}
+    <sw-page class="avalara-test-page">
+        {% block avalara_test_page_smart_bar_actions %}
+            <template slot="smart-bar-actions">
+                <sw-button variant="primary" @click="onClick()">
+                    {{ $t('avalara-test.page.addButtonText') }}
+                </sw-button>
+            </template>
+        {% endblock %}
+        <template slot="content">
+            {% block avalara_test_page_content %}
+                <sw-entity-listing
+                    v-if="bundles"
+                    :items="bundles"
+                    :repository="repository"
+                    :showSelection="false"
+                    :columns="columns"
+                    detailRoute="avalara.test.detail">
+                </sw-entity-listing>
+            {% endblock %}
+        </template>
+    </sw-page>
+{% endblock %}
