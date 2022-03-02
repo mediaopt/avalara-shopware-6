@@ -12,6 +12,8 @@ use Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTax;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
+use Shopware\Core\Checkout\Customer\CustomerEntity;
+use Shopware\Core\Kernel;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\HttpFoundation\Session\Session;
@@ -45,11 +47,9 @@ class OverwritePriceProcessor implements CartProcessorInterface
 
     public function process(CartDataCollection $data, Cart $original, Cart $toCalculate, SalesChannelContext $context, CartBehavior $behavior): void
     {
-        if (!$this->isTaxesUpdateNeeded()) {
-            return;
+        if ($this->isTaxesUpdateNeeded()) {
+           $this->avalaraTaxes = $this->getAvalaraTaxes($original, $context);
         }
-
-        $this->getAvalaraTaxes($original, $context);
 
         if ($this->avalaraTaxes) {
             $this->changeTaxes($toCalculate);
@@ -85,7 +85,7 @@ class OverwritePriceProcessor implements CartProcessorInterface
             $avalaraCalculatedTaxCollection = new CalculatedTaxCollection();
             $avalaraCalculatedTaxCollection->add($avalaraCalculatedTax);
 
-            $avalaraPriceForProduct = $product->getPrice()->getTotalPrice() + $avalaraTaxAmount;
+            $avalaraPriceForProduct = $product->getPrice()->getTotalPrice();
 
             $avalaraProductPriceCalculated = new CalculatedPrice(
                 $originalPrice->getUnitPrice(),
@@ -127,7 +127,7 @@ class OverwritePriceProcessor implements CartProcessorInterface
         $avalaraCalculatedTaxCollection = new CalculatedTaxCollection();
         $avalaraCalculatedTaxCollection->add($avalaraCalculatedTax);
 
-        $avalaraPriceForShipping = $shippingCosts->getTotalPrice() + $avalaraShippingTaxAmount;
+        $avalaraPriceForShipping = $shippingCosts->getTotalPrice();
         $avalaraShippingCalculated = new CalculatedPrice(
             $shippingCosts->getUnitPrice(),
             $avalaraPriceForShipping,
@@ -171,8 +171,9 @@ class OverwritePriceProcessor implements CartProcessorInterface
         $customer = $context->getCustomer();
         if ($customer) {
             $customerId = $customer->getId();
+            $taxIncluded = $this->isTaxIncluded($customer);
             $currencyIso = $context->getCurrency()->getIsoCode();
-            $avalaraRequest = $this->prepareAvalaraRequest($cart, $customerId, $currencyIso);
+            $avalaraRequest = $this->prepeareAvalaraRequest($cart, $customerId, $currencyIso, $taxIncluded);
             if ($avalaraRequest) {
                 $avalaraRequestKey = md5(json_encode($avalaraRequest));
                 $sessionAvalaraRequestKey = $this->session->get(Form::SESSION_AVALARA_MODEL_KEY);
@@ -188,11 +189,12 @@ class OverwritePriceProcessor implements CartProcessorInterface
 
     /**
      * @param Cart $cart
-     * @param $customerId
-     * @param $currencyIso
+     * @param string $customerId
+     * @param string $currencyIso
+     * @param bool $taxIncluded
      * @return mixed
      */
-    private function prepareAvalaraRequest(Cart $cart, $customerId, $currencyIso)
+    private function prepeareAvalaraRequest(Cart $cart, string $customerId, string $currencyIso, bool $taxIncluded)
     {
         $shippingCountry = $cart->getDeliveries()->getAddresses()->getCountries()->first();
         if (is_null($shippingCountry)) {
@@ -205,7 +207,7 @@ class OverwritePriceProcessor implements CartProcessorInterface
             return false;
         }
 
-        return $adapter->getFactory('OrderTransactionModelFactory')->build($cart, $customerId, $currencyIso);
+        return $adapter->getFactory('OrderTransactionModelFactory')->build($cart, $customerId, $currencyIso, $taxIncluded);
     }
 
     /**
@@ -253,5 +255,30 @@ class OverwritePriceProcessor implements CartProcessorInterface
         }
 
         return $transformedTax;
+    }
+
+    /**
+     * @param CustomerEntity $customer
+     * @return bool
+     * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws \Doctrine\DBAL\Exception
+     */
+    private function isTaxIncluded(CustomerEntity $customer): bool
+    {
+        $isTaxIncluded = $this->session->get(Form::SESSION_AVALARA_IS_GROSS_PRICE);
+
+        if (is_null($isTaxIncluded)) {
+            $groupId = $customer->getGroupId();
+            $connection = Kernel::getConnection();
+
+            $sql = "SELECT display_gross FROM customer_group WHERE id = UNHEX('$groupId')";
+
+            $isTaxIncluded = $connection->executeQuery($sql)->fetchAssociative();
+
+            $isTaxIncluded = (bool) $isTaxIncluded['display_gross'];
+            $this->session->set(Form::SESSION_AVALARA_IS_GROSS_PRICE, $isTaxIncluded);
+        }
+
+        return $isTaxIncluded;
     }
 }
