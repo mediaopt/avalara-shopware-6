@@ -62,7 +62,7 @@ class CancelOrder extends AbstractService
             if (!$response = $client->voidTransaction(
                 $request['companyCode'],
                 $request['docCode'],
-                $request['DocumentType'],
+                $request['documentType'],
                 null,
                 $request['model']
             )) {
