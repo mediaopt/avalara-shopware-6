@@ -38,15 +38,16 @@ abstract class AbstractTransactionModelFactory extends AbstractFactory
     /**
      * @param Cart $cart
      * @param AddressLocationInfo $deliveryAddress
+     * @param bool $taxIncluded
      * @return LineItemModel[]
      */
-    protected function getLineModels(Cart $cart, AddressLocationInfo $deliveryAddress)
+    protected function getLineModels(Cart $cart, AddressLocationInfo $deliveryAddress, bool $taxIncluded)
     {
         $lineFactory = $this->getLineFactory();
         $lines = [];
 
         foreach ($cart->getLineItems()->getFlat() as $lineItem) {
-            $lines[] = $lineFactory->build($lineItem, $deliveryAddress);
+            $lines[] = $lineFactory->build($lineItem, $deliveryAddress, $taxIncluded);
         }
 
         if ($shippingModel = $this->getShippingModel($cart)) {

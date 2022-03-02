@@ -27,7 +27,7 @@ class MoptAvalara6 extends Plugin
     {
         parent::install($installContext);
 
-        $this->addCustomField($installContext);
+        $this->addCustomFields($installContext);
     }
 
     /**
@@ -49,7 +49,7 @@ class MoptAvalara6 extends Plugin
      * @param InstallContext $installContext
      * @return void
      */
-    private function addCustomField(InstallContext $installContext)
+    private function addCustomFields(InstallContext $installContext)
     {
         $fieldIds = $this->customFieldsExist($installContext->getContext());
 
@@ -59,29 +59,8 @@ class MoptAvalara6 extends Plugin
 
         $customFieldSetRepository = $this->container->get('custom_field_set.repository');
         $customFieldSetRepository->upsert([
-            [
-                'id' => Uuid::randomHex(),
-                'name' => Form::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE_FIELDSET,
-                'config' => [
-                    'label' => [
-                        'de-DE' => 'Versand Tax Code',
-                        'en-GB' => 'Shipment Tax Code'
-                    ]
-                ],
-                'customFields' => [
-                    [
-                        'id' => Uuid::randomHex(),
-                        'name' => Form::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE,
-                        'type' => CustomFieldTypes::TEXT,
-                    ]
-                ],
-                'relations' => [
-                    [
-                        'id' => Uuid::randomHex(),
-                        'entityName' => 'shipping_method'
-                    ]
-                ]
-            ]
+            $this->getShippingTaxCodeFieldset(),
+            $this->getOrderTaxDocumentCodeFieldset(),
         ], $installContext->getContext());
     }
 
@@ -109,10 +88,76 @@ class MoptAvalara6 extends Plugin
         $customFieldSetRepository = $this->container->get('custom_field_set.repository');
 
         $criteria = new Criteria();
-        $criteria->addFilter(new EqualsAnyFilter('name', [Form::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE_FIELDSET]));
+        $criteria->addFilter(new EqualsAnyFilter(
+            'name',
+            [
+                Form::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE_FIELDSET,
+                Form::CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE_FIELDSET,
+            ]
+        ));
 
         $ids = $customFieldSetRepository->searchIds($criteria, $context);
 
         return $ids->getTotal() > 0 ? $ids : null;
+    }
+
+    /**
+     * @return array
+     */
+    private function getShippingTaxCodeFieldset()
+    {
+        return [
+            'id' => Uuid::randomHex(),
+            'name' => Form::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE_FIELDSET,
+            'config' => [
+                'label' => [
+                    'de-DE' => 'Versand Tax Code',
+                    'en-GB' => 'Shipment Tax Code'
+                ]
+            ],
+            'customFields' => [
+                [
+                    'id' => Uuid::randomHex(),
+                    'name' => Form::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE,
+                    'type' => CustomFieldTypes::TEXT,
+                ]
+            ],
+            'relations' => [
+                [
+                    'id' => Uuid::randomHex(),
+                    'entityName' => 'shipping_method'
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    private function getOrderTaxDocumentCodeFieldset()
+    {
+        return [
+            'id' => Uuid::randomHex(),
+            'name' => Form::CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE_FIELDSET,
+            'config' => [
+                'label' => [
+                    'de-DE' => 'Steuerbelegcode bestellen',
+                    'en-GB' => 'Order tax document code'
+                ]
+            ],
+            'customFields' => [
+                [
+                    'id' => Uuid::randomHex(),
+                    'name' => Form::CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE,
+                    'type' => CustomFieldTypes::TEXT,
+                ]
+            ],
+            'relations' => [
+                [
+                    'id' => Uuid::randomHex(),
+                    'entityName' => 'order'
+                ]
+            ]
+        ];
     }
 }

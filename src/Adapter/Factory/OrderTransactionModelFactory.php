@@ -30,10 +30,11 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
     /**
      * @param Cart $cart
      * @param string $customerId
-     * @param $currencyIso
+     * @param string $currencyIso
+     * @param bool $taxIncluded
      * @return CreateTransactionModel
      */
-    public function build(Cart $cart, string $customerId, $currencyIso): CreateTransactionModel
+    public function build(Cart $cart, string $customerId, $currencyIso, bool $taxIncluded): CreateTransactionModel
     {
         $addresses = $this->getAddressesModel($cart);
 
@@ -44,7 +45,7 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
         $model->type = DocumentType::C_SALESINVOICE;
         $model->currencyCode = $currencyIso;
         $model->addresses = $addresses;
-        $model->lines = $this->getLineModels($cart, $addresses->shipTo);
+        $model->lines = $this->getLineModels($cart, $addresses->shipTo, $taxIncluded);
         // todo: parameters, customerUsageType, discount
         return $model;
     }
@@ -69,10 +70,11 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
     /**
      * @param Cart $cart
      * @param AddressLocationInfo $deliveryAddress
+     * @param bool $taxIncluded
      * @return LineItemModel[]
      */
-    protected function getLineModels(Cart $cart, AddressLocationInfo $deliveryAddress)
+    protected function getLineModels(Cart $cart, AddressLocationInfo $deliveryAddress, bool $taxIncluded)
     {
-        return parent::getLineModels($cart, $deliveryAddress);
+        return parent::getLineModels($cart, $deliveryAddress, $taxIncluded);
     }
 }

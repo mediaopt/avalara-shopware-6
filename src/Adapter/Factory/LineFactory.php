@@ -29,9 +29,10 @@ class LineFactory extends AbstractFactory
      *
      * @param LineItem $lineItem
      * @param AddressLocationInfo $deliveryAddress
+     * @param bool $taxIncluded
      * @return LineItemModel
      */
-    public function build(LineItem $lineItem, AddressLocationInfo $deliveryAddress)
+    public function build(LineItem $lineItem, AddressLocationInfo $deliveryAddress, bool $taxIncluded)
     {
         $price = $lineItem->getPrice()->getUnitPrice();
         $quantity = $lineItem->getPrice()->getQuantity();
@@ -42,7 +43,7 @@ class LineFactory extends AbstractFactory
         $line->amount = $price * $quantity;
         $line->quantity = $quantity;
         $line->description = $lineItem->getLabel();
-        $line->taxIncluded = false;
+        $line->taxIncluded = $taxIncluded;
 
         if ($warehouse = $this->getWarehouse($lineItem, $deliveryAddress)) {
             $line->addresses = $warehouse;

@@ -45,8 +45,14 @@ class AddressFactory extends AbstractFactory
         $address->line3 = $customerAddress->getAdditionalAddressLine2();
         $address->city = $customerAddress->getCity();
         $address->postalCode = $customerAddress->getZipcode();
-        $address->region = $customerAddress->getCountryState()->getName();
         $address->country = $customerAddress->getCountry()->getIso3();
+
+        $customerState = $customerAddress->getCountryState();
+        if (!is_null($customerState)) {
+            if ($region = $customerState->getName()) {
+                $address->region = $region;
+            }
+        }
 
         return $address;
     }

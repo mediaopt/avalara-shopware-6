@@ -42,6 +42,11 @@ class Form
     const TAX_COUNTRY_RESTRICTION = 'MoptAvalara6.config.taxCountryRestriction';
 
     /**
+     * @var string Field name for the plugin config
+     */
+    const ADDRESS_VALIDATION_REQUIRED_FIELD = 'MoptAvalara6.config.addressValidationRequired';
+
+    /**
      * Values and options
      */
     const DELIVERY_COUNTRY_NO_VALIDATION = 1;
@@ -106,6 +111,11 @@ class Form
     const SESSION_AVALARA_MODEL_KEY = 'avalaraModelKey';
 
     /**
+     * @var string Field name for the plugin session key
+     */
+    const SESSION_AVALARA_IS_GROSS_PRICE = 'avalaraIsGrossPrice';
+
+    /**
      * @var string Field name for the plugin custom field
      */
     const CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE = 'avalara_shipping_tax_code';
@@ -114,6 +124,16 @@ class Form
      * @var string Fieldset name for the plugin custom field
      */
     const CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE_FIELDSET = 'avalara_shipping_tax_code_fieldset';
+
+    /**
+     * @var string Field name for the plugin custom field
+     */
+    const CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE = 'avalara_order_tax_document_code';
+
+    /**
+     * @var string Fieldset name for the plugin custom field
+     */
+    const CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE_FIELDSET = 'avalara_order_tax_document_code_fieldset';
 
     /**
      * @var string Field name for the vlck plugin custom field
