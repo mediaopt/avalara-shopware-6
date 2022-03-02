@@ -7,9 +7,9 @@
     <services>
         <service id="MoptAvalara6\Controller\TestConnection" public="true">
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="monolog.logger" />
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
-                <argument type="service" id="monolog.logger" />
             </call>
         </service>
 
