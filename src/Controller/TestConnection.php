@@ -2,6 +2,7 @@
 
 namespace MoptAvalara6\Controller;
 
+use Monolog\Logger;
 use MoptAvalara6\Adapter\AvalaraSDKAdapter;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
@@ -18,9 +19,12 @@ class TestConnection extends AbstractController
 {
     private SystemConfigService $systemConfigService;
 
-    public function __construct(SystemConfigService $systemConfigService)
+    private Logger $logger;
+
+    public function __construct(SystemConfigService $systemConfigService, $logger)
     {
         $this->systemConfigService = $systemConfigService;
+        $this->logger = $logger;
     }
 
     /**
@@ -32,7 +36,7 @@ class TestConnection extends AbstractController
      */
     public function testConnection(Request $request, Context $context): JsonResponse
     {
-        $client = (new AvalaraSDKAdapter($this->systemConfigService))->getAvaTaxClient();
+        $client = (new AvalaraSDKAdapter($this->systemConfigService, $this->logger))->getAvaTaxClient();
 
         $pingResponse = $client->ping();
 
