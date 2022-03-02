@@ -62,19 +62,5 @@ abstract class AbstractService
                 'additionalData' => json_encode($additionalData),
             ]
         );
-        $this->debug($message);
-        $this->debug($additionalData);
-
     }
-    public function debug($str)
-    {
-        if (!is_string($str)) {
-            $str = json_encode($str);
-        }
-        $fp = fopen('debug.txt', 'a');//opens file in append mode.
-        $timestamp = date('d-m-Y h:i:s ', time());
-        fwrite($fp, $timestamp . $str);
-        fwrite($fp, "\r\n");
-    }
-
 }
