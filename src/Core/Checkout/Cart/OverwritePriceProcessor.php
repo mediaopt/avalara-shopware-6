@@ -173,7 +173,7 @@ class OverwritePriceProcessor implements CartProcessorInterface
             $customerId = $customer->getId();
             $taxIncluded = $this->isTaxIncluded($customer);
             $currencyIso = $context->getCurrency()->getIsoCode();
-            $avalaraRequest = $this->prepeareAvalaraRequest($cart, $customerId, $currencyIso, $taxIncluded);
+            $avalaraRequest = $this->prepareAvalaraRequest($cart, $customerId, $currencyIso, $taxIncluded);
             if ($avalaraRequest) {
                 $avalaraRequestKey = md5(json_encode($avalaraRequest));
                 $sessionAvalaraRequestKey = $this->session->get(Form::SESSION_AVALARA_MODEL_KEY);
@@ -194,7 +194,7 @@ class OverwritePriceProcessor implements CartProcessorInterface
      * @param bool $taxIncluded
      * @return mixed
      */
-    private function prepeareAvalaraRequest(Cart $cart, string $customerId, string $currencyIso, bool $taxIncluded)
+    private function prepareAvalaraRequest(Cart $cart, string $customerId, string $currencyIso, bool $taxIncluded)
     {
         $shippingCountry = $cart->getDeliveries()->getAddresses()->getCountries()->first();
         if (is_null($shippingCountry)) {
