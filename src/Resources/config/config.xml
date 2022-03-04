@@ -52,9 +52,9 @@
             <label>Cancel status</label>
         </input-field>
         <input-field type="single-select">
-            <name>orderReturn</name>
+            <name>orderRefund</name>
             <!--options-->
-            <label>Return status</label>
+            <label>Refund status</label>
         </input-field>
     </card>
     <card>

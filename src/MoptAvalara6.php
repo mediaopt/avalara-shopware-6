@@ -21,6 +21,8 @@ class MoptAvalara6 extends Plugin
 
     const PLUGIN_VERSION = '1.0';
 
+    const ORDER_OPTIONS_LANG = 'Deutsch';
+
     /**
      * @param InstallContext $installContext
      * @return void
@@ -196,13 +198,14 @@ class MoptAvalara6 extends Plugin
     {
         $connection = Kernel::getConnection();
 
+        $lang = self::ORDER_OPTIONS_LANG; //todo take a lang from config
         $sql = "SELECT HEX(sms.id) AS id, smst.name AS name
             FROM state_machine sm
             LEFT JOIN state_machine_state sms ON sms.state_machine_id = sm.id
             LEFT JOIN state_machine_state_translation smst ON smst.state_machine_state_id = sms.id
             LEFT JOIN language lang ON lang.id = smst.language_id
             WHERE sm.technical_name = 'order.state'
-            AND lang.name = 'Deutsch';"; //todo use lang from site settings
+            AND lang.name = '$lang';";
 
         $orderStates = $connection->executeQuery($sql)->fetchAllAssociative();
 

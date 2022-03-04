@@ -76,7 +76,7 @@ class OrderChangesSubscriber implements EventSubscriberInterface
 
         $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
         $cancelStatus = $adapter->getPluginConfig(Form::CANCEL_ORDER_STATUS_FIELD);
-        $returnStatus = $adapter->getPluginConfig(Form::RETURN_ORDER_STATUS_FIELD);
+        $refundStatus = $adapter->getPluginConfig(Form::REFUND_ORDER_STATUS_FIELD);
 
         $newOrderStatus = $payload['stateId'];
         switch ($newOrderStatus) {
@@ -85,9 +85,9 @@ class OrderChangesSubscriber implements EventSubscriberInterface
                 $this->cancelAvalaraTax($docCode);
                 break;
             }
-            case $returnStatus:
+            case $refundStatus:
             {
-                $this->returnAvalaraTax($docCode);
+                $this->refundAvalaraTax($docCode);
                 break;
             }
             default :{
@@ -127,22 +127,24 @@ class OrderChangesSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param string $orderId
+     * @param string $docCode
      * @return void
      */
-    private function cancelAvalaraTax(string $orderId)
+    private function cancelAvalaraTax(string $docCode)
     {
         $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
         $service = $adapter->getService('CancelOrder');
-        $service->voidTransaction($orderId);
+        $service->voidTransaction($docCode);
     }
 
     /**
      * @param string $docCode
      * @return void
      */
-    private function returnAvalaraTax(string $docCode)
+    private function refundAvalaraTax(string $docCode)
     {
-        return;
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
+        $service = $adapter->getService('RefundOrder');
+        $service->refundTransaction($docCode);
     }
 }

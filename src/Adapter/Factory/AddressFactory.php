@@ -3,7 +3,7 @@
 /**
  * For the full copyright and license information, refer to the accompanying LICENSE file.
  *
- * @copyright derksen mediaopt GmbH
+ * @copyright Mediaopt GmbH
  */
 
 namespace MoptAvalara6\Adapter\Factory;
@@ -15,7 +15,7 @@ use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEnt
 /**
  *
  *
- * @author derksen mediaopt GmbH
+ * @author Mediaopt GmbH
  *
  * @package MoptAvalara6\Adapter\Factory
  */

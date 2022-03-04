@@ -8,11 +8,10 @@
 
 namespace MoptAvalara6\Service;
 
+use Avalara\RefundTransactionModel;
 use Monolog\Logger;
 use MoptAvalara6\Adapter\AdapterInterface;
 use MoptAvalara6\Bootstrap\Form;
-use Avalara\VoidTransactionModel;
-use Avalara\VoidReasonCode;
 use Avalara\DocumentType;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
@@ -21,7 +20,7 @@ require_once __DIR__ . '/../../vendor/autoload.php';
  * @author Mediaopt GmbH
  * @package MoptAvalara6\Service
  */
-class CancelOrder extends AbstractService
+class RefundOrder extends AbstractService
 {
     /**
      * @param AdapterInterface $adapter
@@ -36,18 +35,21 @@ class CancelOrder extends AbstractService
      * @param string $orderId
      * @throws \RuntimeException
      */
-    public function voidTransaction(string $docCode)
+    public function refundTransaction(string $docCode)
     {
         $adapter = $this->getAdapter();
         try {
             if (empty($docCode)) {
-                $this->log("Cannot void Avalara transaction with empty DocCode");
+                $this->log("Cannot refund Avalara transaction with empty DocCode");
                 return;
             }
 
             $companyCode = $this->getAdapter()->getPluginConfig(Form::COMPANY_CODE_FIELD);
-            $model = new VoidTransactionModel();
-            $model->code = VoidReasonCode::C_DOCVOIDED;
+            $model = new RefundTransactionModel();
+            $model->refundTransactionCode = $docCode;
+            $model->refundDate = date('Y-m-d', time());
+            $model->refundType = 'Full';
+            $model->referenceCode = 'Refund for a committed transaction';
 
             $request = [
                 'companyCode' => $companyCode,
@@ -56,23 +58,24 @@ class CancelOrder extends AbstractService
                 'model' => $model
             ];
 
-            $this->log('Avalara void request', $request);
+            $this->log('Avalara void request', $model);
 
             $client = $adapter->getAvaTaxClient();
-            if (!$response = $client->voidTransaction(
+            if (!$response = $client->refundTransaction(
                 $request['companyCode'],
                 $request['docCode'],
+                null,
                 $request['documentType'],
                 null,
                 $request['model']
             )) {
-                $this->log('Empty response from Avalara on void transaction ' . $docCode);
+                $this->log('Empty response from Avalara on refund transaction ' . $docCode);
                 return;
             } else {
-                $this->checkResponse($response, $docCode, 'cancel');
+                $this->checkResponse($response, $docCode, 'refund');
             }
         } catch (\Exception $e) {
-            $this->log('CancelTax call failed', $e->getMessage());
+            $this->log('RefundTax call failed', $e->getMessage());
         }
     }
 }

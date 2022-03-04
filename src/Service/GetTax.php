@@ -3,7 +3,7 @@
 /**
  * For the full copyright and license information, refer to the accompanying LICENSE file.
  *
- * @copyright derksen mediaopt GmbH
+ * @copyright Mediaopt GmbH
  */
 
 namespace MoptAvalara6\Service;
@@ -13,7 +13,7 @@ use Monolog\Logger;
 use MoptAvalara6\Adapter\AdapterInterface;
 
 /**
- * @author derksen mediaopt GmbH
+ * @author Mediaopt GmbH
  * @package MoptAvalara6\Service
  */
 class GetTax extends AbstractService

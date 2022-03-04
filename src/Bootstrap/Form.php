@@ -3,7 +3,7 @@
 /**
  * For the full copyright and license information, refer to the accompanying LICENSE file.
  *
- * @copyright derksen mediaopt GmbH
+ * @copyright Mediaopt GmbH
  */
 
 namespace MoptAvalara6\Bootstrap;
@@ -11,7 +11,7 @@ namespace MoptAvalara6\Bootstrap;
 /**
  * This class will represent the plugin config options
  *
- * @author derksen mediaopt GmbH
+ * @author Mediaopt GmbH
  * @package MoptAvalara6\Bootstrap
  */
 class Form
@@ -98,7 +98,7 @@ class Form
     /**
      * @var string Field name for the plugin config
      */
-    const RETURN_ORDER_STATUS_FIELD = 'MoptAvalara6.config.orderReturn';
+    const REFUND_ORDER_STATUS_FIELD = 'MoptAvalara6.config.orderRefund';
 
     /**
      * @var string Field name for the plugin session key
