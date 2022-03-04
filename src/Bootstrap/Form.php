@@ -91,6 +91,16 @@ class Form
     const ORIGIN_COUNTRY_FIELD = 'MoptAvalara6.config.country';
 
     /**
+     * @var string Field name for the plugin config
+     */
+    const CANCEL_ORDER_STATUS_FIELD = 'MoptAvalara6.config.orderCancel';
+
+    /**
+     * @var string Field name for the plugin config
+     */
+    const RETURN_ORDER_STATUS_FIELD = 'MoptAvalara6.config.orderReturn';
+
+    /**
      * @var string Field name for the plugin session key
      */
     const SESSION_AVALARA_TAXES = 'avalaraTaxes';

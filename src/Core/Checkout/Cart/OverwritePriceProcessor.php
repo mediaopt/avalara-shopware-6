@@ -73,29 +73,8 @@ class OverwritePriceProcessor implements CartProcessorInterface
             }
 
             $originalPrice = $product->getPrice();
-            $avalaraTaxAmount = $this->avalaraTaxes[$productNumber]['tax'];
-            $avalaraTaxRate = $this->avalaraTaxes[$productNumber]['rate'];
 
-            $avalaraCalculatedTax = new CalculatedTax(
-                $avalaraTaxAmount,
-                $avalaraTaxRate,
-                $product->getPrice()->getTotalPrice()
-            );
-
-            $avalaraCalculatedTaxCollection = new CalculatedTaxCollection();
-            $avalaraCalculatedTaxCollection->add($avalaraCalculatedTax);
-
-            $avalaraPriceForProduct = $product->getPrice()->getTotalPrice();
-
-            $avalaraProductPriceCalculated = new CalculatedPrice(
-                $originalPrice->getUnitPrice(),
-                $avalaraPriceForProduct,
-                $avalaraCalculatedTaxCollection,
-                $originalPrice->getTaxRules(),
-                $originalPrice->getQuantity(),
-                $originalPrice->getReferencePrice(),
-                $originalPrice->getListPrice()
-            );
+            $avalaraProductPriceCalculated = $this->itemPriceCalculator($originalPrice, $productNumber);
 
             $product->setPrice($avalaraProductPriceCalculated);
         }
@@ -113,31 +92,38 @@ class OverwritePriceProcessor implements CartProcessorInterface
             return;
         }
 
-        $shippingCosts = $delivery->getShippingCosts();
+        $originalPrice = $delivery->getShippingCosts();
 
-        $avalaraShippingTaxAmount = $this->avalaraTaxes['Shipping']['tax'];
-        $avalaraShippingTaxRate = $this->avalaraTaxes['Shipping']['rate'];
+        $avalaraShippingCalculated = $this->itemPriceCalculator($originalPrice, 'Shipping');
 
+        $delivery->setShippingCosts($avalaraShippingCalculated);
+    }
+
+    /**
+     * @param CalculatedPrice $price
+     * @param string $productNumber
+     * @return CalculatedPrice
+     */
+    private function itemPriceCalculator(CalculatedPrice $price, string $productNumber): CalculatedPrice
+    {
         $avalaraCalculatedTax = new CalculatedTax(
-            $avalaraShippingTaxAmount,
-            $avalaraShippingTaxRate,
-            $shippingCosts->getTotalPrice()
+            $this->avalaraTaxes[$productNumber]['tax'],
+            $this->avalaraTaxes[$productNumber]['rate'],
+            $price->getTotalPrice()
         );
 
         $avalaraCalculatedTaxCollection = new CalculatedTaxCollection();
         $avalaraCalculatedTaxCollection->add($avalaraCalculatedTax);
 
-        $avalaraPriceForShipping = $shippingCosts->getTotalPrice();
-        $avalaraShippingCalculated = new CalculatedPrice(
-            $shippingCosts->getUnitPrice(),
-            $avalaraPriceForShipping,
+        return new CalculatedPrice(
+            $price->getUnitPrice(),
+            $price->getTotalPrice(),
             $avalaraCalculatedTaxCollection,
-            $shippingCosts->getTaxRules(),
-            $shippingCosts->getQuantity(),
-            $shippingCosts->getReferencePrice(),
-            $shippingCosts->getListPrice()
+            $price->getTaxRules(),
+            $price->getQuantity(),
+            $price->getReferencePrice(),
+            $price->getListPrice()
         );
-        $delivery->setShippingCosts($avalaraShippingCalculated);
     }
 
     /**

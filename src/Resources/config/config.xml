@@ -45,6 +45,19 @@
         </input-field>
     </card>
     <card>
+        <title>Order statuses</title>
+        <input-field type="single-select">
+            <name>orderCancel</name>
+            <!--options-->
+            <label>Cancel status</label>
+        </input-field>
+        <input-field type="single-select">
+            <name>orderReturn</name>
+            <!--options-->
+            <label>Return status</label>
+        </input-field>
+    </card>
+    <card>
         <title>Origin address</title>
         <input-field>
             <name>addressLine1</name>

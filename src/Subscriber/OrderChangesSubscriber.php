@@ -10,10 +10,10 @@ use Shopware\Core\Checkout\Order\OrderEvents;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityWrittenEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Kernel;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use MoptAvalara6\Adapter\AvalaraSDKAdapter;
+use Shopware\Core\Framework\Context;
 
 class OrderChangesSubscriber implements EventSubscriberInterface
 {
@@ -56,47 +56,74 @@ class OrderChangesSubscriber implements EventSubscriberInterface
         foreach ($event->getWriteResults() as $result) {
             $payload = $result->getPayload();
             if (is_array($payload) && array_key_exists('stateId', $payload)) {
-                if ($this->isOrderCanceled($payload['stateId'])) {
-                    $docCode = $this->getAvalaraDocumentTaxCode($payload['id'], $event->getContext());
-                    $this->cancelAvalaraTax($docCode);
-                }
+                $this->processOrder($payload, $event->getContext());
             }
         }
     }
 
     /**
-     * @param string $stateId
-     * @return bool
+     * @param array $payload
+     * @param Context $context
+     * @return void
      * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \Doctrine\DBAL\Exception
      */
-    private function isOrderCanceled(string $stateId): bool
+    private function processOrder(array $payload, Context $context)
     {
-        $connection = Kernel::getConnection();
-        $sql = "SELECT technical_name FROM state_machine_state WHERE id = UNHEX('$stateId')";
-        $technical_name = $connection->executeQuery($sql)->fetchAssociative();
-
-        if ($technical_name['technical_name'] === 'cancelled') {
-            return true;
+        if (!$docCode = $this->getAvalaraDocumentTaxCode($payload['id'], $context)){
+            return;
         }
 
-        return false;
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
+        $cancelStatus = $adapter->getPluginConfig(Form::CANCEL_ORDER_STATUS_FIELD);
+        $returnStatus = $adapter->getPluginConfig(Form::RETURN_ORDER_STATUS_FIELD);
+
+        $newOrderStatus = $payload['stateId'];
+        switch ($newOrderStatus) {
+            case $cancelStatus:
+            {
+                $this->cancelAvalaraTax($docCode);
+                break;
+            }
+            case $returnStatus:
+            {
+                $this->returnAvalaraTax($docCode);
+                break;
+            }
+            default :{
+                break;
+            }
+        }
     }
 
-    private function getAvalaraDocumentTaxCode($orderId, $context)
+    /**
+     * @param string $orderId
+     * @param Context $context
+     * @return mixed
+     */
+    private function getAvalaraDocumentTaxCode(string $orderId, Context $context)
     {
         $orders = $this->orderRepository->search(new Criteria([$orderId]), $context);
+
+        $docCodeField = Form::CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE;
         /* @var $order OrderEntity */
         foreach ($orders->getElements() as $order) {
             $customFeilds = $order->getCustomFields();
-            if (array_key_exists(Form::CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE, $customFeilds)) {
-                return $customFeilds[Form::CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE];
+            if (is_array($customFeilds)) {
+                if (array_key_exists($docCodeField, $customFeilds)) {
+                    return $customFeilds[$docCodeField];
+                } else {
+                    $this->logger->log(LogLevel::ERROR, 'There is no Avalara Tax Document Code!');
+                    return false;
+                }
             } else {
-                $this->logger->log(LogLevel::ERROR, 'There is no Avalara Tax Document Code!');
+                $this->logger->log(LogLevel::ERROR, "There is no Avalara custom field $docCodeField");
+                return false;
             }
         }
 
         $this->logger->log(LogLevel::ERROR, "There is no order with id = $orderId");
+        return false;
     }
 
     /**
@@ -108,5 +135,14 @@ class OrderChangesSubscriber implements EventSubscriberInterface
         $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
         $service = $adapter->getService('CancelOrder');
         $service->voidTransaction($orderId);
+    }
+
+    /**
+     * @param string $docCode
+     * @return void
+     */
+    private function returnAvalaraTax(string $docCode)
+    {
+        return;
     }
 }
