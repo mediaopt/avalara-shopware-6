@@ -15,7 +15,7 @@ use MoptAvalara6\Service\AbstractService;
 /**
  * This is the adaptor for avalara's API
  *
- * @author derksen mediaopt GmbH
+ * @author Mediaopt GmbH
  * @package MoptAvalara6\Adapter\Factory
  */
 class AvalaraSDKAdapter implements AdapterInterface

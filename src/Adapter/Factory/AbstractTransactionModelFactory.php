@@ -3,7 +3,7 @@
 /**
  * For the full copyright and license information, refer to the accompanying LICENSE file.
  *
- * @copyright derksen mediaopt GmbH
+ * @copyright Mediaopt GmbH
  */
 
 namespace MoptAvalara6\Adapter\Factory;
@@ -16,7 +16,7 @@ use Shopware\Core\Checkout\Cart\Cart;
  *
  * Factory to create CreateTransactionModel from a basket/order
  *
- * @author derksen mediaopt GmbH
+ * @author Mediaopt GmbH
  * @package \MoptAvalara6\Adapter\Factory
  */
 abstract class AbstractTransactionModelFactory extends AbstractFactory
@@ -38,15 +38,16 @@ abstract class AbstractTransactionModelFactory extends AbstractFactory
     /**
      * @param Cart $cart
      * @param AddressLocationInfo $deliveryAddress
+     * @param bool $taxIncluded
      * @return LineItemModel[]
      */
-    protected function getLineModels(Cart $cart, AddressLocationInfo $deliveryAddress)
+    protected function getLineModels(Cart $cart, AddressLocationInfo $deliveryAddress, bool $taxIncluded)
     {
         $lineFactory = $this->getLineFactory();
         $lines = [];
 
         foreach ($cart->getLineItems()->getFlat() as $lineItem) {
-            $lines[] = $lineFactory->build($lineItem, $deliveryAddress);
+            $lines[] = $lineFactory->build($lineItem, $deliveryAddress, $taxIncluded);
         }
 
         if ($shippingModel = $this->getShippingModel($cart)) {

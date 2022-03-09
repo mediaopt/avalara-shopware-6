@@ -3,7 +3,7 @@
 /**
  * For the full copyright and license information, refer to the accompanying LICENSE file.
  *
- * @copyright derksen mediaopt GmbH
+ * @copyright Mediaopt GmbH
  */
 
 namespace MoptAvalara6\Bootstrap;
@@ -11,7 +11,7 @@ namespace MoptAvalara6\Bootstrap;
 /**
  * This class will represent the plugin config options
  *
- * @author derksen mediaopt GmbH
+ * @author Mediaopt GmbH
  * @package MoptAvalara6\Bootstrap
  */
 class Form
@@ -40,6 +40,11 @@ class Form
      * @var string Field name for the plugin config
      */
     const TAX_COUNTRY_RESTRICTION = 'MoptAvalara6.config.taxCountryRestriction';
+
+    /**
+     * @var string Field name for the plugin config
+     */
+    const ADDRESS_VALIDATION_REQUIRED_FIELD = 'MoptAvalara6.config.addressValidationRequired';
 
     /**
      * Values and options
@@ -86,6 +91,16 @@ class Form
     const ORIGIN_COUNTRY_FIELD = 'MoptAvalara6.config.country';
 
     /**
+     * @var string Field name for the plugin config
+     */
+    const CANCEL_ORDER_STATUS_FIELD = 'MoptAvalara6.config.orderCancel';
+
+    /**
+     * @var string Field name for the plugin config
+     */
+    const REFUND_ORDER_STATUS_FIELD = 'MoptAvalara6.config.orderRefund';
+
+    /**
      * @var string Field name for the plugin session key
      */
     const SESSION_AVALARA_TAXES = 'avalaraTaxes';
@@ -106,6 +121,11 @@ class Form
     const SESSION_AVALARA_MODEL_KEY = 'avalaraModelKey';
 
     /**
+     * @var string Field name for the plugin session key
+     */
+    const SESSION_AVALARA_IS_GROSS_PRICE = 'avalaraIsGrossPrice';
+
+    /**
      * @var string Field name for the plugin custom field
      */
     const CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE = 'avalara_shipping_tax_code';
@@ -114,6 +134,16 @@ class Form
      * @var string Fieldset name for the plugin custom field
      */
     const CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE_FIELDSET = 'avalara_shipping_tax_code_fieldset';
+
+    /**
+     * @var string Field name for the plugin custom field
+     */
+    const CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE = 'avalara_order_tax_document_code';
+
+    /**
+     * @var string Fieldset name for the plugin custom field
+     */
+    const CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE_FIELDSET = 'avalara_order_tax_document_code_fieldset';
 
     /**
      * @var string Field name for the vlck plugin custom field
