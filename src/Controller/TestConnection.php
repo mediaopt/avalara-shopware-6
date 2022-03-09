@@ -3,6 +3,7 @@
 namespace MoptAvalara6\Controller;
 
 use Avalara\AddressLocationInfo;
+use Monolog\Logger;
 use MoptAvalara6\Adapter\AvalaraSDKAdapter;
 use MoptAvalara6\Service\ValidateAddress;
 use Shopware\Core\Framework\Context;
@@ -21,9 +22,12 @@ class TestConnection extends AbstractController
 {
     private SystemConfigService $systemConfigService;
 
-    public function __construct(SystemConfigService $systemConfigService)
+    private Logger $logger;
+
+    public function __construct(SystemConfigService $systemConfigService, $logger)
     {
         $this->systemConfigService = $systemConfigService;
+        $this->logger = $logger;
     }
 
     /**
@@ -35,7 +39,7 @@ class TestConnection extends AbstractController
      */
     public function testConnection(Request $request, Context $context): JsonResponse
     {
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService);
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
         $client = $adapter->getAvaTaxClient();
 
         $pingResponse = $client->ping();

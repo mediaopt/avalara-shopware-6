@@ -3,7 +3,7 @@
 /**
  * For the full copyright and license information, refer to the accompanying LICENSE file.
  *
- * @copyright derksen mediaopt GmbH
+ * @copyright Mediaopt GmbH
  */
 
 namespace MoptAvalara6\Adapter\Factory;
@@ -22,7 +22,7 @@ use MoptAvalara6\Bootstrap\Form;
  * Just to get estimated tax and landed cost
  * Without commiting it to Avalara
  *
- * @author derksen mediaopt GmbH
+ * @author Mediaopt GmbH
  * @package MoptAvalara6\Adapter\Factory
  */
 class OrderTransactionModelFactory extends AbstractTransactionModelFactory
@@ -30,10 +30,11 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
     /**
      * @param Cart $cart
      * @param string $customerId
-     * @param $currencyIso
+     * @param string $currencyIso
+     * @param bool $taxIncluded
      * @return CreateTransactionModel
      */
-    public function build(Cart $cart, string $customerId, $currencyIso): CreateTransactionModel
+    public function build(Cart $cart, string $customerId, $currencyIso, bool $taxIncluded): CreateTransactionModel
     {
         $addresses = $this->getAddressesModel($cart);
 
@@ -44,7 +45,7 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
         $model->type = DocumentType::C_SALESINVOICE;
         $model->currencyCode = $currencyIso;
         $model->addresses = $addresses;
-        $model->lines = $this->getLineModels($cart, $addresses->shipTo);
+        $model->lines = $this->getLineModels($cart, $addresses->shipTo, $taxIncluded);
         // todo: parameters, customerUsageType, discount
         return $model;
     }
@@ -69,10 +70,11 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
     /**
      * @param Cart $cart
      * @param AddressLocationInfo $deliveryAddress
+     * @param bool $taxIncluded
      * @return LineItemModel[]
      */
-    protected function getLineModels(Cart $cart, AddressLocationInfo $deliveryAddress)
+    protected function getLineModels(Cart $cart, AddressLocationInfo $deliveryAddress, bool $taxIncluded)
     {
-        return parent::getLineModels($cart, $deliveryAddress);
+        return parent::getLineModels($cart, $deliveryAddress, $taxIncluded);
     }
 }

@@ -4,6 +4,7 @@ namespace MoptAvalara6\Adapter;
 
 require_once  __DIR__ . '/../../vendor/autoload.php';
 
+use Monolog\Logger;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use MoptAvalara6\Bootstrap\Form;
 use MoptAvalara6\MoptAvalara6;
@@ -14,7 +15,7 @@ use MoptAvalara6\Service\AbstractService;
 /**
  * This is the adaptor for avalara's API
  *
- * @author derksen mediaopt GmbH
+ * @author Mediaopt GmbH
  * @package MoptAvalara6\Adapter\Factory
  */
 class AvalaraSDKAdapter implements AdapterInterface
@@ -71,11 +72,18 @@ class AvalaraSDKAdapter implements AdapterInterface
     private $systemConfigService;
 
     /**
-     * @param SystemConfigService $cachedConfigService
+     * @var Logger
      */
-    public function __construct(SystemConfigService $cachedConfigService)
+    private $logger;
+
+    /**
+     * @param SystemConfigService $cachedConfigService
+     * @param Logger $logger
+     */
+    public function __construct(SystemConfigService $cachedConfigService, Logger $logger)
     {
         $this->systemConfigService = $cachedConfigService;
+        $this->logger = $logger;
     }
 
     /**
@@ -140,7 +148,7 @@ class AvalaraSDKAdapter implements AdapterInterface
     {
         if (!isset($this->services[$type])) {
             $name = self::SEVICES_NAMESPACE . ucfirst($type);
-            $this->services[$type] = new $name($this);
+            $this->services[$type] = new $name($this, $this->logger);
         }
 
         return $this->services[$type];

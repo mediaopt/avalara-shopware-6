@@ -3,7 +3,7 @@
 /**
  * For the full copyright and license information, refer to the accompanying LICENSE file.
  *
- * @copyright derksen mediaopt GmbH
+ * @copyright Mediaopt GmbH
  */
 
 namespace MoptAvalara6\Adapter\Factory;
@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Session\Session;
 /**
  *
  *
- * @author derksen mediaopt GmbH
+ * @author Mediaopt GmbH
  *
  * @package MoptAvalara6\Adapter\Factory
  */
@@ -46,8 +46,14 @@ class AddressFactory extends AbstractFactory
         $address->line3 = $customerAddress->getAdditionalAddressLine2();
         $address->city = $customerAddress->getCity();
         $address->postalCode = $customerAddress->getZipcode();
-        $address->region = $customerAddress->getCountryState()->getName();
         $address->country = $customerAddress->getCountry()->getIso3();
+
+        $customerState = $customerAddress->getCountryState();
+        if (!is_null($customerState)) {
+            if ($region = $customerState->getName()) {
+                $address->region = $region;
+            }
+        }
 
         return $address;
     }
@@ -67,8 +73,6 @@ class AddressFactory extends AbstractFactory
         $address->postalCode = $this->getPluginConfig(Form::ORIGIN_POSTAL_CODE_FIELD);
         $address->region = $this->getPluginConfig(Form::ORIGIN_REGION_FIELD);
         $address->country = $this->getPluginConfig(Form::ORIGIN_COUNTRY_FIELD);
-
-        //todo: should we fix country code/region, like in shopware5?
 
         return $address;
     }
