@@ -50,25 +50,30 @@ abstract class AbstractService
     /**
      * @param mixed $response
      * @param string $docCode
-     * @return void
+     * @return mixed
      */
     public function checkResponse($response, string $docCode, string $process)
     {
         if (!is_object($response)) {
             $this->log("Avalara $process can not be parsed", $response);
-            return;
+            return false;
         }
 
         if ($response->code != $docCode) {
             $this->log("Avalara $process response docCode is {$response->code}, request code is $docCode", $response);
-            return;
+            return false;
         }
 
-        if ($response->status != 'Cancelled') {
-            $this->log("Avalara transaction was not $process, docCode is $docCode", $response);
+        if ($response->status == 'Cancelled') {
+            $this->log("Order with docCode: $docCode has been canceled", $response);
+        } elseif ($response->totalTax < 0) {
+            $this->log("Refund request for docCOde: $docCode was created", $response);
+            return $response;
         } else {
-            $this->log("Order with docCode: $docCode has been $process", $response);
+            $this->log("Avalara transaction was not $process, docCode is $docCode", $response);
         }
+
+        return false;
     }
 
     /**

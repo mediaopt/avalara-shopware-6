@@ -58,7 +58,7 @@ class RefundOrder extends AbstractService
                 'model' => $model
             ];
 
-            $this->log('Avalara void request', $model);
+            $this->log('Avalara refund request', $model);
 
             $client = $adapter->getAvaTaxClient();
             if (!$response = $client->refundTransaction(

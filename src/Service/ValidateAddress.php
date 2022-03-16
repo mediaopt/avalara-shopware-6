@@ -3,17 +3,16 @@
 /**
  * For the full copyright and license information, refer to the accompanying LICENSE file.
  *
- * @copyright derksen mediaopt GmbH
+ * @copyright Mediaopt GmbH
  */
 
 namespace MoptAvalara6\Service;
 
 use Avalara\AddressLocationInfo;
 use Avalara\AddressResolutionModel;
-use function ECSPrefix20211002\Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 /**
- * @author derksen mediaopt GmbH
+ * @author Mediaopt GmbH
  * @package Shopware\Plugins\MoptAvalara\Service
  */
 class ValidateAddress extends AbstractService
