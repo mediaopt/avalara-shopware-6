@@ -10,6 +10,7 @@ namespace MoptAvalara6\Service;
 
 use Avalara\AddressLocationInfo;
 use Avalara\AddressResolutionModel;
+use MoptAvalara6\Adapter\Factory\AddressFactory;
 
 /**
  * @author Mediaopt GmbH
@@ -30,6 +31,7 @@ class ValidateAddress extends AbstractService
         'region',
         'latitude',
         'longitude',
+        'country',
     ];
 
     /**
@@ -39,7 +41,6 @@ class ValidateAddress extends AbstractService
         'line1',
         'city',
         'postalCode',
-        'country',
     ];
 
     /**
@@ -77,7 +78,8 @@ class ValidateAddress extends AbstractService
         $return = [
             'code' => self::VALIDATION_CODE_VALID,
             'suggestedAddress' => [],
-            'messages' => []
+            'messages' => [],
+            'hash' => AddressFactory::getAddressHash($checkedAddress)
         ];
 
         if (null === $response || !is_object($response) || empty($response->validatedAddresses)) {
@@ -92,8 +94,8 @@ class ValidateAddress extends AbstractService
             if (in_array($key, self::$ignoreAddressParts, false)) {
                 continue;
             }
-            if (isset($suggestedAddress->$key) && strtolower($suggestedAddress->$key) !== strtolower((string)$value)) {
-                $return['suggestedAddress'][$key] = $suggestedAddress->$key;
+            if (isset($suggestedAddress->$key) && (strtolower($suggestedAddress->$key) !== strtolower((string)$value))) {
+                $return['suggestedAddress'][$key] = ucwords(strtolower($suggestedAddress->$key));
             }
         }
 

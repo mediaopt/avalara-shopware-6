@@ -128,7 +128,17 @@ class Form
     /**
      * @var string Field name for the plugin session key
      */
-    const SESSION_AVALARA_ADDRESS_KEY = 'avalaraAddressKey';
+    const SESSION_AVALARA_ADDRESS_VALIDATION = 'avalaraAddressValidation';
+
+    /**
+     * @var string Field name for the plugin session key
+     */
+    const SESSION_AVALARA_CURRENT_ADDRESS_ID = 'avalaraAddressFlag';
+
+    /**
+     * @var string Field name for the plugin session key
+     */
+    const SESSION_AVALARA_REDIRECT_AFTER_ADDRESS_CHANGE = 'avalaraRedirectAfterAddressChange';
 
     /**
      * @var string Field name for the plugin custom field

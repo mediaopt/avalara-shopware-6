@@ -10,7 +10,9 @@ namespace MoptAvalara6\Adapter\Factory;
 
 use Avalara\AddressLocationInfo;
 use MoptAvalara6\Bootstrap\Form;
+use MoptAvalara6\Service\ValidateAddress;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
+use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Symfony\Component\HttpFoundation\Session\Session;
 
 /**
@@ -54,6 +56,24 @@ class AddressFactory extends AbstractFactory
                 $address->region = $region;
             }
         }
+
+        return $address;
+    }
+
+
+    /**
+     * build Address-model based on databag address
+     *
+     * @param RequestDataBag $customerAddress
+     * @return AddressLocationInfo
+     */
+    public function buildDataBagAddress(RequestDataBag $customerAddress)
+    {
+        $address = new AddressLocationInfo();
+        $address->line1 = $customerAddress->get('street');
+        $address->city = $customerAddress->get('city');
+        $address->postalCode = $customerAddress->get('zipcode');
+        $address->country = 'USA'; //todo fix this!
 
         return $address;
     }
@@ -132,12 +152,52 @@ class AddressFactory extends AbstractFactory
     }
 
     /**
-     * check if address has aready been validated
-     * @param \Avalara\AddressLocationInfo $address
-     * @param Session
-     * @return boolean
+     * @param AddressLocationInfo $addressLocationInfo
+     * @param string $addressId
+     * @param Session $session
+     * @param bool $isCart
+     * @return void
      */
-    public function isAddressToBeValidated(AddressLocationInfo $address, $session)
+    public function validate(
+        AddressLocationInfo $addressLocationInfo,
+        string $addressId,
+        Session $session,
+        bool $isCart = true
+    )
+    {
+        $adapter = $this->getAdapter();
+
+        if ($this->isAddressToBeValidated($addressLocationInfo, $session, $addressId, $isCart)) {
+            $service = $adapter->getService('ValidateAddress');
+            $response = $service->validate($addressLocationInfo);
+            $parsed = $service->parseAvalaraResponse($addressLocationInfo, $response);
+            $sessionAddresses = $session->get(Form::SESSION_AVALARA_ADDRESS_VALIDATION);
+
+            if ($parsed['code'] == ValidateAddress::VALIDATION_CODE_VALID) {
+                $sessionAddresses[$addressId] = [
+                    'hash' => $parsed['hash'],
+                    'messages' => $parsed['messages'],
+                    'valid' => true
+                ];
+            } else {
+                $sessionAddresses[$addressId] = [
+                    'hash' => $parsed['hash'],
+                    'messages' => $parsed['messages'],
+                    'valid' => false
+                ];
+            }
+            $session->set(Form::SESSION_AVALARA_ADDRESS_VALIDATION, $sessionAddresses);
+        }
+    }
+
+    /**
+     * @param AddressLocationInfo $address
+     * @param Session $session
+     * @param string $addressId
+     * @param bool $isCart
+     * @return bool
+     */
+    public function isAddressToBeValidated(AddressLocationInfo $address, Session $session, string $addressId, $isCart = true)
     {
         if (!$this->checkCountryRestriction($address->country)) {
             return false;
@@ -147,11 +207,31 @@ class AddressFactory extends AbstractFactory
             return false;
         }
 
-        if ($session->get(Form::SESSION_AVALARA_ADDRESS_KEY) !== $this->getAddressHash($address)) {
+        if ($isCart) {
+            return $this->checkSession($session, $addressId);
+        }
+
+        return true;
+    }
+
+    /**
+     * @param Session $session
+     * @param string $addressId
+     * @return bool
+     */
+    public function checkSession(Session $session, string $addressId)
+    {
+        $sessionAddresses = $session->get(Form::SESSION_AVALARA_ADDRESS_VALIDATION);
+
+        if (!is_array($sessionAddresses)) {
             return true;
         }
 
-        return false;
+        if (array_key_exists($addressId, $sessionAddresses) && $sessionAddresses[$addressId]['valid']) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -160,7 +240,7 @@ class AddressFactory extends AbstractFactory
      * @param \Avalara\AddressLocationInfo $address
      * @return string
      */
-    public function getAddressHash(AddressLocationInfo $address)
+    public static function getAddressHash(AddressLocationInfo $address)
     {
         return md5(serialize($address));
     }
