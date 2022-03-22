@@ -1,0 +1,31 @@
+{
+    "name": "mediaopt/avalara-shopware-6",
+    "description": "Avalara plugin",
+    "version": "1.0.7",
+    "type": "shopware-platform-plugin",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Mediaopt"
+        }
+    ],
+    "extra": {
+        "shopware-plugin-class": "MoptAvalara6\\MoptAvalara6",
+        "label": {
+            "de-DE": "Avalara plugin",
+            "en-GB": "Avalara plugin"
+        },
+        "description": {
+            "de-DE": "Avalara Plugin",
+            "en-GB": "Avalara plugin"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "MoptAvalara6\\": "src/"
+        }
+    },
+    "require": {
+        "avalara/avataxclient": "*"
+    }
+}
