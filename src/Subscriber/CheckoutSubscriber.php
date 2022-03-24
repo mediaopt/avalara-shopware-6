@@ -66,7 +66,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
             $avalaraRequestModel->commit = true;
             $avalaraRequestModel->customerCode = $orderNumber;
 
-            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $this->session);
+            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
             $service = $adapter->getService('GetTax');
             $result = $service->calculate($avalaraRequestModel);
 

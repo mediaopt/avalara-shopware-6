@@ -11,6 +11,12 @@ namespace MoptAvalara6\Service;
 use Avalara\CreateTransactionModel;
 use Monolog\Logger;
 use MoptAvalara6\Adapter\AdapterInterface;
+use MoptAvalara6\Bootstrap\Form;
+use Shopware\Core\Checkout\Cart\Cart;
+use Shopware\Core\Checkout\Customer\CustomerEntity;
+use Shopware\Core\Kernel;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 /**
  * @author Mediaopt GmbH
@@ -20,13 +26,140 @@ class GetTax extends AbstractService
 {
 
     /**
-     *
      * @param AdapterInterface $adapter
      * @param Logger $logger
      */
     public function __construct(AdapterInterface $adapter, Logger $logger)
     {
         parent::__construct($adapter, $logger);
+    }
+
+    /**
+     * @param Cart $cart
+     * @param SalesChannelContext $context
+     * @param Session $session
+     * @return array|null
+     * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws \Doctrine\DBAL\Exception
+     */
+    public function getAvalaraTaxes(Cart $cart, SalesChannelContext $context, Session $session)
+    {
+        $customer = $context->getCustomer();
+        if ($customer) {
+            $customerId = $customer->getId();
+            $taxIncluded = $this->isTaxIncluded($customer, $session);
+            $currencyIso = $context->getCurrency()->getIsoCode();
+            $avalaraRequest = $this->prepareAvalaraRequest($cart, $customerId, $currencyIso, $taxIncluded, $session);
+            if ($avalaraRequest) {
+                $avalaraRequestKey = md5(json_encode($avalaraRequest));
+                $sessionAvalaraRequestKey = $session->get(Form::SESSION_AVALARA_MODEL_KEY);
+                if ($avalaraRequestKey != $sessionAvalaraRequestKey) {
+                    $session->set(Form::SESSION_AVALARA_MODEL, serialize($avalaraRequest));
+                    $session->set(Form::SESSION_AVALARA_MODEL_KEY, $avalaraRequestKey);
+                    return $this->makeAvalaraCall($avalaraRequest, $session);
+                }
+            } else {
+                return null;
+            }
+        }
+
+        return $session->get(Form::SESSION_AVALARA_TAXES_TRANSFORMED);
+    }
+
+    /**
+     * @param Cart $cart
+     * @param string $customerId
+     * @param string $currencyIso
+     * @param bool $taxIncluded
+     * @return mixed
+     */
+    private function prepareAvalaraRequest(Cart $cart, string $customerId, string $currencyIso, bool $taxIncluded, $session)
+    {
+        $shippingCountry = $cart->getDeliveries()->getAddresses()->getCountries()->first();
+        if (is_null($shippingCountry)) {
+            return false;
+        }
+        $shippingCountryIso3 = $shippingCountry->getIso3();
+
+        if (!$this->adapter->getFactory('AddressFactory')->checkCountryRestriction($shippingCountryIso3)) {
+            $session->set(Form::SESSION_AVALARA_TAXES, null);
+            $session->set(Form::SESSION_AVALARA_TAXES_TRANSFORMED, null);
+            $session->set(Form::SESSION_AVALARA_MODEL, null);
+            $session->set(Form::SESSION_AVALARA_MODEL_KEY, null);
+            return false;
+        }
+
+        return $this->adapter->getFactory('OrderTransactionModelFactory')->build($cart, $customerId, $currencyIso, $taxIncluded);
+    }
+
+    /**
+     * @param $avalaraRequest
+     * @return array
+     */
+    private function makeAvalaraCall($avalaraRequest, $session)
+    {
+        $response = $this->calculate($avalaraRequest);
+
+        $transformedTaxes = $this->transformResponse($response);
+
+        $session->set(Form::SESSION_AVALARA_TAXES, $response);
+        $session->set(Form::SESSION_AVALARA_TAXES_TRANSFORMED, $transformedTaxes);
+
+        return $transformedTaxes;
+    }
+
+    /**
+     * @param mixed $response
+     * @return array
+     */
+    private function transformResponse($response): array
+    {
+        $transformedTax = [];
+        if (!is_object($response)) {
+            return $transformedTax;
+        }
+
+        if (is_null($response->lines)) {
+            return $transformedTax;
+        }
+
+        foreach ($response->lines as $line) {
+            $rate = 0;
+            foreach ($line->details as $detail) {
+                $rate += $detail->rate;
+            }
+            $transformedTax[$line->itemCode] = [
+                'tax' => $line->tax,
+                'rate' => $rate * 100,
+            ];
+        }
+
+        return $transformedTax;
+    }
+
+    /**
+     * @param CustomerEntity $customer
+     * @return bool
+     * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws \Doctrine\DBAL\Exception
+     */
+    private function isTaxIncluded(CustomerEntity $customer, $session): bool
+    {
+        $isTaxIncluded = $session->get(Form::SESSION_AVALARA_IS_GROSS_PRICE);
+
+        if (is_null($isTaxIncluded)) {
+            $groupId = $customer->getGroupId();
+            $connection = Kernel::getConnection();
+
+            $sql = "SELECT display_gross FROM customer_group WHERE id = UNHEX('$groupId')";
+
+            $isTaxIncluded = $connection->executeQuery($sql)->fetchAssociative();
+
+            $isTaxIncluded = (bool) $isTaxIncluded['display_gross'];
+            $session->set(Form::SESSION_AVALARA_IS_GROSS_PRICE, $isTaxIncluded);
+        }
+
+        return $isTaxIncluded;
     }
 
     /**

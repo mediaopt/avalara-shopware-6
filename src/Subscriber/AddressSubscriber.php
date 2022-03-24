@@ -61,10 +61,13 @@ class AddressSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @param StorefrontRenderEvent $event
+     * @return void
+     */
     public function storefrontRenderEvent(StorefrontRenderEvent $event)
     {
         if ($this->isCheckoutPage($event)) {
-
             $customer = $event->getSalesChannelContext()->getCustomer();
             if (!is_object($customer)) {
                 return;
@@ -81,6 +84,12 @@ class AddressSubscriber implements EventSubscriberInterface
         }
     }
 
+    /**
+     * @param RequestEvent $event
+     * @return void
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
     public function requestEvent(RequestEvent $event)
     {
         if ($this->isCheckoutPage($event)) {
@@ -107,7 +116,6 @@ class AddressSubscriber implements EventSubscriberInterface
      */
     private function isCheckoutPage($event): bool
     {
-
         $route = $event->getRequest()->attributes->get('_route');
         if (in_array($route, ['frontend.checkout.confirm.page', 'frontend.checkout.cart.page'])) {
             return true;

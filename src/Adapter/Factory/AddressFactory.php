@@ -13,6 +13,7 @@ use MoptAvalara6\Bootstrap\Form;
 use MoptAvalara6\Service\ValidateAddress;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
+use Shopware\Core\Kernel;
 use Symfony\Component\HttpFoundation\Session\Session;
 
 /**
@@ -73,7 +74,7 @@ class AddressFactory extends AbstractFactory
         $address->line1 = $customerAddress->get('street');
         $address->city = $customerAddress->get('city');
         $address->postalCode = $customerAddress->get('zipcode');
-        $address->country = 'USA'; //todo fix this!
+        $address->country = $this->getCountryIso3($customerAddress->get('countryId'));
 
         return $address;
     }
@@ -208,7 +209,7 @@ class AddressFactory extends AbstractFactory
         }
 
         if ($isCart) {
-            return $this->checkSession($session, $addressId);
+            return $this->checkSession($session, $addressId, $address);
         }
 
         return true;
@@ -219,7 +220,7 @@ class AddressFactory extends AbstractFactory
      * @param string $addressId
      * @return bool
      */
-    public function checkSession(Session $session, string $addressId)
+    public function checkSession(Session $session, string $addressId, $address)
     {
         $sessionAddresses = $session->get(Form::SESSION_AVALARA_ADDRESS_VALIDATION);
 
@@ -228,10 +229,27 @@ class AddressFactory extends AbstractFactory
         }
 
         if (array_key_exists($addressId, $sessionAddresses) && $sessionAddresses[$addressId]['valid']) {
-            return false;
+            if ($sessionAddresses[$addressId]['hash'] == self::getAddressHash($address)) {
+                return false;
+            }
         }
 
         return true;
+    }
+
+    /**
+     * @param $countryId
+     * @return mixed
+     * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws \Doctrine\DBAL\Exception
+     */
+    private function getCountryIso3($countryId)
+    {
+        $connection = Kernel::getConnection();
+        $sql = "SELECT iso3 FROM country WHERE id = UNHEX('$countryId')";
+        $country = $connection->executeQuery($sql)->fetchAssociative();
+
+        return $country['iso3'];
     }
 
     /**
@@ -242,6 +260,6 @@ class AddressFactory extends AbstractFactory
      */
     public static function getAddressHash(AddressLocationInfo $address)
     {
-        return md5(serialize($address));
+        return md5($address->line1 . $address->postalCode . $address->city . $address->country);
     }
 }
