@@ -112,10 +112,8 @@ class CheckoutSubscriber implements EventSubscriberInterface
      */
     private function cleanSession()
     {
-        $this->session->set(Form::SESSION_AVALARA_MODEL, null);
-        $this->session->set(Form::SESSION_AVALARA_MODEL_KEY, null);
-        $this->session->set(Form::SESSION_AVALARA_TAXES, null);
-        $this->session->set(Form::SESSION_AVALARA_TAXES_TRANSFORMED, null);
-        $this->session->set(Form::SESSION_AVALARA_IS_GROSS_PRICE, null);
+        foreach (Form::SESSION_KEYS as $key) {
+            $this->session->set($key, null);
+        }
     }
 }
