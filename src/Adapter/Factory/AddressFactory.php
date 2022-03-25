@@ -61,6 +61,24 @@ class AddressFactory extends AbstractFactory
         return $address;
     }
 
+    /**
+     * build Address-model based on address book array address
+     * @param array $customerAddress
+     * @return AddressLocationInfo
+     */
+    public function buildAddressBookAddress(array $customerAddress): AddressLocationInfo
+    {
+        $address = new AddressLocationInfo();
+        $address->line1 = $customerAddress['street'];
+        $address->city = $customerAddress['city'];
+        $address->postalCode = $customerAddress['zipcode'];
+        $address->country = $this->getCountryIso3($customerAddress['countryId']);
+        if (array_key_exists( 'countryStateId', $customerAddress) && !empty($customerAddress['countryStateId'])) {
+            $address->region = $this->getStateName($customerAddress['countryStateId']);
+        }
+
+        return $address;
+    }
 
     /**
      * build Address-model based on databag address
@@ -68,7 +86,7 @@ class AddressFactory extends AbstractFactory
      * @param RequestDataBag $customerAddress
      * @return AddressLocationInfo
      */
-    public function buildDataBagAddress(RequestDataBag $customerAddress)
+    public function buildDataBagAddress(RequestDataBag $customerAddress): AddressLocationInfo
     {
         $address = new AddressLocationInfo();
         $address->line1 = $customerAddress->get('street');
@@ -156,19 +174,19 @@ class AddressFactory extends AbstractFactory
      * @param AddressLocationInfo $addressLocationInfo
      * @param string $addressId
      * @param Session $session
-     * @param bool $isCart
+     * @param bool $checkSession
      * @return void
      */
     public function validate(
         AddressLocationInfo $addressLocationInfo,
         string $addressId,
         Session $session,
-        bool $isCart = true
+        bool $checkSession = true
     )
     {
         $adapter = $this->getAdapter();
 
-        if ($this->isAddressToBeValidated($addressLocationInfo, $session, $addressId, $isCart)) {
+        if ($this->isAddressToBeValidated($addressLocationInfo, $session, $addressId, $checkSession)) {
             $service = $adapter->getService('ValidateAddress');
             $response = $service->validate($addressLocationInfo);
             $parsed = $service->parseAvalaraResponse($addressLocationInfo, $response);
@@ -195,10 +213,10 @@ class AddressFactory extends AbstractFactory
      * @param AddressLocationInfo $address
      * @param Session $session
      * @param string $addressId
-     * @param bool $isCart
+     * @param bool $checkSession
      * @return bool
      */
-    public function isAddressToBeValidated(AddressLocationInfo $address, Session $session, string $addressId, $isCart = true)
+    public function isAddressToBeValidated(AddressLocationInfo $address, Session $session, string $addressId, bool $checkSession = true)
     {
         if (!$this->checkCountryRestriction($address->country)) {
             return false;
@@ -208,7 +226,7 @@ class AddressFactory extends AbstractFactory
             return false;
         }
 
-        if ($isCart) {
+        if ($checkSession) {
             return $this->checkSession($session, $addressId, $address);
         }
 
@@ -238,18 +256,33 @@ class AddressFactory extends AbstractFactory
     }
 
     /**
-     * @param $countryId
+     * @param string $countryId
      * @return mixed
      * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \Doctrine\DBAL\Exception
      */
-    private function getCountryIso3($countryId)
+    private function getCountryIso3(string $countryId)
     {
         $connection = Kernel::getConnection();
         $sql = "SELECT iso3 FROM country WHERE id = UNHEX('$countryId')";
         $country = $connection->executeQuery($sql)->fetchAssociative();
 
-        return $country['iso3'];
+        return $country ? $country['iso3'] : '';
+    }
+
+    /**
+     * @param string $countryId
+     * @return mixed
+     * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws \Doctrine\DBAL\Exception
+     */
+    private function getStateName(string $countryStateId)
+    {
+        $connection = Kernel::getConnection();
+        $sql = "SELECT short_code FROM country_state WHERE id = UNHEX('$countryStateId')";
+        $countryState = $connection->executeQuery($sql)->fetchAssociative();
+
+        return $countryState ? $countryState['short_code'] : '';
     }
 
     /**

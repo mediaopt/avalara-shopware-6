@@ -10,7 +10,6 @@ use Shopware\Storefront\Event\StorefrontRenderEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Monolog\Logger;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -19,8 +18,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 class AddressSubscriber implements EventSubscriberInterface
 {
     private SystemConfigService $systemConfigService;
-
-    private EntityRepositoryInterface $orderRepository;
 
     private Session $session;
 
@@ -31,21 +28,18 @@ class AddressSubscriber implements EventSubscriberInterface
     /**
      * @param ContainerInterface $container
      * @param SystemConfigService $systemConfigService
-     * @param EntityRepositoryInterface $orderRepository
      * @param Logger $logger
      * @param Session $session
      */
     public function __construct(
         ContainerInterface        $container,
         SystemConfigService       $systemConfigService,
-        EntityRepositoryInterface $orderRepository,
         Logger                    $logger,
         Session                   $session
     )
     {
         $this->container = $container;
         $this->systemConfigService = $systemConfigService;
-        $this->orderRepository = $orderRepository;
         $this->logger = $logger;
         $this->session = $session;
     }

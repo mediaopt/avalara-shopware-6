@@ -24,7 +24,6 @@ use Symfony\Component\HttpFoundation\Session\Session;
  */
 class GetTax extends AbstractService
 {
-
     /**
      * @param AdapterInterface $adapter
      * @param Logger $logger
@@ -45,22 +44,24 @@ class GetTax extends AbstractService
     public function getAvalaraTaxes(Cart $cart, SalesChannelContext $context, Session $session)
     {
         $customer = $context->getCustomer();
-        if ($customer) {
-            $customerId = $customer->getId();
-            $taxIncluded = $this->isTaxIncluded($customer, $session);
-            $currencyIso = $context->getCurrency()->getIsoCode();
-            $avalaraRequest = $this->prepareAvalaraRequest($cart, $customerId, $currencyIso, $taxIncluded, $session);
-            if ($avalaraRequest) {
-                $avalaraRequestKey = md5(json_encode($avalaraRequest));
-                $sessionAvalaraRequestKey = $session->get(Form::SESSION_AVALARA_MODEL_KEY);
-                if ($avalaraRequestKey != $sessionAvalaraRequestKey) {
-                    $session->set(Form::SESSION_AVALARA_MODEL, serialize($avalaraRequest));
-                    $session->set(Form::SESSION_AVALARA_MODEL_KEY, $avalaraRequestKey);
-                    return $this->makeAvalaraCall($avalaraRequest, $session);
-                }
-            } else {
-                return null;
-            }
+        if (!$customer) {
+            return $session->get(Form::SESSION_AVALARA_TAXES_TRANSFORMED);
+        }
+
+        $customerId = $customer->getId();
+        $taxIncluded = $this->isTaxIncluded($customer, $session);
+        $currencyIso = $context->getCurrency()->getIsoCode();
+        $avalaraRequest = $this->prepareAvalaraRequest($cart, $customerId, $currencyIso, $taxIncluded, $session);
+        if (!$avalaraRequest) {
+            return null;
+        }
+
+        $avalaraRequestKey = md5(json_encode($avalaraRequest));
+        $sessionAvalaraRequestKey = $session->get(Form::SESSION_AVALARA_MODEL_KEY);
+        if ($avalaraRequestKey != $sessionAvalaraRequestKey) {
+            $session->set(Form::SESSION_AVALARA_MODEL, serialize($avalaraRequest));
+            $session->set(Form::SESSION_AVALARA_MODEL_KEY, $avalaraRequestKey);
+            return $this->makeAvalaraCall($avalaraRequest, $session);
         }
 
         return $session->get(Form::SESSION_AVALARA_TAXES_TRANSFORMED);
