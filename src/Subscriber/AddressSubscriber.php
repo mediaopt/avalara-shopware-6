@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 
 namespace MoptAvalara6\Subscriber;
-require_once __DIR__ . '/../../vendor/autoload.php';
 
 use MoptAvalara6\Adapter\AvalaraSDKAdapter;
 use MoptAvalara6\Bootstrap\Form;

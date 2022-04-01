@@ -2,8 +2,6 @@
 
 namespace MoptAvalara6\Adapter;
 
-require_once  __DIR__ . '/../../vendor/autoload.php';
-
 use Monolog\Logger;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use MoptAvalara6\Bootstrap\Form;
@@ -51,7 +49,6 @@ class AvalaraSDKAdapter implements AdapterInterface
     const MACHINE_NAME = 'localhost';
 
     /**
-     *
      * @var AvaTaxClient
      */
     protected $avaTaxClient;
@@ -75,6 +72,11 @@ class AvalaraSDKAdapter implements AdapterInterface
      * @var Logger
      */
     private $logger;
+
+    /**
+     * @var AbstractService
+     */
+    private $services;
 
     /**
      * @param SystemConfigService $cachedConfigService

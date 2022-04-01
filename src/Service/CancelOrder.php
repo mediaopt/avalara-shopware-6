@@ -15,8 +15,6 @@ use Avalara\VoidTransactionModel;
 use Avalara\VoidReasonCode;
 use Avalara\DocumentType;
 
-require_once __DIR__ . '/../../vendor/autoload.php';
-
 /**
  * @author Mediaopt GmbH
  * @package MoptAvalara6\Service

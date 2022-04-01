@@ -13,7 +13,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
-use function Amp\Iterator\merge;
 
 /**
  * @RouteScope(scopes={"api"})
@@ -53,7 +52,7 @@ class TestConnection extends AbstractController
         $this->validateOriginAddress($adapter, $messages);
 
         return new JsonResponse([
-            'message' => implode("\n", $messages)
+            'message' => implode("</br>", $messages)
         ]);
     }
 

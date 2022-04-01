@@ -14,8 +14,6 @@ use MoptAvalara6\Adapter\AdapterInterface;
 use MoptAvalara6\Bootstrap\Form;
 use Avalara\DocumentType;
 
-require_once __DIR__ . '/../../vendor/autoload.php';
-
 /**
  * @author Mediaopt GmbH
  * @package MoptAvalara6\Service

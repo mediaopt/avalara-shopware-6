@@ -13,8 +13,7 @@ Component.register('avalara-test-page', {
 
     data() {
         return {
-            repository: null,
-            bundles: null
+            repository: null
         };
     },
 
@@ -26,26 +25,7 @@ Component.register('avalara-test-page', {
 
     computed: {
         columns() {
-            return [{
-                property: 'name',
-                dataIndex: 'name',
-                label: this.$t('avalara-test.page.columnName'),
-                routerLink: 'avalara.test.detail',
-                inlineEdit: 'string',
-                allowResize: true,
-                primary: true
-            }, {
-                property: 'discount',
-                dataIndex: 'discount',
-                label: this.$t('avalara-test.page.columnDiscount'),
-                inlineEdit: 'number',
-                allowResize: true
-            }, {
-                property: 'discountType',
-                dataIndex: 'discountType',
-                label: this.$t('avalara-test.page.columnDiscountType'),
-                allowResize: true
-            }];
+            return [];
         }
     },
 
@@ -62,7 +42,7 @@ Component.register('avalara-test-page', {
     methods: {
         onClick() {
             this.AvalaraService.testConnection().then((result) => {
-                alert(result.message);
+                document.getElementById('testResult').innerHTML = result.message;
             });
         }
     }

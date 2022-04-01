@@ -8,16 +8,7 @@
             </template>
         {% endblock %}
         <template slot="content">
-            {% block avalara_test_page_content %}
-                <sw-entity-listing
-                    v-if="bundles"
-                    :items="bundles"
-                    :repository="repository"
-                    :showSelection="false"
-                    :columns="columns"
-                    detailRoute="avalara.test.detail">
-                </sw-entity-listing>
-            {% endblock %}
+            <div id="testResult"></div>
         </template>
     </sw-page>
 {% endblock %}
