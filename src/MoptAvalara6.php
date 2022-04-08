@@ -219,3 +219,7 @@ class MoptAvalara6 extends Plugin
         return $options;
     }
 }
+
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require_once __DIR__ . '/../vendor/autoload.php';
+}

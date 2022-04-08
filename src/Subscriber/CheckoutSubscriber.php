@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 
 namespace MoptAvalara6\Subscriber;
-require_once __DIR__ . '/../../vendor/autoload.php';
 
 use Avalara\CreateTransactionModel;
 use MoptAvalara6\Adapter\AvalaraSDKAdapter;
@@ -66,7 +65,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
             $avalaraRequestModel->commit = true;
             $avalaraRequestModel->customerCode = $orderNumber;
 
-            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $this->session);
+            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
             $service = $adapter->getService('GetTax');
             $result = $service->calculate($avalaraRequestModel);
 
@@ -112,10 +111,8 @@ class CheckoutSubscriber implements EventSubscriberInterface
      */
     private function cleanSession()
     {
-        $this->session->set(Form::SESSION_AVALARA_MODEL, null);
-        $this->session->set(Form::SESSION_AVALARA_MODEL_KEY, null);
-        $this->session->set(Form::SESSION_AVALARA_TAXES, null);
-        $this->session->set(Form::SESSION_AVALARA_TAXES_TRANSFORMED, null);
-        $this->session->set(Form::SESSION_AVALARA_IS_GROSS_PRICE, null);
+        foreach (Form::SESSION_KEYS as $key) {
+            $this->session->set($key, null);
+        }
     }
 }

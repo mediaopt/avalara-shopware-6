@@ -10,7 +10,11 @@ namespace MoptAvalara6\Adapter\Factory;
 
 use Avalara\AddressLocationInfo;
 use MoptAvalara6\Bootstrap\Form;
+use MoptAvalara6\Service\ValidateAddress;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
+use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
+use Shopware\Core\Kernel;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 /**
  *
@@ -53,6 +57,42 @@ class AddressFactory extends AbstractFactory
                 $address->region = $region;
             }
         }
+
+        return $address;
+    }
+
+    /**
+     * build Address-model based on address book array address
+     * @param array $customerAddress
+     * @return AddressLocationInfo
+     */
+    public function buildAddressBookAddress(array $customerAddress): AddressLocationInfo
+    {
+        $address = new AddressLocationInfo();
+        $address->line1 = $customerAddress['street'];
+        $address->city = $customerAddress['city'];
+        $address->postalCode = $customerAddress['zipcode'];
+        $address->country = $this->getCountryIso3($customerAddress['countryId']);
+        if (array_key_exists( 'countryStateId', $customerAddress) && !empty($customerAddress['countryStateId'])) {
+            $address->region = $this->getStateName($customerAddress['countryStateId']);
+        }
+
+        return $address;
+    }
+
+    /**
+     * build Address-model based on databag address
+     *
+     * @param RequestDataBag $customerAddress
+     * @return AddressLocationInfo
+     */
+    public function buildDataBagAddress(RequestDataBag $customerAddress): AddressLocationInfo
+    {
+        $address = new AddressLocationInfo();
+        $address->line1 = $customerAddress->get('street');
+        $address->city = $customerAddress->get('city');
+        $address->postalCode = $customerAddress->get('zipcode');
+        $address->country = $this->getCountryIso3($customerAddress->get('countryId'));
 
         return $address;
     }
@@ -128,5 +168,131 @@ class AddressFactory extends AbstractFactory
         }
 
         return false;
+    }
+
+    /**
+     * @param AddressLocationInfo $addressLocationInfo
+     * @param string $addressId
+     * @param Session $session
+     * @param bool $checkSession
+     * @return void
+     */
+    public function validate(
+        AddressLocationInfo $addressLocationInfo,
+        string $addressId,
+        Session $session,
+        bool $checkSession = true
+    )
+    {
+        $adapter = $this->getAdapter();
+
+        if ($this->isAddressToBeValidated($addressLocationInfo, $session, $addressId, $checkSession)) {
+            $service = $adapter->getService('ValidateAddress');
+            $response = $service->validate($addressLocationInfo);
+            $parsed = $service->parseAvalaraResponse($addressLocationInfo, $response);
+            $sessionAddresses = $session->get(Form::SESSION_AVALARA_ADDRESS_VALIDATION);
+
+            if ($parsed['code'] == ValidateAddress::VALIDATION_CODE_VALID) {
+                $sessionAddresses[$addressId] = [
+                    'hash' => $parsed['hash'],
+                    'messages' => $parsed['messages'],
+                    'valid' => true
+                ];
+            } else {
+                $sessionAddresses[$addressId] = [
+                    'hash' => $parsed['hash'],
+                    'messages' => $parsed['messages'],
+                    'valid' => false
+                ];
+            }
+            $session->set(Form::SESSION_AVALARA_ADDRESS_VALIDATION, $sessionAddresses);
+        }
+    }
+
+    /**
+     * @param AddressLocationInfo $address
+     * @param Session $session
+     * @param string $addressId
+     * @param bool $checkSession
+     * @return bool
+     */
+    public function isAddressToBeValidated(AddressLocationInfo $address, Session $session, string $addressId, bool $checkSession = true)
+    {
+        if (!$this->checkCountryRestriction($address->country)) {
+            return false;
+        }
+
+        if (!$this->getPluginConfig(Form::ADDRESS_VALIDATION_REQUIRED_FIELD)) {
+            return false;
+        }
+
+        if ($checkSession) {
+            return $this->checkSession($session, $addressId, $address);
+        }
+
+        return true;
+    }
+
+    /**
+     * @param Session $session
+     * @param string $addressId
+     * @return bool
+     */
+    public function checkSession(Session $session, string $addressId, $address)
+    {
+        $sessionAddresses = $session->get(Form::SESSION_AVALARA_ADDRESS_VALIDATION);
+
+        if (!is_array($sessionAddresses)) {
+            return true;
+        }
+
+        if (array_key_exists($addressId, $sessionAddresses) && $sessionAddresses[$addressId]['valid']) {
+            if ($sessionAddresses[$addressId]['hash'] == self::getAddressHash($address)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param string $countryId
+     * @return mixed
+     * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws \Doctrine\DBAL\Exception
+     */
+    private function getCountryIso3(string $countryId)
+    {
+        $connection = Kernel::getConnection();
+        $sql = "SELECT iso3 FROM country WHERE id = UNHEX('$countryId')";
+        $country = $connection->executeQuery($sql)->fetchAssociative();
+
+        return $country ? $country['iso3'] : '';
+    }
+
+    /**
+     * @param string $countryId
+     * @return mixed
+     * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws \Doctrine\DBAL\Exception
+     */
+    private function getStateName(string $countryStateId)
+    {
+        $connection = Kernel::getConnection();
+        $sql = "SELECT short_code FROM country_state WHERE id = UNHEX('$countryStateId')";
+        $countryState = $connection->executeQuery($sql)->fetchAssociative();
+
+        return $countryState ? $countryState['short_code'] : '';
+    }
+
+    /**
+     * get hash of given address
+     *
+     * @param \Avalara\AddressLocationInfo $address
+     * @return string
+     */
+    public static function getAddressHash(AddressLocationInfo $address)
+    {
+        return md5($address->line1 . $address->postalCode . $address->city . $address->country);
     }
 }

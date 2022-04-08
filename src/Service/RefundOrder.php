@@ -14,8 +14,6 @@ use MoptAvalara6\Adapter\AdapterInterface;
 use MoptAvalara6\Bootstrap\Form;
 use Avalara\DocumentType;
 
-require_once __DIR__ . '/../../vendor/autoload.php';
-
 /**
  * @author Mediaopt GmbH
  * @package MoptAvalara6\Service
@@ -58,7 +56,7 @@ class RefundOrder extends AbstractService
                 'model' => $model
             ];
 
-            $this->log('Avalara void request', $model);
+            $this->log('Avalara refund request', $model);
 
             $client = $adapter->getAvaTaxClient();
             if (!$response = $client->refundTransaction(
