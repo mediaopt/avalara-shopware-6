@@ -4,6 +4,10 @@
     "version": "1.0.9",
     "type": "shopware-platform-plugin",
     "license": "proprietary",
+    "config": {
+        "prepend-autoloader": false,
+        "vendor-dir": "src/vendor"
+    },
     "authors": [
         {
             "name": "Mediaopt"
@@ -26,6 +30,7 @@
         }
     },
     "require": {
+        "shopware/core": "^6.4.0.0",
         "avalara/avataxclient": "*"
     }
 }

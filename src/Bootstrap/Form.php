@@ -39,7 +39,12 @@ class Form
     /**
      * @var string Field name for the plugin config
      */
-    const TAX_COUNTRY_RESTRICTION = 'MoptAvalara6.config.taxCountryRestriction';
+    const TAX_CALCULATION_MODE = 'MoptAvalara6.config.taxCalculationMode';
+
+    /**
+     * @var string Field name for the plugin config
+     */
+    const SEND_GET_TAX_ONLY = 'MoptAvalara6.config.sendGetTaxOnly';
 
     /**
      * @var string Field name for the plugin config

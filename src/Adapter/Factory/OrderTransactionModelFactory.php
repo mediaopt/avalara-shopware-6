@@ -42,7 +42,7 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
         $model->companyCode = $this->getPluginConfig(Form::COMPANY_CODE_FIELD);
         $model->commit = false;
         $model->customerCode = $customerId;
-        $model->type = DocumentType::C_SALESINVOICE;
+        $model->type = DocumentType::C_SALESORDER;
         $model->currencyCode = $currencyIso;
         $model->addresses = $addresses;
         $model->lines = $this->getLineModels($cart, $addresses->shipTo, $taxIncluded);

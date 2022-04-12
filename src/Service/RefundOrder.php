@@ -36,6 +36,11 @@ class RefundOrder extends AbstractService
     public function refundTransaction(string $docCode)
     {
         $adapter = $this->getAdapter();
+        if ($adapter->getPluginConfig(Bootstrap::SEND_GET_TAX_ONLY)) {
+            $this->log("Cannot refund Avalara transaction. Only get tax requests are enabled.");
+            return;
+        }
+
         try {
             if (empty($docCode)) {
                 $this->log("Cannot refund Avalara transaction with empty DocCode");

@@ -48,7 +48,7 @@ class GetTax extends AbstractService
             return $session->get(Form::SESSION_AVALARA_TAXES_TRANSFORMED);
         }
 
-        $customerId = $customer->getId();
+        $customerId = $customer->customerNumber;
         $taxIncluded = $this->isTaxIncluded($customer, $session);
         $currencyIso = $context->getCurrency()->getIsoCode();
         $avalaraRequest = $this->prepareAvalaraRequest($cart, $customerId, $currencyIso, $taxIncluded, $session);

@@ -37,6 +37,11 @@ class CancelOrder extends AbstractService
     public function voidTransaction(string $docCode)
     {
         $adapter = $this->getAdapter();
+        if ($adapter->getPluginConfig(Bootstrap::SEND_GET_TAX_ONLY)) {
+            $this->log("Cannot void Avalara transaction. Only get tax requests are enabled.");
+            return;
+        }
+
         try {
             if (empty($docCode)) {
                 $this->log("Cannot void Avalara transaction with empty DocCode");

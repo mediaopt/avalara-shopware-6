@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Session\Session;
 use MoptAvalara6\Bootstrap\Form;
 use Monolog\Logger;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Avalara\DocumentType;
 
 class CheckoutSubscriber implements EventSubscriberInterface
 {
@@ -57,15 +58,20 @@ class CheckoutSubscriber implements EventSubscriberInterface
     public function makeAvalaraCommitCall(CheckoutFinishPageLoadedEvent $event): void
     {
         /* @var CreateTransactionModel */
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
+        if ($adapter->getPluginConfig(Bootstrap::SEND_GET_TAX_ONLY)) {
+            return;
+        }
+
         $sessionModel = $this->session->get(Form::SESSION_AVALARA_MODEL);
 
         if (!empty($sessionModel)) {
             $orderNumber = $event->getPage()->getOrder()->getOrderNumber();
             $avalaraRequestModel = unserialize($sessionModel);
             $avalaraRequestModel->commit = true;
-            $avalaraRequestModel->customerCode = $orderNumber;
+            $avalaraRequestModel->code = $orderNumber;
+            $avalaraRequestModel->type = DocumentType::C_SALESINVOICE;
 
-            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
             $service = $adapter->getService('GetTax');
             $result = $service->calculate($avalaraRequestModel);
 
