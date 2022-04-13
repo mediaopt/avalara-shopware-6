@@ -172,12 +172,12 @@ class GetTax extends AbstractService
         $client = $this->getAdapter()->getAvaTaxClient();
         $model->date = date(DATE_W3C);
         try {
-            $this->log('Avalara request', $model);
+            $this->log('Avalara request', 0, $model);
             $response = $client->createTransaction(null, $model);
-            $this->log('Avalara response', $response);
+            $this->log('Avalara response', 0, $response);
             return $response;
         } catch (\Exception $e) {
-            $this->log($e->getMessage());
+            $this->log($e->getMessage(), Logger::ERROR);
         }
 
         return false;

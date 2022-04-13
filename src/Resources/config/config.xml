@@ -53,6 +53,25 @@
             <defaultValue>false</defaultValue>
             <label>Is customer address validation required</label>
         </input-field>
+        <input-field type="single-select">
+            <name>logLevel</name>
+            <options>
+                <option>
+                    <id>DEBUG</id>
+                    <name>DEBUG</name>
+                </option>
+                <option>
+                    <id>ERROR</id>
+                    <name>ERROR</name>
+                </option>
+                <option>
+                    <id>INFO</id>
+                    <name>INFO</name>
+                </option>
+            </options>
+            <defaultValue>INFO</defaultValue>
+            <label>Choose the loglevel of Avalara non-error messages</label>
+        </input-field>
     </card>
     <card>
         <title>Order statuses</title>

@@ -59,7 +59,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
     {
         /* @var CreateTransactionModel */
         $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
-        if ($adapter->getPluginConfig(Bootstrap::SEND_GET_TAX_ONLY)) {
+        if ($adapter->getPluginConfig(Form::SEND_GET_TAX_ONLY)) {
             return;
         }
 
@@ -93,7 +93,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
         }
 
         if (is_null($result->code)) {
-            $service->log('Can not get tax document code from Avalara response.', $result);
+            $service->log('Can not get tax document code from Avalara response.', Logger::ERROR, $result);
             return;
         }
 

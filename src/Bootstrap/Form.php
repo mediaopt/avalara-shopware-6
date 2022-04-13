@@ -49,6 +49,11 @@ class Form
     /**
      * @var string Field name for the plugin config
      */
+    const LOG_LEVEL = 'MoptAvalara6.config.logLevel';
+
+    /**
+     * @var string Field name for the plugin config
+     */
     const ADDRESS_VALIDATION_REQUIRED_FIELD = 'MoptAvalara6.config.addressValidationRequired';
 
     /**
