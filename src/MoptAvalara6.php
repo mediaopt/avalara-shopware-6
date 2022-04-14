@@ -74,7 +74,6 @@ class MoptAvalara6 extends Plugin
         $customFieldSetRepository = $this->container->get('custom_field_set.repository');
         $customFieldSetRepository->upsert([
             $this->getShippingTaxCodeFieldset(),
-            $this->getOrderTaxDocumentCodeFieldset(),
         ], $installContext->getContext());
     }
 
@@ -106,7 +105,6 @@ class MoptAvalara6 extends Plugin
             'name',
             [
                 Form::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE_FIELDSET,
-                Form::CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE_FIELDSET,
             ]
         ));
 
@@ -140,36 +138,6 @@ class MoptAvalara6 extends Plugin
                 [
                     'id' => Uuid::randomHex(),
                     'entityName' => 'shipping_method'
-                ]
-            ]
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    private function getOrderTaxDocumentCodeFieldset()
-    {
-        return [
-            'id' => Uuid::randomHex(),
-            'name' => Form::CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE_FIELDSET,
-            'config' => [
-                'label' => [
-                    'de-DE' => 'Steuerbelegcode bestellen',
-                    'en-GB' => 'Order tax document code'
-                ]
-            ],
-            'customFields' => [
-                [
-                    'id' => Uuid::randomHex(),
-                    'name' => Form::CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE,
-                    'type' => CustomFieldTypes::TEXT,
-                ]
-            ],
-            'relations' => [
-                [
-                    'id' => Uuid::randomHex(),
-                    'entityName' => 'order'
                 ]
             ]
         ];

@@ -161,16 +161,6 @@ class Form
     const CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE_FIELDSET = 'avalara_shipping_tax_code_fieldset';
 
     /**
-     * @var string Field name for the plugin custom field
-     */
-    const CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE = 'avalara_order_tax_document_code';
-
-    /**
-     * @var string Fieldset name for the plugin custom field
-     */
-    const CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE_FIELDSET = 'avalara_order_tax_document_code_fieldset';
-
-    /**
      * @var string Field name for the vlck plugin custom field
      */
     const CUSTOM_FIELD_PRODUCT_WAREHOUSE = 'vlck_warehouse_id';

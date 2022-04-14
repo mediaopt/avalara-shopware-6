@@ -15,7 +15,6 @@
 
         <service id="MoptAvalara6\Subscriber\CheckoutSubscriber">
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
-            <argument type="service" id="order.repository" />
             <argument type="service" id="monolog.logger" />
             <argument type="service" id="session" />
             <tag name="kernel.event_subscriber" priority="-5100"/>
