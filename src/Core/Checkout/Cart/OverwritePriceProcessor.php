@@ -12,6 +12,7 @@ use Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTax;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\HttpFoundation\Session\Session;
@@ -24,6 +25,8 @@ class OverwritePriceProcessor implements CartProcessorInterface
 
     private SystemConfigService $systemConfigService;
 
+    private EntityRepositoryInterface $categoryRepository;
+
     private Session $session;
 
     private $avalaraTaxes;
@@ -33,12 +36,14 @@ class OverwritePriceProcessor implements CartProcessorInterface
     public function __construct(
         QuantityPriceCalculator $calculator,
         SystemConfigService $systemConfigService,
+        EntityRepositoryInterface $categoryRepository,
         Logger $loggerMonolog,
         Session $session
     ) {
         $this->calculator = $calculator;
         $this->systemConfigService = $systemConfigService;
         $this->session = $session;
+        $this->categoryRepository = $categoryRepository;
         $this->logger = $loggerMonolog;
         $this->avalaraTaxes = $this->session->get(Form::SESSION_AVALARA_TAXES_TRANSFORMED);
     }
@@ -48,7 +53,7 @@ class OverwritePriceProcessor implements CartProcessorInterface
         if ($this->isTaxesUpdateNeeded()) {
             $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
             $service = $adapter->getService('GetTax');
-            $this->avalaraTaxes = $service->getAvalaraTaxes($original, $context, $this->session);
+            $this->avalaraTaxes = $service->getAvalaraTaxes($original, $context, $this->session, $this->categoryRepository);
         }
 
         if ($this->avalaraTaxes) {

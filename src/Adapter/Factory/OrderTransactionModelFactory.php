@@ -8,13 +8,13 @@
 
 namespace MoptAvalara6\Adapter\Factory;
 
-use Avalara\AddressLocationInfo;
 use Avalara\CreateTransactionModel;
 use Avalara\AddressesModel;
 use Avalara\DocumentType;
-use Avalara\LineItemModel;
 use Shopware\Core\Checkout\Cart\Cart;
 use MoptAvalara6\Bootstrap\Form;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 /**
  *
@@ -32,9 +32,18 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
      * @param string $customerId
      * @param string $currencyIso
      * @param bool $taxIncluded
+     * @param EntityRepositoryInterface $categoryRepository
+     * @param SalesChannelContext $context
      * @return CreateTransactionModel
      */
-    public function build(Cart $cart, string $customerId, $currencyIso, bool $taxIncluded): CreateTransactionModel
+    public function build(
+        Cart $cart,
+        string $customerId,
+        string $currencyIso,
+        bool $taxIncluded,
+        EntityRepositoryInterface $categoryRepository,
+        SalesChannelContext $context
+    ): CreateTransactionModel
     {
         $addresses = $this->getAddressesModel($cart);
 
@@ -45,7 +54,7 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
         $model->type = DocumentType::C_SALESORDER;
         $model->currencyCode = $currencyIso;
         $model->addresses = $addresses;
-        $model->lines = $this->getLineModels($cart, $addresses->shipTo, $taxIncluded);
+        $model->lines = $this->getLineModels($cart, $addresses->shipTo, $taxIncluded, $categoryRepository, $context);
         // todo: parameters, customerUsageType, discount
         return $model;
     }
@@ -65,16 +74,5 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
         $addressesModel->shipTo = $addressFactory->buildDeliveryAddress($customerAddress);
 
         return $addressesModel;
-    }
-
-    /**
-     * @param Cart $cart
-     * @param AddressLocationInfo $deliveryAddress
-     * @param bool $taxIncluded
-     * @return LineItemModel[]
-     */
-    protected function getLineModels(Cart $cart, AddressLocationInfo $deliveryAddress, bool $taxIncluded)
-    {
-        return parent::getLineModels($cart, $deliveryAddress, $taxIncluded);
     }
 }

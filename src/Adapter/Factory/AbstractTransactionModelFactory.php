@@ -11,6 +11,8 @@ namespace MoptAvalara6\Adapter\Factory;
 use Avalara\AddressLocationInfo;
 use Avalara\LineItemModel;
 use Shopware\Core\Checkout\Cart\Cart;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 /**
  *
@@ -41,13 +43,19 @@ abstract class AbstractTransactionModelFactory extends AbstractFactory
      * @param bool $taxIncluded
      * @return LineItemModel[]
      */
-    protected function getLineModels(Cart $cart, AddressLocationInfo $deliveryAddress, bool $taxIncluded)
+    protected function getLineModels(
+        Cart $cart,
+        AddressLocationInfo $deliveryAddress,
+        bool $taxIncluded,
+        EntityRepositoryInterface $categoryRepository,
+        SalesChannelContext $context
+    )
     {
         $lineFactory = $this->getLineFactory();
         $lines = [];
 
         foreach ($cart->getLineItems()->getFlat() as $lineItem) {
-            $lines[] = $lineFactory->build($lineItem, $deliveryAddress, $taxIncluded);
+            $lines[] = $lineFactory->build($lineItem, $deliveryAddress, $taxIncluded, $categoryRepository, $context);
         }
 
         if ($shippingModel = $this->getShippingModel($cart)) {

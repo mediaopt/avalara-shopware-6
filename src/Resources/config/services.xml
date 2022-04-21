@@ -38,6 +38,7 @@
         <service id="MoptAvalara6\Core\Checkout\Cart\OverwritePriceProcessor">
             <argument type="service" id="Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator"/>
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="category.repository" />
             <argument type="service" id="monolog.logger" />
             <argument type="service" id="session" />
             <tag name="shopware.cart.processor" priority="-5200"/>

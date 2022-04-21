@@ -17,6 +17,7 @@ use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Kernel;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Session\Session;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 
 /**
  * @author Mediaopt GmbH
@@ -41,7 +42,12 @@ class GetTax extends AbstractService
      * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \Doctrine\DBAL\Exception
      */
-    public function getAvalaraTaxes(Cart $cart, SalesChannelContext $context, Session $session)
+    public function getAvalaraTaxes(
+        Cart $cart,
+        SalesChannelContext $context,
+        Session $session,
+        EntityRepositoryInterface $entityRepository
+    )
     {
         $customer = $context->getCustomer();
         if (!$customer) {
@@ -51,7 +57,15 @@ class GetTax extends AbstractService
         $customerId = $customer->customerNumber;
         $taxIncluded = $this->isTaxIncluded($customer, $session);
         $currencyIso = $context->getCurrency()->getIsoCode();
-        $avalaraRequest = $this->prepareAvalaraRequest($cart, $customerId, $currencyIso, $taxIncluded, $session);
+        $avalaraRequest = $this->prepareAvalaraRequest(
+            $cart,
+            $customerId,
+            $currencyIso,
+            $taxIncluded,
+            $session,
+            $entityRepository,
+            $context
+        );
         if (!$avalaraRequest) {
             return null;
         }
@@ -72,9 +86,20 @@ class GetTax extends AbstractService
      * @param string $customerId
      * @param string $currencyIso
      * @param bool $taxIncluded
-     * @return mixed
+     * @param $session
+     * @param EntityRepositoryInterface $categoryRepository
+     * @param SalesChannelContext $context
+     * @return CreateTransactionModel|bool
      */
-    private function prepareAvalaraRequest(Cart $cart, string $customerId, string $currencyIso, bool $taxIncluded, $session)
+    private function prepareAvalaraRequest(
+        Cart $cart,
+        string $customerId,
+        string $currencyIso,
+        bool $taxIncluded,
+        $session,
+        EntityRepositoryInterface $categoryRepository,
+        SalesChannelContext $context
+    )
     {
         $shippingCountry = $cart->getDeliveries()->getAddresses()->getCountries()->first();
         if (is_null($shippingCountry)) {
@@ -90,7 +115,8 @@ class GetTax extends AbstractService
             return false;
         }
 
-        return $this->adapter->getFactory('OrderTransactionModelFactory')->build($cart, $customerId, $currencyIso, $taxIncluded);
+        return $this->adapter->getFactory('OrderTransactionModelFactory')
+            ->build($cart, $customerId, $currencyIso, $taxIncluded, $categoryRepository, $context);
     }
 
     /**
