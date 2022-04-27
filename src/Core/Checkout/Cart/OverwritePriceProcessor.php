@@ -59,6 +59,7 @@ class OverwritePriceProcessor implements CartProcessorInterface
         if ($this->avalaraTaxes) {
             $this->changeTaxes($toCalculate);
             $this->changeShippingCosts($toCalculate);
+            $this->changePromotionsTaxes($toCalculate);
             $toCalculate->getShippingCosts();
         }
     }
@@ -102,6 +103,25 @@ class OverwritePriceProcessor implements CartProcessorInterface
         $avalaraShippingCalculated = $this->itemPriceCalculator($originalPrice, 'Shipping');
 
         $delivery->setShippingCosts($avalaraShippingCalculated);
+    }
+
+    private function changePromotionsTaxes(Cart $toCalculate)
+    {
+        $promotions = $toCalculate->getLineItems()->filterType(LineItem::PROMOTION_LINE_ITEM_TYPE);
+
+        foreach ($promotions as $promotion) {
+            $promotionId = $promotion->getPayloadValue('promotionId');
+
+            if (!array_key_exists($promotionId, $this->avalaraTaxes)) {
+                continue;
+            }
+
+            $originalPrice = $promotion->getPrice();
+
+            $avalaraPromotionCalculated = $this->itemPriceCalculator($originalPrice, $promotionId);
+
+            $promotion->setPrice($avalaraPromotionCalculated);
+        }
     }
 
     /**

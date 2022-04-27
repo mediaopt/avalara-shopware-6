@@ -13,6 +13,7 @@ use Monolog\Logger;
 use MoptAvalara6\Adapter\AdapterInterface;
 use MoptAvalara6\Bootstrap\Form;
 use Shopware\Core\Checkout\Cart\Cart;
+use Shopware\Core\Checkout\Cart\LineItem\LineItem;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Kernel;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -75,7 +76,7 @@ class GetTax extends AbstractService
         if ($avalaraRequestKey != $sessionAvalaraRequestKey) {
             $session->set(Form::SESSION_AVALARA_MODEL, serialize($avalaraRequest));
             $session->set(Form::SESSION_AVALARA_MODEL_KEY, $avalaraRequestKey);
-            return $this->makeAvalaraCall($avalaraRequest, $session);
+            return $this->makeAvalaraCall($avalaraRequest, $session, $cart);
         }
 
         return $session->get(Form::SESSION_AVALARA_TAXES_TRANSFORMED);
@@ -86,7 +87,7 @@ class GetTax extends AbstractService
      * @param string $customerId
      * @param string $currencyIso
      * @param bool $taxIncluded
-     * @param $session
+     * @param Session $session
      * @param EntityRepositoryInterface $categoryRepository
      * @param SalesChannelContext $context
      * @return CreateTransactionModel|bool
@@ -96,7 +97,7 @@ class GetTax extends AbstractService
         string $customerId,
         string $currencyIso,
         bool $taxIncluded,
-        $session,
+        Session $session,
         EntityRepositoryInterface $categoryRepository,
         SalesChannelContext $context
     )
@@ -120,14 +121,16 @@ class GetTax extends AbstractService
     }
 
     /**
-     * @param $avalaraRequest
+     * @param CreateTransactionModel $avalaraRequest
+     * @param Session $session
+     * @param Cart $cart
      * @return array
      */
-    private function makeAvalaraCall($avalaraRequest, $session)
+    private function makeAvalaraCall(CreateTransactionModel $avalaraRequest, Session $session, Cart $cart)
     {
         $response = $this->calculate($avalaraRequest);
 
-        $transformedTaxes = $this->transformResponse($response);
+        $transformedTaxes = $this->transformResponse($response, $cart);
 
         $session->set(Form::SESSION_AVALARA_TAXES, $response);
         $session->set(Form::SESSION_AVALARA_TAXES_TRANSFORMED, $transformedTaxes);
@@ -137,9 +140,10 @@ class GetTax extends AbstractService
 
     /**
      * @param mixed $response
+     * @param Cart $cart
      * @return array
      */
-    private function transformResponse($response): array
+    private function transformResponse($response, Cart $cart): array
     {
         $transformedTax = [];
         if (!is_object($response)) {
@@ -158,6 +162,17 @@ class GetTax extends AbstractService
             $transformedTax[$line->itemCode] = [
                 'tax' => $line->tax,
                 'rate' => $rate * 100,
+            ];
+        }
+
+        $promotions = $cart->getLineItems()->filterType(LineItem::PROMOTION_LINE_ITEM_TYPE);
+
+        //promotions taxes are included in item price and should be 0
+        foreach ($promotions as $promotion) {
+            $promotionId = $promotion->getPayloadValue('promotionId');
+            $transformedTax[$promotionId] = [
+                'tax' => 0,
+                'rate' => 0,
             ];
         }
 

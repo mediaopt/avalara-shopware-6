@@ -40,7 +40,7 @@ class LineFactory extends AbstractFactory
      * @param bool $taxIncluded
      * @param EntityRepositoryInterface $categoryRepository
      * @param SalesChannelContext $context
-     * @return LineItemModel
+     * @return LineItemModel|bool
      * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \Doctrine\DBAL\Exception
      */
@@ -49,9 +49,14 @@ class LineFactory extends AbstractFactory
         AddressLocationInfo $deliveryAddress,
         bool $taxIncluded,
         EntityRepositoryInterface $categoryRepository,
-        SalesChannelContext $context
-    ): LineItemModel
+        SalesChannelContext $context,
+        bool $discounted
+    )
     {
+        if (self::isDiscount($lineItem)) {
+            return false;
+        }
+
         $this->categoryRepository = $categoryRepository;
         $this->context = $context;
 
@@ -64,6 +69,7 @@ class LineFactory extends AbstractFactory
         $line->amount = $price * $quantity;
         $line->quantity = $quantity;
         $line->description = $lineItem->getLabel();
+        $line->discounted = $discounted;
         $line->taxIncluded = $taxIncluded;
 
         if ($taxCode = $this->getTaxCode($lineItem)) {
@@ -89,7 +95,11 @@ class LineFactory extends AbstractFactory
     private function getWarehouse(LineItem $lineItem, AddressLocationInfo $deliveryAddress)
     {
         $payload = $lineItem->getPayload();
+        if (!array_key_exists('customFields', [$payload])) {
+            return false;
+        }
         $customFields = $payload['customFields'];
+
         if (!array_key_exists(Form::CUSTOM_FIELD_PRODUCT_WAREHOUSE, $customFields)) {
             return false;
         }
@@ -147,7 +157,13 @@ class LineFactory extends AbstractFactory
     private function getCategoryTaxCode(LineItem $lineItem)
     {
         //Ids sorted from main to sub, but we need to take the first subcategory tax code
-        $categoryIds = array_reverse($lineItem->getPayloadValue('categoryIds'));
+        $categoryIds = $lineItem->getPayloadValue('categoryIds');
+        if (is_array($categoryIds)) {
+            $categoryIds = array_reverse($categoryIds);
+        } else {
+            return false;
+        }
+
         $searchResults = $this->categoryRepository->search(
             new Criteria($categoryIds),
             $this->context->getContext()
@@ -166,6 +182,18 @@ class LineFactory extends AbstractFactory
             }
         }
 
+        return false;
+    }
+
+    /**
+     * @param LineItem $lineItem
+     * @return bool
+     */
+    public static function isDiscount(LineItem $lineItem): bool
+    {
+        if ($lineItem->getPayloadValue('discountId')) {
+            return true;
+        }
         return false;
     }
 }

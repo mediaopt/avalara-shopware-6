@@ -48,14 +48,17 @@ abstract class AbstractTransactionModelFactory extends AbstractFactory
         AddressLocationInfo $deliveryAddress,
         bool $taxIncluded,
         EntityRepositoryInterface $categoryRepository,
-        SalesChannelContext $context
+        SalesChannelContext $context,
+        bool $discounted
     )
     {
         $lineFactory = $this->getLineFactory();
         $lines = [];
 
         foreach ($cart->getLineItems()->getFlat() as $lineItem) {
-            $lines[] = $lineFactory->build($lineItem, $deliveryAddress, $taxIncluded, $categoryRepository, $context);
+            if ($newLIne = $lineFactory->build($lineItem, $deliveryAddress, $taxIncluded, $categoryRepository, $context, $discounted)) {
+                $lines[] = $newLIne;
+            }
         }
 
         if ($shippingModel = $this->getShippingModel($cart)) {

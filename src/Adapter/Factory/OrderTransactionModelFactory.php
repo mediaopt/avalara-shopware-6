@@ -54,8 +54,16 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
         $model->type = DocumentType::C_SALESORDER;
         $model->currencyCode = $currencyIso;
         $model->addresses = $addresses;
-        $model->lines = $this->getLineModels($cart, $addresses->shipTo, $taxIncluded, $categoryRepository, $context);
-        // todo: parameters, customerUsageType, discount
+
+        $discount = $this->calculateDiscount($cart);
+        $discounted = false;
+        if ($discount > 0) {
+            $model->discount = $discount;
+            $discounted = true;
+        }
+
+        $model->lines = $this->getLineModels($cart, $addresses->shipTo, $taxIncluded, $categoryRepository, $context, $discounted);
+
         return $model;
     }
 
@@ -75,4 +83,24 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
 
         return $addressesModel;
     }
+
+    /**
+     * @param Cart $cart
+     * @return float
+     */
+    private function calculateDiscount(Cart $cart)
+    {
+        $discount = 0.0;
+
+        foreach ($cart->getLineItems()->getFlat() as $lineItem) {
+            if (LineFactory::isDiscount($lineItem)) {
+                $price = $lineItem->getPrice()->getUnitPrice();
+                $quantity = $lineItem->getPrice()->getQuantity();
+                $discount += abs($price * $quantity);
+            }
+        }
+
+        return $discount;
+    }
+
 }
