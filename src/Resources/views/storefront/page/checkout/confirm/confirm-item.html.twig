@@ -1,0 +1,8 @@
+{% sw_extends '@Storefront/storefront/page/checkout/confirm/confirm-item.html.twig' %}
+
+{% block page_checkout_item_tax_price_inner %}
+    {{ parent() }}
+    {% if lineItem.type == 'promotion' %}
+        <p>{{ 'moptavalara6.promotion_VAT_message' | trans }}</p>
+    {% endif %}
+{% endblock %}
