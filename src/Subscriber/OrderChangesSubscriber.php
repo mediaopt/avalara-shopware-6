@@ -70,7 +70,7 @@ class OrderChangesSubscriber implements EventSubscriberInterface
      */
     private function processOrder(array $payload, Context $context)
     {
-        if (!$docCode = $this->getAvalaraDocumentTaxCode($payload['id'], $context)){
+        if (!$docCode = $this->getOrderNumber($payload['id'], $context)){
             return;
         }
 
@@ -90,7 +90,8 @@ class OrderChangesSubscriber implements EventSubscriberInterface
                 $this->refundAvalaraTax($docCode);
                 break;
             }
-            default :{
+            default :
+            {
                 break;
             }
         }
@@ -101,27 +102,13 @@ class OrderChangesSubscriber implements EventSubscriberInterface
      * @param Context $context
      * @return mixed
      */
-    private function getAvalaraDocumentTaxCode(string $orderId, Context $context)
+    private function getOrderNumber(string $orderId, Context $context)
     {
         $orders = $this->orderRepository->search(new Criteria([$orderId]), $context);
-
-        $docCodeField = Form::CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE;
         /* @var $order OrderEntity */
         foreach ($orders->getElements() as $order) {
-            $customFeilds = $order->getCustomFields();
-            if (is_array($customFeilds)) {
-                if (array_key_exists($docCodeField, $customFeilds)) {
-                    return $customFeilds[$docCodeField];
-                } else {
-                    $this->logger->log(LogLevel::ERROR, 'There is no Avalara Tax Document Code!');
-                    return false;
-                }
-            } else {
-                $this->logger->log(LogLevel::ERROR, "There is no Avalara custom field $docCodeField");
-                return false;
-            }
+            return $order->getOrderNumber();
         }
-
         $this->logger->log(LogLevel::ERROR, "There is no order with id = $orderId");
         return false;
     }

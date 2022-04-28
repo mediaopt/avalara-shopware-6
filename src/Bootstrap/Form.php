@@ -39,7 +39,17 @@ class Form
     /**
      * @var string Field name for the plugin config
      */
-    const TAX_COUNTRY_RESTRICTION = 'MoptAvalara6.config.taxCountryRestriction';
+    const TAX_CALCULATION_MODE = 'MoptAvalara6.config.taxCalculationMode';
+
+    /**
+     * @var string Field name for the plugin config
+     */
+    const SEND_GET_TAX_ONLY = 'MoptAvalara6.config.sendGetTaxOnly';
+
+    /**
+     * @var string Field name for the plugin config
+     */
+    const LOG_LEVEL = 'MoptAvalara6.config.logLevel';
 
     /**
      * @var string Field name for the plugin config
@@ -153,12 +163,22 @@ class Form
     /**
      * @var string Field name for the plugin custom field
      */
-    const CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE = 'avalara_order_tax_document_code';
+    const CUSTOM_FIELD_AVALARA_PRODUCT_TAX_CODE = 'avalara_product_tax_code';
 
     /**
      * @var string Fieldset name for the plugin custom field
      */
-    const CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE_FIELDSET = 'avalara_order_tax_document_code_fieldset';
+    const CUSTOM_FIELD_AVALARA_PRODUCT_TAX_CODE_FIELDSET = 'avalara_product_tax_code_fieldset';
+
+    /**
+     * @var string Field name for the plugin custom field
+     */
+    const CUSTOM_FIELD_AVALARA_CATEGORY_TAX_CODE = 'avalara_category_tax_code';
+
+    /**
+     * @var string Fieldset name for the plugin custom field
+     */
+    const CUSTOM_FIELD_AVALARA_CATEGORY_TAX_CODE_FIELDSET = 'avalara_category_tax_code_fieldset';
 
     /**
      * @var string Field name for the vlck plugin custom field

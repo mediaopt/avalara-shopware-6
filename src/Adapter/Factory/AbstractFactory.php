@@ -11,7 +11,6 @@ namespace MoptAvalara6\Adapter\Factory;
 use MoptAvalara6\Adapter\AdapterInterface;
 
 /**
- *
  * Abstract factory to generate requests to the AvalaraSDK
  *
  * @author Mediaopt GmbH
@@ -20,13 +19,11 @@ use MoptAvalara6\Adapter\AdapterInterface;
 abstract class AbstractFactory
 {
     /**
-     *
      * @var \MoptAvalara6\Adapter\AdapterInterface
      */
     protected $adapter;
 
     /**
-     *
      * @param AdapterInterface $adapter
      */
     public function __construct(AdapterInterface $adapter)
@@ -35,7 +32,6 @@ abstract class AbstractFactory
     }
 
     /**
-     *
      * @return \Avalara\AvaTaxClient
      */
     public function getSdk()
@@ -44,7 +40,6 @@ abstract class AbstractFactory
     }
 
     /**
-     *
      * @return AdapterInterface
      */
     public function getAdapter()

@@ -140,7 +140,7 @@ class AddressFactory extends AbstractFactory
      */
     public function checkCountryRestriction(string $country): bool
     {
-        $countriesForDelivery = $this->getPluginConfig(Form::TAX_COUNTRY_RESTRICTION);
+        $countriesForDelivery = $this->getPluginConfig(Form::TAX_CALCULATION_MODE);
 
         switch ($countriesForDelivery) {
             case Form::DELIVERY_COUNTRY_NO_VALIDATION:

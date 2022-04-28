@@ -21,11 +21,11 @@
             <label>Company Code Lookup</label>
         </input-field>
         <input-field type="single-select">
-            <name>taxCountryRestriction</name>
+            <name>taxCalculationMode</name>
             <options>
                 <option>
                     <id>1</id>
-                    <name>No Validation</name>
+                    <name>No tax calculation</name>
                 </option>
                 <option>
                     <id>2</id>
@@ -41,12 +41,36 @@
                 </option>
             </options>
             <defaultValue>1</defaultValue>
-            <label>Work mode</label>
+            <label>Tax calculation mode</label>
+        </input-field>
+        <input-field type="bool">
+            <name>sendGetTaxOnly</name>
+            <defaultValue>false</defaultValue>
+            <label>Send get tax only (no cancel, refund and commit calls)</label>
         </input-field>
         <input-field type="bool">
             <name>addressValidationRequired</name>
             <defaultValue>false</defaultValue>
             <label>Is customer address validation required</label>
+        </input-field>
+        <input-field type="single-select">
+            <name>logLevel</name>
+            <options>
+                <option>
+                    <id>DEBUG</id>
+                    <name>DEBUG</name>
+                </option>
+                <option>
+                    <id>ERROR</id>
+                    <name>ERROR</name>
+                </option>
+                <option>
+                    <id>INFO</id>
+                    <name>INFO</name>
+                </option>
+            </options>
+            <defaultValue>INFO</defaultValue>
+            <label>Choose the loglevel of Avalara non-error messages</label>
         </input-field>
     </card>
     <card>

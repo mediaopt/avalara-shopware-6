@@ -8,13 +8,13 @@
 
 namespace MoptAvalara6\Adapter\Factory;
 
-use Avalara\AddressLocationInfo;
 use Avalara\CreateTransactionModel;
 use Avalara\AddressesModel;
 use Avalara\DocumentType;
-use Avalara\LineItemModel;
 use Shopware\Core\Checkout\Cart\Cart;
 use MoptAvalara6\Bootstrap\Form;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 /**
  *
@@ -32,9 +32,18 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
      * @param string $customerId
      * @param string $currencyIso
      * @param bool $taxIncluded
+     * @param EntityRepositoryInterface $categoryRepository
+     * @param SalesChannelContext $context
      * @return CreateTransactionModel
      */
-    public function build(Cart $cart, string $customerId, $currencyIso, bool $taxIncluded): CreateTransactionModel
+    public function build(
+        Cart $cart,
+        string $customerId,
+        string $currencyIso,
+        bool $taxIncluded,
+        EntityRepositoryInterface $categoryRepository,
+        SalesChannelContext $context
+    ): CreateTransactionModel
     {
         $addresses = $this->getAddressesModel($cart);
 
@@ -42,11 +51,19 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
         $model->companyCode = $this->getPluginConfig(Form::COMPANY_CODE_FIELD);
         $model->commit = false;
         $model->customerCode = $customerId;
-        $model->type = DocumentType::C_SALESINVOICE;
+        $model->type = DocumentType::C_SALESORDER;
         $model->currencyCode = $currencyIso;
         $model->addresses = $addresses;
-        $model->lines = $this->getLineModels($cart, $addresses->shipTo, $taxIncluded);
-        // todo: parameters, customerUsageType, discount
+
+        $discount = $this->calculateDiscount($cart);
+        $discounted = false;
+        if ($discount > 0) {
+            $model->discount = $discount;
+            $discounted = true;
+        }
+
+        $model->lines = $this->getLineModels($cart, $addresses->shipTo, $taxIncluded, $categoryRepository, $context, $discounted);
+
         return $model;
     }
 
@@ -69,12 +86,21 @@ class OrderTransactionModelFactory extends AbstractTransactionModelFactory
 
     /**
      * @param Cart $cart
-     * @param AddressLocationInfo $deliveryAddress
-     * @param bool $taxIncluded
-     * @return LineItemModel[]
+     * @return float
      */
-    protected function getLineModels(Cart $cart, AddressLocationInfo $deliveryAddress, bool $taxIncluded)
+    private function calculateDiscount(Cart $cart)
     {
-        return parent::getLineModels($cart, $deliveryAddress, $taxIncluded);
+        $discount = 0.0;
+
+        foreach ($cart->getLineItems()->getFlat() as $lineItem) {
+            if (LineFactory::isDiscount($lineItem)) {
+                $price = $lineItem->getPrice()->getUnitPrice();
+                $quantity = $lineItem->getPrice()->getQuantity();
+                $discount += abs($price * $quantity);
+            }
+        }
+
+        return $discount;
     }
+
 }
