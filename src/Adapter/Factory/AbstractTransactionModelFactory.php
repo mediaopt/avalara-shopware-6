@@ -56,8 +56,8 @@ abstract class AbstractTransactionModelFactory extends AbstractFactory
         $lines = [];
 
         foreach ($cart->getLineItems()->getFlat() as $lineItem) {
-            if ($newLIne = $lineFactory->build($lineItem, $deliveryAddress, $taxIncluded, $categoryRepository, $context, $discounted)) {
-                $lines[] = $newLIne;
+            if ($newLine = $lineFactory->build($lineItem, $deliveryAddress, $taxIncluded, $categoryRepository, $context, $discounted)) {
+                $lines[] = $newLine;
             }
         }
 

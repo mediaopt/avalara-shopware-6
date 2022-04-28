@@ -156,13 +156,13 @@ class LineFactory extends AbstractFactory
      */
     private function getCategoryTaxCode(LineItem $lineItem)
     {
-        //Ids sorted from main to sub, but we need to take the first subcategory tax code
         $categoryIds = $lineItem->getPayloadValue('categoryIds');
-        if (is_array($categoryIds)) {
-            $categoryIds = array_reverse($categoryIds);
-        } else {
+        if (!is_array($categoryIds)) {
             return false;
         }
+
+        //Ids sorted from main to sub, but we need to take the first subcategory tax code
+        $categoryIds = array_reverse($categoryIds);
 
         $searchResults = $this->categoryRepository->search(
             new Criteria($categoryIds),
