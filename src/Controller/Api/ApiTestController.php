@@ -90,7 +90,7 @@ class ApiTestController extends AbstractController
         }
 
         $result['message'] = implode('</br>', $result['messages']);
-debug($result);
+
         return new JsonResponse($result);
     }
 
