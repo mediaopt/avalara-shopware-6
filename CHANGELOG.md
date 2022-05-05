@@ -3,6 +3,7 @@
 
 # 1.1.1
 - Added TaxCode mapping
+- Added discounts
 
 # 1.1.0
 - First version of the Avalara integrations for Shopware 6
