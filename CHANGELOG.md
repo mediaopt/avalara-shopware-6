@@ -1,0 +1,8 @@
+# 1.1.2
+- Improves Test Connection button
+
+# 1.1.1
+- Added TaxCode mapping
+
+# 1.1.0
+- First version of the Avalara integrations for Shopware 6

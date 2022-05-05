@@ -11,6 +11,10 @@
             <name>licenseKey</name>
             <label>License Key</label>
         </input-field>
+        <component name="avalara-api-test-button">
+            <name>apiTest</name>
+            <label>Test connection</label>
+        </component>
         <input-field type="bool">
             <name>isLiveMode</name>
             <defaultValue>false</defaultValue>
@@ -77,12 +81,12 @@
         <title>Order statuses</title>
         <input-field type="single-select">
             <name>orderCancel</name>
-            <!--options-->
+            <options><option><id>0158f594020242699baedf8852e2044b</id><name>Abgebrochen</name></option><option><id>017cdf5e2a7a46c9949e3d5eba942ba0</id><name>Abgeschlossen</name></option><option><id>27f425fefcaa42d785266cbe2a43fbc5</id><name>In Bearbeitung</name></option><option><id>34e12e8fa8134c5cb8130abe3e55216d</id><name>Offen</name></option></options>
             <label>Cancel status</label>
         </input-field>
         <input-field type="single-select">
             <name>orderRefund</name>
-            <!--options-->
+            <options><option><id>0158f594020242699baedf8852e2044b</id><name>Abgebrochen</name></option><option><id>017cdf5e2a7a46c9949e3d5eba942ba0</id><name>Abgeschlossen</name></option><option><id>27f425fefcaa42d785266cbe2a43fbc5</id><name>In Bearbeitung</name></option><option><id>34e12e8fa8134c5cb8130abe3e55216d</id><name>Offen</name></option></options>
             <label>Refund status</label>
         </input-field>
     </card>
@@ -116,5 +120,9 @@
             <name>country</name>
             <label>Country</label>
         </input-field>
+        <component name="avalara-address-test-button">
+            <name>addressTest</name>
+            <label>Test address</label>
+        </component>
     </card>
 </config>

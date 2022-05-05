@@ -1,10 +1,11 @@
-<?php declare(strict_types=1);
+<?php
 
-namespace MoptAvalara6\Controller;
+namespace MoptAvalara6\Controller\Api;
 
 use Avalara\AddressLocationInfo;
 use Monolog\Logger;
 use MoptAvalara6\Adapter\AvalaraSDKAdapter;
+use MoptAvalara6\Bootstrap\Form;
 use MoptAvalara6\Service\ValidateAddress;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Routing\Annotation\RouteScope;
@@ -17,7 +18,7 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 /**
  * @RouteScope(scopes={"api"})
  */
-class TestConnection extends AbstractController
+class ApiTestController extends AbstractController
 {
     private SystemConfigService $systemConfigService;
 
@@ -31,68 +32,101 @@ class TestConnection extends AbstractController
 
     /**
      * @Route(
-     *     "/api/_action/avalara/test-connection",
+     *     "/api/_action/avalara-api-test/test-connection",
      *     name="api.action.avalara.test.connection",
-     *     methods={"GET"}
+     *     methods={"POST"}
      * )
      */
     public function testConnection(Request $request, Context $context): JsonResponse
     {
+        $credentials = [
+            'accountNumber' => $request->request->get(Form::ACCOUNT_NUMBER_FIELD),
+            'licenseKey' => $request->request->get(Form::LICENSE_KEY_FIELD),
+            'isLiveMode' => $request->request->get(Form::IS_LIVE_MODE_FIELD),
+        ];
+
         $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
-        $client = $adapter->getAvaTaxClient();
+        $client = $adapter->getAvaTaxClient($credentials);
 
         $pingResponse = $client->ping();
 
-        $messages = ['Connection test failed: unknown error.'];
-
+        $success = false;
         if (!empty($pingResponse->authenticated)) {
-            $messages = ['Connection test successful.'];
+            $success = true;
         }
 
-        $this->validateOriginAddress($adapter, $messages);
-
         return new JsonResponse([
-            'message' => implode("</br>", $messages)
+            'success' => $success
         ]);
     }
 
     /**
-     * @param AvalaraSDKAdapter $adapter
-     * @param array $messages
-     * @return void
+     * @Route(
+     *     "/api/_action/avalara-address-test/test-address",
+     *     name="api.action.avalara.test.address",
+     *     methods={"POST"}
+     * )
      */
-    private function validateOriginAddress(AvalaraSDKAdapter $adapter, array &$messages)
+    public function testAddress(Request $request, Context $context): JsonResponse
     {
-
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
         $addressFactory = $adapter->getFactory('AddressFactory');
-        $originAddress = $addressFactory->buildOriginAddress();
+        $originAddress = $addressFactory->buildAddressFromArray(
+            $this->getAddressFromRequest($request)
+        );
         $service = $adapter->getService('ValidateAddress');
         $emptyFields = $service->getEmptyFields($originAddress);
 
+        $result = [
+            'success' => false,
+            'messages' => ["</br>"]
+        ];
         if (empty($emptyFields)) {
-            $this->avalaraValidation($service, $originAddress, $messages);
+            $this->avalaraValidation($service, $originAddress, $result);
         } else {
             foreach ($emptyFields as $emptyField) {
-                $messages[] = "Origin $emptyField should not be empty";
+                $result['messages'][] = "Origin $emptyField should not be empty";
             }
         }
+
+        $result['message'] = implode('</br>', $result['messages']);
+debug($result);
+        return new JsonResponse($result);
+    }
+
+    /**
+     * @param Request $request
+     * @return array
+     */
+    private function getAddressFromRequest(Request $request): array
+    {
+        return [
+            'address_line_1' => $request->request->get(Form::ORIGIN_ADDRESS_LINE_1_FIELD),
+            'address_line_2' => $request->request->get(Form::ORIGIN_ADDRESS_LINE_2_FIELD),
+            'address_line_3' => $request->request->get(Form::ORIGIN_ADDRESS_LINE_3_FIELD),
+            'city' => $request->request->get(Form::ORIGIN_CITY_FIELD),
+            'postcode' => $request->request->get(Form::ORIGIN_POSTAL_CODE_FIELD),
+            'region' => $request->request->get(Form::ORIGIN_REGION_FIELD),
+            'country' => $request->request->get(Form::ORIGIN_COUNTRY_FIELD),
+        ];
     }
 
     /**
      * @param ValidateAddress $service
      * @param AddressLocationInfo $originAddress
-     * @param array $messages
+     * @param array $result
      * @return void
      */
-    private function avalaraValidation (ValidateAddress $service, AddressLocationInfo $originAddress, array &$messages)
+    private function avalaraValidation(ValidateAddress $service, AddressLocationInfo $originAddress, array &$result)
     {
         $response = $service->validate($originAddress);
         $validation = $service->parseAvalaraResponse($originAddress, $response);
 
+        $messages = [];
         switch ($validation['code']) {
             case ValidateAddress::VALIDATION_CODE_VALID:
             {
-                $messages[] = 'Origin address is valid';
+                $result['success'] = true;
                 break;
             }
             case ValidateAddress::VALIDATION_CODE_INVALID:
@@ -101,6 +135,7 @@ class TestConnection extends AbstractController
                 break;
             }
             case ValidateAddress::VALIDATION_CODE_BAD_RESPONSE:
+            default:
             {
                 $messages[] = 'Bad response from Avalara';
                 break;
@@ -108,7 +143,7 @@ class TestConnection extends AbstractController
         }
 
         if (!empty($validation['suggestedAddress'])) {
-            $messages[] = 'Suggested address from Avalara:';
+            $messages[] = 'Suggested address changes from Avalara:';
             foreach ($validation['suggestedAddress'] as $key => $item) {
                 $messages[] = "$key is '{$originAddress->$key}', can be changed to '$item'";
             }
@@ -116,9 +151,9 @@ class TestConnection extends AbstractController
 
         if (!empty($validation['messages'])) {
             $messages[] = 'Errors from Avalara:';
-            foreach ($validation['messages'] as $key => $item) {
-                $messages = array_merge($messages, $validation['messages']);
-            }
+            $messages = array_merge($messages, $validation['messages']);
         }
+
+        $result['messages'] = array_merge($result['messages'], $messages);
     }
 }

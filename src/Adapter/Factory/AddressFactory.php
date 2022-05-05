@@ -117,19 +117,19 @@ class AddressFactory extends AbstractFactory
     }
 
     /**
-     * @param array $warehouse
+     * @param array $addressArray
      * @return AddressLocationInfo
      */
-    public function buildWarehouseAddress(array $warehouse)
+    public function buildAddressFromArray(array $addressArray)
     {
         $address = new AddressLocationInfo();
-        $address->line1 = $warehouse['address_line_1'];
-        $address->line2 = $warehouse['address_line_2'];
-        $address->line3 = $warehouse['address_line_3'];
-        $address->city = $warehouse['city'];
-        $address->postalCode = $warehouse['postcode'];
-        $address->region = $warehouse['region'];
-        $address->country = $warehouse['country'];
+        $address->line1 = $addressArray['address_line_1'];
+        $address->line2 = $addressArray['address_line_2'];
+        $address->line3 = $addressArray['address_line_3'];
+        $address->city = $addressArray['city'];
+        $address->postalCode = $addressArray['postcode'];
+        $address->region = $addressArray['region'];
+        $address->country = $addressArray['country'];
 
         return $address;
     }
