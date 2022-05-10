@@ -79,13 +79,20 @@ class AvalaraSDKAdapter implements AdapterInterface
     private $services;
 
     /**
+     * @var string|null
+     */
+    private $salesChannelId;
+
+    /**
      * @param SystemConfigService $cachedConfigService
      * @param Logger $logger
+     * @param string|null $salesChannelId
      */
-    public function __construct(SystemConfigService $cachedConfigService, Logger $logger)
+    public function __construct(SystemConfigService $cachedConfigService, Logger $logger, $salesChannelId = null)
     {
         $this->systemConfigService = $cachedConfigService;
         $this->logger = $logger;
+        $this->salesChannelId = $salesChannelId;
     }
 
     /**
@@ -126,7 +133,7 @@ class AvalaraSDKAdapter implements AdapterInterface
      */
     public function getPluginConfig($key)
     {
-        return $this->systemConfigService->get($key);
+        return $this->systemConfigService->get($key, $this->salesChannelId);
     }
 
     /**

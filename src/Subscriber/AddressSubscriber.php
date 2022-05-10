@@ -70,7 +70,8 @@ class AddressSubscriber implements EventSubscriberInterface
 
             $this->session->set(Form::SESSION_AVALARA_CURRENT_ADDRESS_ID, $address->getId());
 
-            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
+            $salesChannelId = $event->getSalesChannelContext()->getSalesChannel()->getId();
+            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
             $addressFactory = $adapter->getFactory('AddressFactory');
             $addressLocationInfo = $addressFactory->buildDeliveryAddress($address);
             $addressFactory->validate($addressLocationInfo, $address->getId(), $this->session);

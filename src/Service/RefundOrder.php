@@ -33,7 +33,7 @@ class RefundOrder extends AbstractService
      * @param string $orderId
      * @throws \RuntimeException
      */
-    public function refundTransaction(string $docCode)
+    public function processTransaction(string $docCode)
     {
         $adapter = $this->getAdapter();
         if ($adapter->getPluginConfig(Form::SEND_GET_TAX_ONLY)) {

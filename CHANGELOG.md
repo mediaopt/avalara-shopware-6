@@ -1,3 +1,6 @@
+# 1.1.3
+- Subshop config split
+
 # 1.1.2
 - Improves Test Connection button
 
