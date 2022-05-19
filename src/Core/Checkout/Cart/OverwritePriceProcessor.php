@@ -51,7 +51,8 @@ class OverwritePriceProcessor implements CartProcessorInterface
     public function process(CartDataCollection $data, Cart $original, Cart $toCalculate, SalesChannelContext $context, CartBehavior $behavior): void
     {
         if ($this->isTaxesUpdateNeeded()) {
-            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
+            $salesChannelId = $context->getSalesChannel()->getId();
+            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
             $service = $adapter->getService('GetTax');
             $this->avalaraTaxes = $service->getAvalaraTaxes($original, $context, $this->session, $this->categoryRepository);
         }

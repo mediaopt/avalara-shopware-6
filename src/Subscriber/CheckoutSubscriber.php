@@ -51,8 +51,8 @@ class CheckoutSubscriber implements EventSubscriberInterface
      */
     public function makeAvalaraCommitCall(CheckoutFinishPageLoadedEvent $event): void
     {
-        /* @var CreateTransactionModel */
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
+        $salesChannelId = $event->getSalesChannelContext()->getSalesChannel()->getId();
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
         if ($adapter->getPluginConfig(Form::SEND_GET_TAX_ONLY)) {
             return;
         }
@@ -61,6 +61,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
 
         if (!empty($sessionModel)) {
             $orderNumber = $event->getPage()->getOrder()->getOrderNumber();
+            /* @var CreateTransactionModel */
             $avalaraRequestModel = unserialize($sessionModel);
             $avalaraRequestModel->commit = true;
             $avalaraRequestModel->code = $orderNumber;
@@ -70,14 +71,18 @@ class CheckoutSubscriber implements EventSubscriberInterface
             $result = $service->calculate($avalaraRequestModel);
 
             $order = $event->getPage()->getOrder();
-            if (is_null($result->code)) {
-                $service->log('Can not get tax document code from Avalara response.', Logger::ERROR, $result);
-            } elseif ($result->code != $order->getId()) {
-                $service->log(
-                    "Tax code ({$result->code}) is not the same as order ID {$order->getId()}",
-                    Logger::ERROR,
-                    $result
-                );
+            if (!is_object($result)) {
+                $service->log('Unexpected response from Avalara.', Logger::ERROR, $result);
+            } else {
+                if (is_null($result->code)) {
+                    $service->log('Can not get tax document code from Avalara response.', Logger::ERROR, $result);
+                } elseif ($result->code != $order->getId()) {
+                    $service->log(
+                        "Tax code ({$result->code}) is not the same as order ID {$order->getId()}",
+                        Logger::ERROR,
+                        $result
+                    );
+                }
             }
 
             $this->cleanSession();

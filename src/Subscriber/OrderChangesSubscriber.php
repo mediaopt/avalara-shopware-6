@@ -70,11 +70,15 @@ class OrderChangesSubscriber implements EventSubscriberInterface
      */
     private function processOrder(array $payload, Context $context)
     {
-        if (!$docCode = $this->getOrderNumber($payload['id'], $context)){
+        if (!$order = $this->getOrder($payload['id'], $context)){
             return;
         }
 
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
+        if (!$docCode = $order->getOrderNumber()){
+            return;
+        }
+
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $order->getSalesChannelId());
         $cancelStatus = $adapter->getPluginConfig(Form::CANCEL_ORDER_STATUS_FIELD);
         $refundStatus = $adapter->getPluginConfig(Form::REFUND_ORDER_STATUS_FIELD);
 
@@ -82,12 +86,12 @@ class OrderChangesSubscriber implements EventSubscriberInterface
         switch ($newOrderStatus) {
             case $cancelStatus:
             {
-                $this->cancelAvalaraTax($docCode);
+                $this->processAvalaraTax($docCode, $order->getSalesChannelId(), 'CancelOrder');
                 break;
             }
             case $refundStatus:
             {
-                $this->refundAvalaraTax($docCode);
+                $this->processAvalaraTax($docCode, $order->getSalesChannelId(), 'RefundOrder');
                 break;
             }
             default :
@@ -100,14 +104,14 @@ class OrderChangesSubscriber implements EventSubscriberInterface
     /**
      * @param string $orderId
      * @param Context $context
-     * @return mixed
+     * @return OrderEntity|mixed
      */
-    private function getOrderNumber(string $orderId, Context $context)
+    private function getOrder(string $orderId, Context $context)
     {
         $orders = $this->orderRepository->search(new Criteria([$orderId]), $context);
         /* @var $order OrderEntity */
         foreach ($orders->getElements() as $order) {
-            return $order->getOrderNumber();
+            return $order;
         }
         $this->logger->log(LogLevel::ERROR, "There is no order with id = $orderId");
         return false;
@@ -115,23 +119,14 @@ class OrderChangesSubscriber implements EventSubscriberInterface
 
     /**
      * @param string $docCode
+     * @param string $salesChannelId
+     * @param string $service
      * @return void
      */
-    private function cancelAvalaraTax(string $docCode)
+    private function processAvalaraTax(string $docCode, string $salesChannelId, string $service)
     {
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
-        $service = $adapter->getService('CancelOrder');
-        $service->voidTransaction($docCode);
-    }
-
-    /**
-     * @param string $docCode
-     * @return void
-     */
-    private function refundAvalaraTax(string $docCode)
-    {
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
-        $service = $adapter->getService('RefundOrder');
-        $service->refundTransaction($docCode);
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
+        $service = $adapter->getService($service);
+        $service->processTransaction($docCode);
     }
 }

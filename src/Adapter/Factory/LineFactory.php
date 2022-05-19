@@ -112,7 +112,7 @@ class LineFactory extends AbstractFactory
 
         $addressesModel = new AddressesModel();
         $addressFactory = new AddressFactory($this->adapter);
-        $addressesModel->shipFrom = $addressFactory->buildWarehouseAddress($warehouse);
+        $addressesModel->shipFrom = $addressFactory->buildAddressFromArray($warehouse);
         $addressesModel->shipTo = $deliveryAddress;
 
         return $addressesModel;

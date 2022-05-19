@@ -137,7 +137,8 @@ class AddressController extends StorefrontController
                 $customer
             );
 
-            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
+            $salesChannelId = $context->getSalesChannel()->getId();
+            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
             $addressFactory = $adapter->getFactory('AddressFactory');
             $addressLocationInfo = $addressFactory->buildDataBagAddress($address);
             $addressFactory->validate($addressLocationInfo, $address->get('id'), $this->session, false);
@@ -193,7 +194,8 @@ class AddressController extends StorefrontController
             return $this->createActionResponse($request);
         }
 
-        $this->validateAddressBook($request);
+        $salesChannelId = $context->getSalesChannel()->getId();
+        $this->validateAddressBook($request, $salesChannelId);
 
         $response = $this->renderStorefront(
             '@Storefront/storefront/component/address/address-editor-modal.html.twig',
@@ -353,13 +355,14 @@ class AddressController extends StorefrontController
 
     /**
      * @param Request $request
+     * @param string $salesChannelId
      * @return bool|Response
      */
-    private function validateAddressBook(Request $request)
+    private function validateAddressBook(Request $request, string $salesChannelId)
     {
         if ($addressId = $request->get('addressId')) {
-           $address = $request->get('address');
-            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
+            $address = $request->get('address');
+            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
             $addressFactory = $adapter->getFactory('AddressFactory');
             $addressLocationInfo = $addressFactory->buildAddressBookAddress($address);
             $addressFactory->validate($addressLocationInfo, $addressId, $this->session, false);

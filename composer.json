@@ -1,7 +1,7 @@
 {
     "name": "mediaopt/avalara-shopware-6",
-    "description": "Avalara plugin",
-    "version": "1.1.1",
+    "description": "The Avalara Plugin calculates automatically Canada and the USA taxes",
+    "version": "1.1.3",
     "type": "shopware-platform-plugin",
     "license": "proprietary",
     "config": {
@@ -15,13 +15,22 @@
     ],
     "extra": {
         "shopware-plugin-class": "MoptAvalara6\\MoptAvalara6",
+        "copyright": "(c) by Mediaopt GmbH",
         "label": {
-            "de-DE": "Avalara plugin",
-            "en-GB": "Avalara plugin"
+            "de-DE": "Avalara Shopware6 plugin",
+            "en-GB": "Avalara Shopware6 plugin"
         },
         "description": {
-            "de-DE": "Avalara Plugin",
-            "en-GB": "Avalara plugin"
+            "de-DE": "Das Avalara Plugin berechnet automatisch den Umsatzsteuerbetrag auf jeder Rechnung und ermöglicht eine einfache Abwicklung des Exports von Produkten für Kanada und die USA, die für ihre komplizierten Steuersysteme bekannt sind.",
+            "en-GB": "The Avalara Plugin calculates automatically the final sales tax amount on every invoice and enables an easy handling of exporting products for Canada and the USA, known for their complicated tax systems."
+        },
+        "manufacturerLink": {
+            "de-DE": "https://www.mediaopt.de/",
+            "en-GB": "https://www.mediaopt.de/"
+        },
+        "supportLink": {
+            "de-DE": "support@mediaopt.de",
+            "en-GB": "support@mediaopt.de"
         }
     },
     "autoload": {

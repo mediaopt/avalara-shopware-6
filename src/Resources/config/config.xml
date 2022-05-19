@@ -11,6 +11,10 @@
             <name>licenseKey</name>
             <label>License Key</label>
         </input-field>
+        <component name="avalara-api-test-button">
+            <name>apiTest</name>
+            <label>Test connection</label>
+        </component>
         <input-field type="bool">
             <name>isLiveMode</name>
             <defaultValue>false</defaultValue>
@@ -116,5 +120,9 @@
             <name>country</name>
             <label>Country</label>
         </input-field>
+        <component name="avalara-address-test-button">
+            <name>addressTest</name>
+            <label>Test address</label>
+        </component>
     </card>
 </config>
