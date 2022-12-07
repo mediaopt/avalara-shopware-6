@@ -1,3 +1,6 @@
+# 1.1.5
+- Prevent error when $_SERVER[REQUEST_URI] is not set
+
 # 1.1.4
 - Guests can edit invalid address
 
