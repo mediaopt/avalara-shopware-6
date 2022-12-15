@@ -94,7 +94,7 @@ class AddressController extends StorefrontController
 
     /**
      * @Since("6.0.0.0")
-     * @LoginRequired()
+     * @LoginRequired(allowGuest=true)
      * @Route("/account/address/{addressId}", name="frontend.account.address.edit.page", options={"seo"="false"}, methods={"GET"})
      * @NoStore
      *
@@ -119,7 +119,7 @@ class AddressController extends StorefrontController
 
     /**
      * @Since("6.0.0.0")
-     * @LoginRequired()
+     * @LoginRequired(allowGuest=true)
      * @Route("/account/address/create", name="frontend.account.address.create", options={"seo"="false"}, methods={"POST"})
      * @Route("/account/address/{addressId}", name="frontend.account.address.edit.save", options={"seo"="false"}, methods={"POST"})
      *

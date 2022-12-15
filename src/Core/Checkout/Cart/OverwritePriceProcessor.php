@@ -157,6 +157,10 @@ class OverwritePriceProcessor implements CartProcessorInterface
      */
     private function isTaxesUpdateNeeded()
     {
+        if (!array_key_exists('REQUEST_URI', $_SERVER)) {
+            return true;
+        }
+
         $pagesForUpdate = [
             'checkout/cart',
             'checkout/confirm',
