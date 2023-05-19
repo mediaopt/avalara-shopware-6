@@ -10,6 +10,7 @@ namespace MoptAvalara6\Service;
 
 use MoptAvalara6\Adapter\AdapterInterface;
 use Monolog\Logger;
+use MoptAvalara6\Bootstrap\Form;
 
 /**
  * @author Mediaopt GmbH
@@ -50,35 +51,46 @@ abstract class AbstractService
     /**
      * @param mixed $response
      * @param string $docCode
-     * @return void
+     * @return mixed
      */
     public function checkResponse($response, string $docCode, string $process)
     {
         if (!is_object($response)) {
-            $this->log("Avalara $process can not be parsed", $response);
-            return;
+            $this->log("Avalara $process can not be parsed", Logger::ERROR, $response);
+            return false;
         }
 
         if ($response->code != $docCode) {
-            $this->log("Avalara $process response docCode is {$response->code}, request code is $docCode", $response);
-            return;
+            $this->log("Avalara $process response docCode is {$response->code}, request code is $docCode", Logger::ERROR, $response);
+            return false;
         }
 
-        if ($response->status != 'Cancelled') {
-            $this->log("Avalara transaction was not $process, docCode is $docCode", $response);
+        if ($response->status == 'Cancelled') {
+            $this->log("Order with docCode: $docCode has been canceled", 0, $response);
+        } elseif ($response->totalTax < 0) {
+            $this->log("Refund request for docCOde: $docCode was created", 0, $response);
+            return $response;
         } else {
-            $this->log("Order with docCode: $docCode has been $process", $response);
+            $this->log("Avalara transaction was not $process, docCode is $docCode", Logger::ERROR, $response);
         }
+
+        return false;
     }
 
     /**
      * @param string $message
+     * @param int $logLevel
      * @param mixed $additionalData
      * @return void
      */
-    public function log(string $message, $additionalData = '') {
+    public function log(string $message, int $logLevel = 0, $additionalData = '')
+    {
+        if ($logLevel == 0) {
+            $logLevel = $this->getLogLevel();
+        }
+
         $this->logger->addRecord(
-            Logger::INFO,
+            $logLevel,
             $message,
             [
                 'source' => 'Avalara',
@@ -87,4 +99,29 @@ abstract class AbstractService
             ]
         );
     }
+
+    /**
+     * get monolog log-level by module configuration
+     * @return int
+     */
+    protected function getLogLevel()
+    {
+        $logLevel = 'INFO';
+
+        if ($overrideLogLevel = $this->adapter->getPluginConfig(Form::LOG_LEVEL)) {
+            $logLevel = $overrideLogLevel;
+        }
+
+        //set levels
+        switch ($logLevel) {
+            case 'INFO':
+                return Logger::INFO;
+            case 'ERROR':
+                return Logger::ERROR;
+            case 'DEBUG':
+            default:
+                return Logger::DEBUG;
+        }
+    }
+
 }

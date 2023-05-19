@@ -12,8 +12,7 @@ use Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTax;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
-use Shopware\Core\Checkout\Customer\CustomerEntity;
-use Shopware\Core\Kernel;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\HttpFoundation\Session\Session;
@@ -26,6 +25,8 @@ class OverwritePriceProcessor implements CartProcessorInterface
 
     private SystemConfigService $systemConfigService;
 
+    private EntityRepositoryInterface $categoryRepository;
+
     private Session $session;
 
     private $avalaraTaxes;
@@ -35,12 +36,14 @@ class OverwritePriceProcessor implements CartProcessorInterface
     public function __construct(
         QuantityPriceCalculator $calculator,
         SystemConfigService $systemConfigService,
+        EntityRepositoryInterface $categoryRepository,
         Logger $loggerMonolog,
         Session $session
     ) {
         $this->calculator = $calculator;
         $this->systemConfigService = $systemConfigService;
         $this->session = $session;
+        $this->categoryRepository = $categoryRepository;
         $this->logger = $loggerMonolog;
         $this->avalaraTaxes = $this->session->get(Form::SESSION_AVALARA_TAXES_TRANSFORMED);
     }
@@ -48,12 +51,16 @@ class OverwritePriceProcessor implements CartProcessorInterface
     public function process(CartDataCollection $data, Cart $original, Cart $toCalculate, SalesChannelContext $context, CartBehavior $behavior): void
     {
         if ($this->isTaxesUpdateNeeded()) {
-           $this->avalaraTaxes = $this->getAvalaraTaxes($original, $context);
+            $salesChannelId = $context->getSalesChannel()->getId();
+            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
+            $service = $adapter->getService('GetTax');
+            $this->avalaraTaxes = $service->getAvalaraTaxes($original, $context, $this->session, $this->categoryRepository);
         }
 
         if ($this->avalaraTaxes) {
             $this->changeTaxes($toCalculate);
             $this->changeShippingCosts($toCalculate);
+            $this->changePromotionsTaxes($toCalculate);
             $toCalculate->getShippingCosts();
         }
     }
@@ -99,6 +106,25 @@ class OverwritePriceProcessor implements CartProcessorInterface
         $delivery->setShippingCosts($avalaraShippingCalculated);
     }
 
+    private function changePromotionsTaxes(Cart $toCalculate)
+    {
+        $promotions = $toCalculate->getLineItems()->filterType(LineItem::PROMOTION_LINE_ITEM_TYPE);
+
+        foreach ($promotions as $promotion) {
+            $promotionId = $promotion->getPayloadValue('promotionId');
+
+            if (!array_key_exists($promotionId, $this->avalaraTaxes)) {
+                continue;
+            }
+
+            $originalPrice = $promotion->getPrice();
+
+            $avalaraPromotionCalculated = $this->itemPriceCalculator($originalPrice, $promotionId);
+
+            $promotion->setPrice($avalaraPromotionCalculated);
+        }
+    }
+
     /**
      * @param CalculatedPrice $price
      * @param string $productNumber
@@ -131,9 +157,14 @@ class OverwritePriceProcessor implements CartProcessorInterface
      */
     private function isTaxesUpdateNeeded()
     {
+        if (!array_key_exists('REQUEST_URI', $_SERVER)) {
+            return true;
+        }
+
         $pagesForUpdate = [
             'checkout/cart',
             'checkout/confirm',
+            'checkout/order'
         ];
 
         $currentPage = $_SERVER['REQUEST_URI'];
@@ -145,126 +176,5 @@ class OverwritePriceProcessor implements CartProcessorInterface
         }
 
         return false;
-    }
-
-    /**
-     * @param Cart $cart
-     * @param SalesChannelContext $context
-     * @return array|mixed
-     */
-    private function getAvalaraTaxes(Cart $cart, SalesChannelContext $context)
-    {
-        $customer = $context->getCustomer();
-        if ($customer) {
-            $customerId = $customer->getId();
-            $taxIncluded = $this->isTaxIncluded($customer);
-            $currencyIso = $context->getCurrency()->getIsoCode();
-            $avalaraRequest = $this->prepareAvalaraRequest($cart, $customerId, $currencyIso, $taxIncluded);
-            if ($avalaraRequest) {
-                $avalaraRequestKey = md5(json_encode($avalaraRequest));
-                $sessionAvalaraRequestKey = $this->session->get(Form::SESSION_AVALARA_MODEL_KEY);
-                if ($avalaraRequestKey != $sessionAvalaraRequestKey) {
-                    $this->session->set(Form::SESSION_AVALARA_MODEL, serialize($avalaraRequest));
-                    $this->session->set(Form::SESSION_AVALARA_MODEL_KEY, $avalaraRequestKey);
-                    $this->avalaraTaxes = $this->makeAvalaraCall($avalaraRequest);
-                }
-            }
-        }
-        return $this->avalaraTaxes;
-    }
-
-    /**
-     * @param Cart $cart
-     * @param string $customerId
-     * @param string $currencyIso
-     * @param bool $taxIncluded
-     * @return mixed
-     */
-    private function prepareAvalaraRequest(Cart $cart, string $customerId, string $currencyIso, bool $taxIncluded)
-    {
-        $shippingCountry = $cart->getDeliveries()->getAddresses()->getCountries()->first();
-        if (is_null($shippingCountry)) {
-            return false;
-        }
-        $shippingCountryIso3 = $shippingCountry->getIso3();
-
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
-        if (!$adapter->getFactory('AddressFactory')->checkCountryRestriction($shippingCountryIso3)) {
-            return false;
-        }
-
-        return $adapter->getFactory('OrderTransactionModelFactory')->build($cart, $customerId, $currencyIso, $taxIncluded);
-    }
-
-    /**
-     * @param $avalaraRequest
-     * @return array
-     */
-    private function makeAvalaraCall($avalaraRequest)
-    {
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
-        $service = $adapter->getService('GetTax');
-        $response = $service->calculate($avalaraRequest);
-
-        $transformedTaxes = $this->transformResponse($response);
-
-        $this->session->set(Form::SESSION_AVALARA_TAXES, $response);
-        $this->session->set(Form::SESSION_AVALARA_TAXES_TRANSFORMED, $transformedTaxes);
-
-        return $transformedTaxes;
-    }
-
-    /**
-     * @param mixed $response
-     * @return array
-     */
-    private function transformResponse($response): array
-    {
-        $transformedTax = [];
-        if (!is_object($response)) {
-            return $transformedTax;
-        }
-
-        if (is_null($response->lines)) {
-            return $transformedTax;
-        }
-
-        foreach ($response->lines as $line) {
-            $rate = 0;
-            foreach ($line->details as $detail) {
-                $rate += $detail->rate;
-            }
-            $transformedTax[$line->itemCode] = [
-                'tax' => $line->tax,
-                'rate' => $rate * 100,
-            ];
-        }
-
-        return $transformedTax;
-    }
-
-    /**
-     * @param CustomerEntity $customer
-     * @return bool
-     * @throws \Doctrine\DBAL\Driver\Exception
-     * @throws \Doctrine\DBAL\Exception
-     */
-    private function isTaxIncluded(CustomerEntity $customer): bool
-    {
-        $isTaxIncluded = $this->session->get(Form::SESSION_AVALARA_IS_GROSS_PRICE);
-
-        if (is_null($isTaxIncluded)) {
-            $groupId = $customer->getGroupId();
-            $connection = Kernel::getConnection();
-
-            $sql = "SELECT display_gross FROM customer_group WHERE id = UNHEX('$groupId')";
-
-            $isTaxIncluded = $connection->executeQuery($sql)->fetchAssociative();
-
-            $isTaxIncluded = (bool) $isTaxIncluded['display_gross'];
-            $this->session->set(Form::SESSION_AVALARA_IS_GROSS_PRICE, $isTaxIncluded);
-        }
-
-        return $isTaxIncluded;
     }
 }

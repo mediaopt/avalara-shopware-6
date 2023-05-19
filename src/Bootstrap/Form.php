@@ -39,7 +39,17 @@ class Form
     /**
      * @var string Field name for the plugin config
      */
-    const TAX_COUNTRY_RESTRICTION = 'MoptAvalara6.config.taxCountryRestriction';
+    const TAX_CALCULATION_MODE = 'MoptAvalara6.config.taxCalculationMode';
+
+    /**
+     * @var string Field name for the plugin config
+     */
+    const SEND_GET_TAX_ONLY = 'MoptAvalara6.config.sendGetTaxOnly';
+
+    /**
+     * @var string Field name for the plugin config
+     */
+    const LOG_LEVEL = 'MoptAvalara6.config.logLevel';
 
     /**
      * @var string Field name for the plugin config
@@ -126,6 +136,21 @@ class Form
     const SESSION_AVALARA_IS_GROSS_PRICE = 'avalaraIsGrossPrice';
 
     /**
+     * @var string Field name for the plugin session key
+     */
+    const SESSION_AVALARA_ADDRESS_VALIDATION = 'avalaraAddressValidation';
+
+    /**
+     * @var string Field name for the plugin session key
+     */
+    const SESSION_AVALARA_CURRENT_ADDRESS_ID = 'avalaraAddressFlag';
+
+    /**
+     * @var string Field name for the plugin session key
+     */
+    const SESSION_AVALARA_REDIRECT_AFTER_ADDRESS_CHANGE = 'avalaraRedirectAfterAddressChange';
+
+    /**
      * @var string Field name for the plugin custom field
      */
     const CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE = 'avalara_shipping_tax_code';
@@ -138,15 +163,39 @@ class Form
     /**
      * @var string Field name for the plugin custom field
      */
-    const CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE = 'avalara_order_tax_document_code';
+    const CUSTOM_FIELD_AVALARA_PRODUCT_TAX_CODE = 'avalara_product_tax_code';
 
     /**
      * @var string Fieldset name for the plugin custom field
      */
-    const CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE_FIELDSET = 'avalara_order_tax_document_code_fieldset';
+    const CUSTOM_FIELD_AVALARA_PRODUCT_TAX_CODE_FIELDSET = 'avalara_product_tax_code_fieldset';
+
+    /**
+     * @var string Field name for the plugin custom field
+     */
+    const CUSTOM_FIELD_AVALARA_CATEGORY_TAX_CODE = 'avalara_category_tax_code';
+
+    /**
+     * @var string Fieldset name for the plugin custom field
+     */
+    const CUSTOM_FIELD_AVALARA_CATEGORY_TAX_CODE_FIELDSET = 'avalara_category_tax_code_fieldset';
 
     /**
      * @var string Field name for the vlck plugin custom field
      */
     const CUSTOM_FIELD_PRODUCT_WAREHOUSE = 'vlck_warehouse_id';
+
+    /**
+     * @var array plugin session keys
+     */
+    const SESSION_KEYS = [
+        self::SESSION_AVALARA_ADDRESS_VALIDATION,
+        self::SESSION_AVALARA_TAXES_TRANSFORMED,
+        self::SESSION_AVALARA_MODEL,
+        self::SESSION_AVALARA_MODEL_KEY,
+        self::SESSION_AVALARA_IS_GROSS_PRICE,
+        self::SESSION_AVALARA_ADDRESS_VALIDATION,
+        self::SESSION_AVALARA_CURRENT_ADDRESS_ID,
+        self::SESSION_AVALARA_REDIRECT_AFTER_ADDRESS_CHANGE,
+    ];
 }

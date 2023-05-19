@@ -14,8 +14,6 @@ use MoptAvalara6\Adapter\AdapterInterface;
 use MoptAvalara6\Bootstrap\Form;
 use Avalara\DocumentType;
 
-require_once __DIR__ . '/../../vendor/autoload.php';
-
 /**
  * @author Mediaopt GmbH
  * @package MoptAvalara6\Service
@@ -35,12 +33,17 @@ class RefundOrder extends AbstractService
      * @param string $orderId
      * @throws \RuntimeException
      */
-    public function refundTransaction(string $docCode)
+    public function processTransaction(string $docCode)
     {
         $adapter = $this->getAdapter();
+        if ($adapter->getPluginConfig(Form::SEND_GET_TAX_ONLY)) {
+            $this->log("Cannot refund Avalara transaction. Only get tax requests are enabled.", Logger::INFO);
+            return;
+        }
+
         try {
             if (empty($docCode)) {
-                $this->log("Cannot refund Avalara transaction with empty DocCode");
+                $this->log("Cannot refund Avalara transaction with empty DocCode",Logger::ERROR);
                 return;
             }
 
@@ -58,7 +61,7 @@ class RefundOrder extends AbstractService
                 'model' => $model
             ];
 
-            $this->log('Avalara void request', $model);
+            $this->log('Avalara refund request', 0, $model);
 
             $client = $adapter->getAvaTaxClient();
             if (!$response = $client->refundTransaction(
@@ -69,13 +72,13 @@ class RefundOrder extends AbstractService
                 null,
                 $request['model']
             )) {
-                $this->log('Empty response from Avalara on refund transaction ' . $docCode);
+                $this->log('Empty response from Avalara on refund transaction ' . $docCode, Logger::ERROR);
                 return;
             } else {
                 $this->checkResponse($response, $docCode, 'refund');
             }
         } catch (\Exception $e) {
-            $this->log('RefundTax call failed', $e->getMessage());
+            $this->log('RefundTax call failed', Logger::ERROR, $e->getMessage());
         }
     }
 }

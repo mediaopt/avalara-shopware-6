@@ -1,0 +1,14 @@
+{
+    "avalara-api-test-button": {
+        "title": "API Test",
+        "success": "Connection was successfully tested",
+        "error": "Connection could not be established. Please check the access data",
+        "button": "Test connection"
+    },
+    "avalara-address-test-button": {
+        "title": "Address Test",
+        "success": "Address is valid",
+        "error": "Address is not valid",
+        "button": "Check address"
+    }
+}

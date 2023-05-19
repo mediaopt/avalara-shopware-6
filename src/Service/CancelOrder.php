@@ -15,8 +15,6 @@ use Avalara\VoidTransactionModel;
 use Avalara\VoidReasonCode;
 use Avalara\DocumentType;
 
-require_once __DIR__ . '/../../vendor/autoload.php';
-
 /**
  * @author Mediaopt GmbH
  * @package MoptAvalara6\Service
@@ -36,12 +34,17 @@ class CancelOrder extends AbstractService
      * @param string $orderId
      * @throws \RuntimeException
      */
-    public function voidTransaction(string $docCode)
+    public function processTransaction(string $docCode)
     {
         $adapter = $this->getAdapter();
+        if ($adapter->getPluginConfig(Form::SEND_GET_TAX_ONLY)) {
+            $this->log("Cannot void Avalara transaction. Only get tax requests are enabled.", Logger::INFO);
+            return;
+        }
+
         try {
             if (empty($docCode)) {
-                $this->log("Cannot void Avalara transaction with empty DocCode");
+                $this->log("Cannot void Avalara transaction with empty DocCode", Logger::ERROR);
                 return;
             }
 
@@ -56,7 +59,7 @@ class CancelOrder extends AbstractService
                 'model' => $model
             ];
 
-            $this->log('Avalara void request', $request);
+            $this->log('Avalara void request', 0, $request);
 
             $client = $adapter->getAvaTaxClient();
             if (!$response = $client->voidTransaction(
@@ -66,13 +69,13 @@ class CancelOrder extends AbstractService
                 null,
                 $request['model']
             )) {
-                $this->log('Empty response from Avalara on void transaction ' . $docCode);
+                $this->log('Empty response from Avalara on void transaction ' . $docCode, Logger::ERROR);
                 return;
             } else {
                 $this->checkResponse($response, $docCode, 'cancel');
             }
         } catch (\Exception $e) {
-            $this->log('CancelTax call failed', $e->getMessage());
+            $this->log('CancelTax call failed', Logger::ERROR, $e->getMessage());
         }
     }
 }

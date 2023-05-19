@@ -74,7 +74,8 @@ class MoptAvalara6 extends Plugin
         $customFieldSetRepository = $this->container->get('custom_field_set.repository');
         $customFieldSetRepository->upsert([
             $this->getShippingTaxCodeFieldset(),
-            $this->getOrderTaxDocumentCodeFieldset(),
+            $this->getProductTaxCodeFieldset(),
+            $this->getCategoryTaxCodeFieldset(),
         ], $installContext->getContext());
     }
 
@@ -106,7 +107,8 @@ class MoptAvalara6 extends Plugin
             'name',
             [
                 Form::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE_FIELDSET,
-                Form::CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE_FIELDSET,
+                Form::CUSTOM_FIELD_AVALARA_PRODUCT_TAX_CODE_FIELDSET,
+                Form::CUSTOM_FIELD_AVALARA_CATEGORY_TAX_CODE_FIELDSET,
             ]
         ));
 
@@ -118,7 +120,7 @@ class MoptAvalara6 extends Plugin
     /**
      * @return array
      */
-    private function getShippingTaxCodeFieldset()
+    private function getShippingTaxCodeFieldset(): array
     {
         return [
             'id' => Uuid::randomHex(),
@@ -148,28 +150,58 @@ class MoptAvalara6 extends Plugin
     /**
      * @return array
      */
-    private function getOrderTaxDocumentCodeFieldset()
+    private function getProductTaxCodeFieldset(): array
     {
         return [
             'id' => Uuid::randomHex(),
-            'name' => Form::CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE_FIELDSET,
+            'name' => Form::CUSTOM_FIELD_AVALARA_PRODUCT_TAX_CODE_FIELDSET,
             'config' => [
                 'label' => [
-                    'de-DE' => 'Steuerbelegcode bestellen',
-                    'en-GB' => 'Order tax document code'
+                    'de-DE' => 'Produkt Tax Code',
+                    'en-GB' => 'Product Tax Code'
                 ]
             ],
             'customFields' => [
                 [
                     'id' => Uuid::randomHex(),
-                    'name' => Form::CUSTOM_FIELD_AVALARA_ORDER_TAX_DOCUMENT_CODE,
+                    'name' => Form::CUSTOM_FIELD_AVALARA_PRODUCT_TAX_CODE,
                     'type' => CustomFieldTypes::TEXT,
                 ]
             ],
             'relations' => [
                 [
                     'id' => Uuid::randomHex(),
-                    'entityName' => 'order'
+                    'entityName' => 'product'
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    private function getCategoryTaxCodeFieldset(): array
+    {
+        return [
+            'id' => Uuid::randomHex(),
+            'name' => Form::CUSTOM_FIELD_AVALARA_CATEGORY_TAX_CODE_FIELDSET,
+            'config' => [
+                'label' => [
+                    'de-DE' => 'Kategorie Tax Code',
+                    'en-GB' => 'Category Tax Code'
+                ]
+            ],
+            'customFields' => [
+                [
+                    'id' => Uuid::randomHex(),
+                    'name' => Form::CUSTOM_FIELD_AVALARA_CATEGORY_TAX_CODE,
+                    'type' => CustomFieldTypes::TEXT,
+                ]
+            ],
+            'relations' => [
+                [
+                    'id' => Uuid::randomHex(),
+                    'entityName' => 'category'
                 ]
             ]
         ];
@@ -218,4 +250,8 @@ class MoptAvalara6 extends Plugin
 
         return $options;
     }
+}
+
+if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+    require_once __DIR__ . '/vendor/autoload.php';
 }

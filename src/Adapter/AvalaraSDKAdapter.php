@@ -2,8 +2,6 @@
 
 namespace MoptAvalara6\Adapter;
 
-require_once  __DIR__ . '/../../vendor/autoload.php';
-
 use Monolog\Logger;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use MoptAvalara6\Bootstrap\Form;
@@ -51,7 +49,6 @@ class AvalaraSDKAdapter implements AdapterInterface
     const MACHINE_NAME = 'localhost';
 
     /**
-     *
      * @var AvaTaxClient
      */
     protected $avaTaxClient;
@@ -77,34 +74,54 @@ class AvalaraSDKAdapter implements AdapterInterface
     private $logger;
 
     /**
+     * @var AbstractService
+     */
+    private $services;
+
+    /**
+     * @var string|null
+     */
+    private $salesChannelId;
+
+    /**
      * @param SystemConfigService $cachedConfigService
      * @param Logger $logger
+     * @param string|null $salesChannelId
      */
-    public function __construct(SystemConfigService $cachedConfigService, Logger $logger)
+    public function __construct(SystemConfigService $cachedConfigService, Logger $logger, $salesChannelId = null)
     {
         $this->systemConfigService = $cachedConfigService;
         $this->logger = $logger;
+        $this->salesChannelId = $salesChannelId;
     }
 
     /**
+     * @param array $credentials
      * @return AvaTaxClient
+     * @throws \Exception
      */
-    public function getAvaTaxClient()
+    public function getAvaTaxClient(array $credentials = []): AvaTaxClient
     {
         if ($this->avaTaxClient !== null) {
             return $this->avaTaxClient;
+        }
+
+        if (empty($credentials)) {
+            $credentials = [
+                'accountNumber' => $this->getPluginConfig(Form::ACCOUNT_NUMBER_FIELD),
+                'licenseKey'    => $this->getPluginConfig(Form::LICENSE_KEY_FIELD),
+                'isLiveMode'    => $this->getPluginConfig(Form::IS_LIVE_MODE_FIELD),
+            ];
         }
 
         $avaClient = new AvaTaxClient(
             MoptAvalara6::PLUGIN_NAME,
             MoptAvalara6::PLUGIN_VERSION,
             $this->getMachineName(),
-            $this->getSDKEnv()
+            $this->getSDKEnv($credentials['isLiveMode'])
         );
 
-        $accountNumber = $this->getPluginConfig(Form::ACCOUNT_NUMBER_FIELD);
-        $licenseKey = $this->getPluginConfig(Form::LICENSE_KEY_FIELD);
-        $avaClient->withSecurity($accountNumber, $licenseKey);
+        $avaClient->withSecurity($credentials['accountNumber'], $credentials['licenseKey']);
         $this->avaTaxClient = $avaClient;
 
         return $this->avaTaxClient;
@@ -116,15 +133,15 @@ class AvalaraSDKAdapter implements AdapterInterface
      */
     public function getPluginConfig($key)
     {
-        return $this->systemConfigService->get($key);
+        return $this->systemConfigService->get($key, $this->salesChannelId);
     }
 
     /**
      * @return string
      */
-    private function getSDKEnv()
+    private function getSDKEnv($isLiveMode)
     {
-        return $this->getPluginConfig(Form::IS_LIVE_MODE_FIELD)
+        return $isLiveMode
             ? self::PRODUCTION_ENV
             : self::SANDBOX_ENV
         ;
