@@ -4,7 +4,7 @@
 # 1.1.4
 - Guests can edit invalid address
 
-- # 1.1.3
+# 1.1.3
 - Subshop config split
 
 # 1.1.2
