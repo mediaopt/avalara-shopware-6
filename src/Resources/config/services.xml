@@ -16,15 +16,14 @@
         <service id="MoptAvalara6\Subscriber\CheckoutSubscriber">
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="monolog.logger" />
-            <argument type="service" id="session" />
+            <argument type="service" id="category.repository" />
             <tag name="kernel.event_subscriber" priority="-5100"/>
         </service>
 
         <service id="MoptAvalara6\Subscriber\AddressSubscriber">
-            <argument type="service" id="Psr\Container\ContainerInterface" />
+            <argument type="service" id="router" />
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="monolog.logger" />
-            <argument type="service" id="session" />
             <tag name="kernel.event_subscriber" priority="-5100"/>
         </service>
 
@@ -40,7 +39,6 @@
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="category.repository" />
             <argument type="service" id="monolog.logger" />
-            <argument type="service" id="session" />
             <tag name="shopware.cart.processor" priority="-5200"/>
         </service>
 
@@ -54,10 +52,24 @@
             <argument type="service" id="Shopware\Core\Checkout\Customer\SalesChannel\ChangeCustomerProfileRoute" />
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="monolog.logger" />
-            <argument type="service" id="session" />
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>
+            <call method="setTwig">
+                <argument type="service" id="twig"/>
+            </call>
+        </service>
+
+        <service id="MoptAvalara6\Controller\AddressValidationController" public="true">
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
+            <argument type="service" id="monolog.logger" />
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <service id="MoptAvalara6\Core\Checkout\Cart\CartValidator">
+            <tag name="shopware.cart.validator"/>
         </service>
     </services>
 </container>

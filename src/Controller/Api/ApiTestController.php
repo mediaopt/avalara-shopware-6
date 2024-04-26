@@ -8,7 +8,6 @@ use MoptAvalara6\Adapter\AvalaraSDKAdapter;
 use MoptAvalara6\Bootstrap\Form;
 use MoptAvalara6\Service\ValidateAddress;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,7 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 /**
- * @RouteScope(scopes={"api"})
+ * @Route(defaults={"_routeScope"={"api"}})
  */
 class ApiTestController extends AbstractController
 {

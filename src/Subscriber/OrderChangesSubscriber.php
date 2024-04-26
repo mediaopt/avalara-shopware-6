@@ -7,7 +7,7 @@ use MoptAvalara6\Bootstrap\Form;
 use Psr\Log\LogLevel;
 use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\Checkout\Order\OrderEvents;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityWrittenEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
@@ -19,7 +19,7 @@ class OrderChangesSubscriber implements EventSubscriberInterface
 {
     private SystemConfigService $systemConfigService;
 
-    private EntityRepositoryInterface $orderRepository;
+    private EntityRepository $orderRepository;
 
     private Logger $logger;
 
@@ -29,7 +29,7 @@ class OrderChangesSubscriber implements EventSubscriberInterface
      */
     public function __construct(
         SystemConfigService $systemConfigService,
-        EntityRepositoryInterface $orderRepository,
+        EntityRepository $orderRepository,
         Logger $logger
     )
     {

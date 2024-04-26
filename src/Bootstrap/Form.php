@@ -57,6 +57,21 @@ class Form
     const ADDRESS_VALIDATION_REQUIRED_FIELD = 'MoptAvalara6.config.addressValidationRequired';
 
     /**
+     * @var string Field name for the plugin config
+     */
+    const CONNECTION_TIMEOUT = 'MoptAvalara6.config.connectionTimeout';
+
+    /**
+     * @var string Field name for the plugin config
+     */
+    const HEADLESS_MODE = 'MoptAvalara6.config.headlessMode';
+
+    /**
+     * @var string Field name for the plugin config
+     */
+    const BLOCK_CART_ON_ERROR_FIELD = 'MoptAvalara6.config.blockCartOnError';
+
+    /**
      * Values and options
      */
     const DELIVERY_COUNTRY_NO_VALIDATION = 1;
@@ -198,4 +213,12 @@ class Form
         self::SESSION_AVALARA_CURRENT_ADDRESS_ID,
         self::SESSION_AVALARA_REDIRECT_AFTER_ADDRESS_CHANGE,
     ];
+
+    /**
+     * @var string
+     */
+    const TAX_REQUEST_STATUS = 'AvalaraTaxCalculationStatus';
+    const TAX_REQUEST_STATUS_FAILED = 'failed';
+    const TAX_REQUEST_STATUS_SUCCESS = 'success';
+    const TAX_REQUEST_STATUS_NOT_NEEDED = 'notNeeded';
 }

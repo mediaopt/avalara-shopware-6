@@ -3,6 +3,7 @@
 namespace MoptAvalara6\Core\Checkout\Cart;
 
 use MoptAvalara6\Bootstrap\Form;
+use MoptAvalara6\Service\SessionService;
 use Shopware\Core\Checkout\Cart\Cart;
 use Shopware\Core\Checkout\Cart\CartBehavior;
 use Shopware\Core\Checkout\Cart\CartProcessorInterface;
@@ -12,7 +13,7 @@ use Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTax;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\HttpFoundation\Session\Session;
@@ -25,7 +26,7 @@ class OverwritePriceProcessor implements CartProcessorInterface
 
     private SystemConfigService $systemConfigService;
 
-    private EntityRepositoryInterface $categoryRepository;
+    private EntityRepository $categoryRepository;
 
     private Session $session;
 
@@ -36,28 +37,33 @@ class OverwritePriceProcessor implements CartProcessorInterface
     public function __construct(
         QuantityPriceCalculator $calculator,
         SystemConfigService $systemConfigService,
-        EntityRepositoryInterface $categoryRepository,
-        Logger $loggerMonolog,
-        Session $session
+        EntityRepository $categoryRepository,
+        Logger $loggerMonolog
     ) {
         $this->calculator = $calculator;
         $this->systemConfigService = $systemConfigService;
-        $this->session = $session;
+        $this->session = new SessionService();
         $this->categoryRepository = $categoryRepository;
         $this->logger = $loggerMonolog;
-        $this->avalaraTaxes = $this->session->get(Form::SESSION_AVALARA_TAXES_TRANSFORMED);
     }
 
     public function process(CartDataCollection $data, Cart $original, Cart $toCalculate, SalesChannelContext $context, CartBehavior $behavior): void
     {
+        $salesChannelId = $context->getSalesChannel()->getId();
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
+        $this->avalaraTaxes = $this->session->getValue(Form::SESSION_AVALARA_TAXES_TRANSFORMED, $adapter);
+
         if ($this->isTaxesUpdateNeeded()) {
-            $salesChannelId = $context->getSalesChannel()->getId();
-            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
             $service = $adapter->getService('GetTax');
             $this->avalaraTaxes = $service->getAvalaraTaxes($original, $context, $this->session, $this->categoryRepository);
+
+            $this->validateTaxes($adapter, $toCalculate);
         }
 
-        if ($this->avalaraTaxes) {
+        if ($this->avalaraTaxes
+            && array_key_exists(Form::TAX_REQUEST_STATUS, $this->avalaraTaxes)
+            && $this->avalaraTaxes[Form::TAX_REQUEST_STATUS] == Form::TAX_REQUEST_STATUS_SUCCESS)
+        {
             $this->changeTaxes($toCalculate);
             $this->changeShippingCosts($toCalculate);
             $this->changePromotionsTaxes($toCalculate);
@@ -176,5 +182,24 @@ class OverwritePriceProcessor implements CartProcessorInterface
         }
 
         return false;
+    }
+
+    /**
+     * @param AvalaraSDKAdapter $adapter
+     * @param Cart $toCalculate
+     * @return void
+     */
+    private function validateTaxes(AvalaraSDKAdapter $adapter, Cart $toCalculate)
+    {
+        if ($adapter->getPluginConfig(Form::BLOCK_CART_ON_ERROR_FIELD)) {
+            $products = $toCalculate->getLineItems()->filterType(LineItem::PRODUCT_LINE_ITEM_TYPE);
+            $status = Form::TAX_REQUEST_STATUS_FAILED;
+            if (is_array($this->avalaraTaxes) && array_key_exists(Form::TAX_REQUEST_STATUS, $this->avalaraTaxes)) {
+                $status = $this->avalaraTaxes[Form::TAX_REQUEST_STATUS];
+            }
+            foreach ($products as $product) {
+                $product->setPayloadValue(Form::TAX_REQUEST_STATUS, $status);
+            }
+        }
     }
 }

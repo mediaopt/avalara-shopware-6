@@ -114,11 +114,13 @@ class AvalaraSDKAdapter implements AdapterInterface
             ];
         }
 
+        $timeout = $this->getPluginConfig(Form::CONNECTION_TIMEOUT);
         $avaClient = new AvaTaxClient(
             MoptAvalara6::PLUGIN_NAME,
             MoptAvalara6::PLUGIN_VERSION,
             $this->getMachineName(),
-            $this->getSDKEnv($credentials['isLiveMode'])
+            $this->getSDKEnv($credentials['isLiveMode']),
+            ['timeout' => $timeout]
         );
 
         $avaClient->withSecurity($credentials['accountNumber'], $credentials['licenseKey']);
