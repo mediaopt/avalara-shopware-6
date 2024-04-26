@@ -12,6 +12,7 @@ use Avalara\AddressLocationInfo;
 use MoptAvalara6\Bootstrap\Form;
 use MoptAvalara6\Service\ValidateAddress;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
+use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressEntity;
 use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
 use Shopware\Core\Kernel;
 use Symfony\Component\HttpFoundation\Session\Session;
@@ -38,10 +39,10 @@ class AddressFactory extends AbstractFactory
     /**
      * build Address-model based on delivery address
      *
-     * @param CustomerAddressEntity $cart
+     * @param OrderAddressEntity|CustomerAddressEntity $cart
      * @return AddressLocationInfo
      */
-    public function buildDeliveryAddress(CustomerAddressEntity $customerAddress)
+    public function buildDeliveryAddress(OrderAddressEntity|CustomerAddressEntity $customerAddress)
     {
         $address = new AddressLocationInfo();
         $address->line1 = $customerAddress->getStreet();
@@ -73,7 +74,7 @@ class AddressFactory extends AbstractFactory
         $address->city = $customerAddress['city'];
         $address->postalCode = $customerAddress['zipcode'];
         $address->country = $this->getCountryIso3($customerAddress['countryId']);
-        if (array_key_exists( 'countryStateId', $customerAddress) && !empty($customerAddress['countryStateId'])) {
+        if (array_key_exists('countryStateId', $customerAddress) && !empty($customerAddress['countryStateId'])) {
             $address->region = $this->getStateName($customerAddress['countryStateId']);
         }
 
@@ -172,16 +173,16 @@ class AddressFactory extends AbstractFactory
 
     /**
      * @param AddressLocationInfo $addressLocationInfo
-     * @param string $addressId
+     * @param string|null $addressId
      * @param Session $session
      * @param bool $checkSession
      * @return void
      */
     public function validate(
         AddressLocationInfo $addressLocationInfo,
-        string $addressId,
-        Session $session,
-        bool $checkSession = true
+        ?string             $addressId,
+        Session             $session,
+        bool                $checkSession = true
     )
     {
         $adapter = $this->getAdapter();
@@ -212,12 +213,16 @@ class AddressFactory extends AbstractFactory
     /**
      * @param AddressLocationInfo $address
      * @param Session $session
-     * @param string $addressId
+     * @param string|null $addressId
      * @param bool $checkSession
      * @return bool
      */
-    public function isAddressToBeValidated(AddressLocationInfo $address, Session $session, string $addressId, bool $checkSession = true)
+    public function isAddressToBeValidated(AddressLocationInfo $address, Session $session, ?string $addressId, bool $checkSession)
     {
+        if (is_null($addressId)) {
+            return true;
+        }
+
         if (!$this->checkCountryRestriction($address->country)) {
             return false;
         }

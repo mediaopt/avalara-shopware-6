@@ -4,6 +4,7 @@ namespace MoptAvalara6\Storefront\Controller;
 
 use MoptAvalara6\Adapter\AvalaraSDKAdapter;
 use MoptAvalara6\Bootstrap\Form;
+use MoptAvalara6\Service\SessionService;
 use Shopware\Core\Checkout\Cart\Exception\CustomerNotLoggedInException;
 use Shopware\Core\Checkout\Cart\Order\Transformer\CustomerTransformer;
 use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
@@ -17,8 +18,6 @@ use Shopware\Core\Checkout\Customer\SalesChannel\AccountService;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Feature;
-use Shopware\Core\Framework\Routing\Annotation\LoginRequired;
-use Shopware\Core\Framework\Routing\Annotation\RouteScope;
 use Shopware\Core\Framework\Routing\Annotation\Since;
 use Shopware\Core\Framework\Uuid\Exception\InvalidUuidException;
 use Shopware\Core\Framework\Uuid\Uuid;
@@ -40,10 +39,9 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Request;
-use Shopware\Storefront\Framework\Routing\Annotation\NoStore;
 
 /**
- * @RouteScope(scopes={"storefront"})
+ * @Route(defaults={"_routeScope"={"storefront"}})
  */
 class AddressController extends StorefrontController
 {
@@ -76,8 +74,7 @@ class AddressController extends StorefrontController
         AbstractDeleteAddressRoute         $deleteAddressRoute,
         AbstractChangeCustomerProfileRoute $updateCustomerProfileRoute,
         SystemConfigService                $systemConfigService,
-        Logger                             $logger,
-        Session                            $session
+        Logger                             $logger
     )
     {
         $this->accountService = $accountService;
@@ -89,17 +86,10 @@ class AddressController extends StorefrontController
         $this->updateCustomerProfileRoute = $updateCustomerProfileRoute;
         $this->systemConfigService = $systemConfigService;
         $this->logger = $logger;
-        $this->session = $session;
+        $this->session = new Session();
     }
 
-    /**
-     * @Since("6.0.0.0")
-     * @LoginRequired(allowGuest=true)
-     * @Route("/account/address/{addressId}", name="frontend.account.address.edit.page", options={"seo"="false"}, methods={"GET"})
-     * @NoStore
-     *
-     * @throws CustomerNotLoggedInException
-     */
+    #[Route(path: '/account/address/{addressId}', name: 'frontend.account.address.edit.page', options: ['seo' => false], defaults: ['_loginRequired' => true, '_noStore' => true], methods: ['GET'])]
     public function accountEditAddress(Request $request, SalesChannelContext $context, CustomerEntity $customer): Response
     {
         $page = $this->addressDetailPageLoader->load($request, $context, $customer);
@@ -117,14 +107,8 @@ class AddressController extends StorefrontController
         );
     }
 
-    /**
-     * @Since("6.0.0.0")
-     * @LoginRequired(allowGuest=true)
-     * @Route("/account/address/create", name="frontend.account.address.create", options={"seo"="false"}, methods={"POST"})
-     * @Route("/account/address/{addressId}", name="frontend.account.address.edit.save", options={"seo"="false"}, methods={"POST"})
-     *
-     * @throws CustomerNotLoggedInException
-     */
+    #[Route(path: '/account/address/create', name: 'frontend.account.address.create', options: ['seo' => false], defaults: ['_loginRequired' => true, '_loginRequiredAllowGuest' => true], methods: ['POST'])]
+    #[Route(path: '/account/address/{addressId}', name: 'frontend.account.address.edit.save', options: ['seo' => false], defaults: ['_loginRequired' => true, '_loginRequiredAllowGuest' => true], methods: ['POST'])]
     public function saveAddress(RequestDataBag $data, SalesChannelContext $context, CustomerEntity $customer): Response
     {
         /** @var RequestDataBag $address */
@@ -137,6 +121,7 @@ class AddressController extends StorefrontController
                 $customer
             );
 
+            /** Custom validation for address*/
             $salesChannelId = $context->getSalesChannel()->getId();
             $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
             $addressFactory = $adapter->getFactory('AddressFactory');
@@ -169,37 +154,47 @@ class AddressController extends StorefrontController
         );
     }
 
-    /**
-     * @Since("6.0.0.0")
-     * @LoginRequired(allowGuest=true)
-     * @Route("/widgets/account/address-book", name="frontend.account.addressbook", options={"seo"=true}, methods={"POST"}, defaults={"XmlHttpRequest"=true})
-     */
+    /** Custom validation for new address*/
+    #[Route(path: '/widgets/account/address-book', name: 'frontend.account.addressbook', options: ['seo' => true], defaults: ['XmlHttpRequest' => true, '_loginRequired' => true, '_loginRequiredAllowGuest' => true], methods: ['POST'])]
     public function addressBook(Request $request, RequestDataBag $dataBag, SalesChannelContext $context, CustomerEntity $customer): Response
     {
         $viewData = new AddressEditorModalStruct();
-        $this->handleChangeableAddresses($viewData, $dataBag, $context, $customer);
-        $this->handleAddressCreation($viewData, $dataBag, $context, $customer);
-        $this->handleAddressSelection($viewData, $dataBag, $context, $customer);
+        $params = [];
 
-        $page = $this->addressListingPageLoader->load($request, $context, $customer);
+        try {
+            $this->handleChangeableAddresses($viewData, $dataBag, $context, $customer);
+            $this->handleAddressCreation($viewData, $dataBag, $context, $customer);
+            $this->handleAddressSelection($viewData, $dataBag, $context, $customer);
 
-        $this->hook(new AddressBookWidgetLoadedHook($page, $context));
+            $page = $this->addressListingPageLoader->load($request, $context, $customer);
 
-        $viewData->setPage($page);
-        if (Feature::isActive('FEATURE_NEXT_15957')) {
+            $this->hook(new AddressBookWidgetLoadedHook($page, $context));
+
+            $viewData->setPage($page);
             $this->handleCustomerVatIds($dataBag, $context, $customer);
+        } catch (ConstraintViolationException $formViolations) {
+            $params['formViolations'] = $formViolations;
+            $params['postedData'] = $dataBag->get('address');
+        } catch (\Exception) {
+            $viewData->setSuccess(false);
+            $viewData->setMessages([
+                'type' => self::DANGER,
+                'text' => $this->trans('error.message-default'),
+            ]);
         }
 
         if ($request->get('redirectTo') || $request->get('forwardTo')) {
             return $this->createActionResponse($request);
         }
 
+        /** Custom validation for address*/
         $salesChannelId = $context->getSalesChannel()->getId();
         $this->validateAddressBook($request, $salesChannelId);
+        $params = array_merge($params, $viewData->getVars());
 
         $response = $this->renderStorefront(
             '@Storefront/storefront/component/address/address-editor-modal.html.twig',
-            $viewData->getVars()
+            $params
         );
 
         $response->headers->set('x-robots-tag', 'noindex');
@@ -207,6 +202,7 @@ class AddressController extends StorefrontController
         return $response;
     }
 
+    /** Copied from AddressController for compatibility */
     private function handleAddressCreation(
         AddressEditorModalStruct $viewData,
         RequestDataBag $dataBag,
@@ -215,50 +211,42 @@ class AddressController extends StorefrontController
     ): void {
         /** @var DataBag|null $addressData */
         $addressData = $dataBag->get('address');
-        $addressId = null;
 
         if ($addressData === null) {
             return;
         }
 
-        try {
-            $response = $this->updateAddressRoute->upsert(
-                $addressData->get('id'),
-                $addressData->toRequestDataBag(),
-                $context,
-                $customer
-            );
+        $response = $this->updateAddressRoute->upsert(
+            $addressData->get('id'),
+            $addressData->toRequestDataBag(),
+            $context,
+            $customer
+        );
 
-            $addressId = $response->getAddress()->getId();
+        $addressId = $response->getAddress()->getId();
 
-            $addressType = null;
+        $addressType = null;
 
-            if ($viewData->isChangeBilling()) {
-                $addressType = self::ADDRESS_TYPE_BILLING;
-            } elseif ($viewData->isChangeShipping()) {
-                $addressType = self::ADDRESS_TYPE_SHIPPING;
-            }
+        if ($viewData->isChangeBilling()) {
+            $addressType = self::ADDRESS_TYPE_BILLING;
+        } elseif ($viewData->isChangeShipping()) {
+            $addressType = self::ADDRESS_TYPE_SHIPPING;
+        }
 
-            // prepare data to set newly created address as customers default
-            if ($addressType) {
-                $dataBag->set('selectAddress', new RequestDataBag([
-                    'id' => $addressId,
-                    'type' => $addressType,
-                ]));
-            }
-
-            $success = true;
-            $messages = ['type' => 'success', 'text' => $this->trans('account.addressSaved')];
-        } catch (\Exception $exception) {
-            $success = false;
-            $messages = ['type' => 'danger', 'text' => $this->trans('error.message-default')];
+        // prepare data to set newly created address as customers default
+        if ($addressType) {
+            $dataBag->set('selectAddress', new RequestDataBag([
+                'id' => $addressId,
+                'type' => $addressType,
+            ]));
         }
 
         $viewData->setAddressId($addressId);
-        $viewData->setSuccess($success);
-        $viewData->setMessages($messages);
+        $viewData->setSuccess(true);
+        $viewData->setMessages(['type' => 'success', 'text' => $this->trans('account.addressSaved')]);
     }
 
+    /** Copied from AddressController for compatibility */
     private function handleChangeableAddresses(
         AddressEditorModalStruct $viewData,
         RequestDataBag $dataBag,
@@ -280,11 +268,11 @@ class AddressController extends StorefrontController
             return;
         }
 
-        $address = $this->getById($addressId, $context, $customer);
-        $viewData->setAddress($address);
+        $viewData->setAddress($this->getById($addressId, $context, $customer));
     }
 
     /**
+     * Copied from AddressController for compatibility
      * @throws CustomerNotLoggedInException
      * @throws InvalidUuidException
      */
@@ -312,16 +300,16 @@ class AddressController extends StorefrontController
         try {
             if ($addressType === self::ADDRESS_TYPE_SHIPPING) {
                 $address = $this->getById($addressId, $context, $customer);
-                $context->getCustomer()->setDefaultShippingAddress($address);
+                $customer->setDefaultShippingAddress($address);
                 $this->accountService->setDefaultShippingAddress($addressId, $context, $customer);
             } elseif ($addressType === self::ADDRESS_TYPE_BILLING) {
                 $address = $this->getById($addressId, $context, $customer);
-                $context->getCustomer()->setDefaultBillingAddress($address);
+                $customer->setDefaultBillingAddress($address);
                 $this->accountService->setDefaultBillingAddress($addressId, $context, $customer);
             } else {
                 $success = false;
             }
-        } catch (AddressNotFoundException $exception) {
+        } catch (AddressNotFoundException) {
             $success = false;
         }
 
@@ -334,6 +322,7 @@ class AddressController extends StorefrontController
         $viewData->setSuccess($success);
     }
 
+    /** Copied from AddressController for compatibility */
     private function getById(string $addressId, SalesChannelContext $context, CustomerEntity $customer): CustomerAddressEntity
     {
         if (!Uuid::isValid($addressId)) {
@@ -351,23 +340,6 @@ class AddressController extends StorefrontController
         }
 
         return $address;
-    }
-
-    /**
-     * @param Request $request
-     * @param string $salesChannelId
-     * @return bool|Response
-     */
-    private function validateAddressBook(Request $request, string $salesChannelId)
-    {
-        if ($addressId = $request->get('addressId')) {
-            $address = $request->get('address');
-            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
-            $addressFactory = $adapter->getFactory('AddressFactory');
-            $addressLocationInfo = $addressFactory->buildAddressBookAddress($address);
-            $addressFactory->validate($addressLocationInfo, $addressId, $this->session, false);
-        }
-        return false;
     }
 
     private function handleCustomerVatIds(RequestDataBag $dataBag, SalesChannelContext $context, CustomerEntity $customer): void
@@ -389,6 +361,23 @@ class AddressController extends StorefrontController
         $newDataBag = new RequestDataBag($dataCustomer);
 
         $this->updateCustomerProfileRoute->change($newDataBag, $context, $customer);
+    }
+
+    /**
+     * @param Request $request
+     * @param string $salesChannelId
+     * @return bool|Response
+     */
+    private function validateAddressBook(Request $request, string $salesChannelId)
+    {
+        if ($addressId = $request->get('addressId')) {
+            $address = $request->get('address');
+            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
+            $addressFactory = $adapter->getFactory('AddressFactory');
+            $addressLocationInfo = $addressFactory->buildAddressBookAddress($address);
+            $addressFactory->validate($addressLocationInfo, $addressId, $this->session, false);
+        }
+        return false;
     }
 
     private function buildFormError($addressId)

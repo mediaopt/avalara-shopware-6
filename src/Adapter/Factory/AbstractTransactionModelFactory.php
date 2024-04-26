@@ -8,11 +8,14 @@
 
 namespace MoptAvalara6\Adapter\Factory;
 
+use Avalara\AddressesModel;
 use Avalara\AddressLocationInfo;
 use Avalara\LineItemModel;
-use Shopware\Core\Checkout\Cart\Cart;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\Checkout\Customer\Aggregate\CustomerAddress\CustomerAddressEntity;
+use Shopware\Core\Checkout\Order\Aggregate\OrderAddress\OrderAddressEntity;
+use Shopware\Core\Checkout\Shipping\ShippingMethodEntity;
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 
 /**
  *
@@ -24,13 +27,22 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 abstract class AbstractTransactionModelFactory extends AbstractFactory
 {
     /**
-     * @param Cart $cart
+     * @param OrderAddressEntity|CustomerAddressEntity $address
      * @return \Avalara\AddressesModel
      */
-    abstract protected function getAddressesModel(Cart $cart);
+    protected function getAddressesModel(OrderAddressEntity|CustomerAddressEntity $address)
+    {
+        $addressFactory = $this->getAddressFactory();
+
+        $addressesModel = new AddressesModel();
+        $addressesModel->shipFrom = $addressFactory->buildOriginAddress();
+        $addressesModel->shipTo = $addressFactory->buildDeliveryAddress($address);
+
+        return $addressesModel;
+    }
 
     /**
-     * @return \MoptAvalara6\Adapter\Factory\AddressFactory
+     * @return AddressFactory
      */
     protected function getAddressFactory()
     {
@@ -38,30 +50,39 @@ abstract class AbstractTransactionModelFactory extends AbstractFactory
     }
 
     /**
-     * @param Cart $cart
+     * @param mixed $lineItems
      * @param AddressLocationInfo $deliveryAddress
      * @param bool $taxIncluded
-     * @return LineItemModel[]
+     * @param EntityRepository $categoryRepository
+     * @param Context $context
+     * @param bool $discounted
+     * @param ShippingMethodEntity $shippingMethod
+     * @param float|null $price
+     * @return array
+     * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws \Doctrine\DBAL\Exception
      */
     protected function getLineModels(
-        Cart $cart,
-        AddressLocationInfo $deliveryAddress,
-        bool $taxIncluded,
-        EntityRepositoryInterface $categoryRepository,
-        SalesChannelContext $context,
-        bool $discounted
+        mixed                $lineItems,
+        AddressLocationInfo  $deliveryAddress,
+        bool                 $taxIncluded,
+        EntityRepository     $categoryRepository,
+        Context              $context,
+        bool                 $discounted,
+        ShippingMethodEntity $shippingMethod,
+        ?float               $price
     )
     {
         $lineFactory = $this->getLineFactory();
         $lines = [];
 
-        foreach ($cart->getLineItems()->getFlat() as $lineItem) {
+        foreach ($lineItems as $lineItem) {
             if ($newLine = $lineFactory->build($lineItem, $deliveryAddress, $taxIncluded, $categoryRepository, $context, $discounted)) {
                 $lines[] = $newLine;
             }
         }
 
-        if ($shippingModel = $this->getShippingModel($cart)) {
+        if ($shippingModel = $this->buildShippingModel($shippingMethod, $price)) {
             $lines[] = $shippingModel;
         }
 
@@ -69,18 +90,15 @@ abstract class AbstractTransactionModelFactory extends AbstractFactory
     }
 
     /**
-     * get shipment information
-     *
+     * @param ShippingMethodEntity $shippingMethod
+     * @param ?float $price
      * @return LineItemModel
      */
-    protected function getShippingModel(Cart $cart)
+    protected function buildShippingModel(ShippingMethodEntity $shippingMethod, ?float $price)
     {
-        $price = $cart->getShippingCosts()->getUnitPrice();
         if (null === $price) {
             return null;
         }
-
-        $shippingMethod = $cart->getDeliveries()->first()->getShippingMethod();
 
         return $this->getShippingFactory()->build($shippingMethod, $price);
     }
@@ -99,5 +117,24 @@ abstract class AbstractTransactionModelFactory extends AbstractFactory
     protected function getShippingFactory()
     {
         return $this->getAdapter()->getFactory('ShippingFactory');
+    }
+
+
+    /**
+     * @param array $elements
+     * @return float
+     */
+    protected function calculateDiscount(array $elements)
+    {
+        $discount = 0.0;
+
+        foreach ($elements as $lineItem) {
+            if (LineFactory::isDiscount($lineItem)) {
+                [$price, $quantity] = LineFactory::getLineItemDetails($lineItem);
+                $discount += abs($price * $quantity);
+            }
+        }
+
+        return $discount;
     }
 }

@@ -11,13 +11,14 @@ namespace MoptAvalara6\Adapter\Factory;
 use Avalara\AddressesModel;
 use Avalara\AddressLocationInfo;
 use Avalara\LineItemModel;
+use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity;
 use Shopware\Core\Content\Category\CategoryEntity;
+use Shopware\Core\Framework\Context;
 use Shopware\Core\Kernel;
 use Shopware\Core\Checkout\Cart\LineItem\LineItem;
 use MoptAvalara6\Bootstrap\Form;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
 
 /**
  *
@@ -28,28 +29,28 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
  */
 class LineFactory extends AbstractFactory
 {
-    private EntityRepositoryInterface $categoryRepository;
+    private EntityRepository $categoryRepository;
 
-    private SalesChannelContext $context;
+    private Context $context;
 
     /**
      * build Line-model based on passed in lineData
      *
-     * @param LineItem $lineItem
+     * @param LineItem|OrderLineItemEntity $lineItem
      * @param AddressLocationInfo $deliveryAddress
      * @param bool $taxIncluded
-     * @param EntityRepositoryInterface $categoryRepository
-     * @param SalesChannelContext $context
+     * @param EntityRepository $categoryRepository
+     * @param Context $context
      * @return LineItemModel|bool
      * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \Doctrine\DBAL\Exception
      */
     public function build(
-        LineItem $lineItem,
+        LineItem|OrderLineItemEntity $lineItem,
         AddressLocationInfo $deliveryAddress,
         bool $taxIncluded,
-        EntityRepositoryInterface $categoryRepository,
-        SalesChannelContext $context,
+        EntityRepository $categoryRepository,
+        Context $context,
         bool $discounted
     )
     {
@@ -60,12 +61,11 @@ class LineFactory extends AbstractFactory
         $this->categoryRepository = $categoryRepository;
         $this->context = $context;
 
-        $price = $lineItem->getPrice()->getUnitPrice();
-        $quantity = $lineItem->getPrice()->getQuantity();
+        [$price, $quantity] = self::getLineItemDetails($lineItem);
 
         $line = new LineItemModel();
-        $line->number = $lineItem->getPayloadValue('productNumber');
-        $line->itemCode = $lineItem->getPayloadValue('productNumber');
+        $line->number = self::getPayloadValue($lineItem, 'productNumber');
+        $line->itemCode = self::getPayloadValue($lineItem, 'productNumber');
         $line->amount = $price * $quantity;
         $line->quantity = $quantity;
         $line->description = $lineItem->getLabel();
@@ -86,19 +86,18 @@ class LineFactory extends AbstractFactory
     }
 
     /**
-     * @param LineItem $lineItem
+     * @param LineItem|OrderLineItemEntity $lineItem
      * @param AddressLocationInfo $deliveryAddress
      * @return AddressesModel|false
      * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \Doctrine\DBAL\Exception
      */
-    private function getWarehouse(LineItem $lineItem, AddressLocationInfo $deliveryAddress)
+    private function getWarehouse(LineItem|OrderLineItemEntity $lineItem, AddressLocationInfo $deliveryAddress)
     {
-        $payload = $lineItem->getPayload();
-        if (!array_key_exists('customFields', [$payload])) {
+        $customFields = self::getPayloadValue($lineItem, 'customFields');
+        if (is_null($customFields)) {
             return false;
         }
-        $customFields = $payload['customFields'];
 
         if (!array_key_exists(Form::CUSTOM_FIELD_PRODUCT_WAREHOUSE, $customFields)) {
             return false;
@@ -119,10 +118,10 @@ class LineFactory extends AbstractFactory
     }
 
     /**
-     * @param LineItem $lineItem
+     * @param LineItem|OrderLineItemEntity $lineItem
      * @return string|bool
      */
-    private function getTaxCode(LineItem $lineItem): string
+    private function getTaxCode(LineItem|OrderLineItemEntity $lineItem): string
     {
         if (($taxCode = $this->getProductTaxCode($lineItem))
             || ($taxCode = $this->getCategoryTaxCode($lineItem))) {
@@ -133,12 +132,12 @@ class LineFactory extends AbstractFactory
     }
 
     /**
-     * @param LineItem $lineItem
+     * @param LineItem|OrderLineItemEntity $lineItem
      * @return string|bool
      */
-    private function getProductTaxCode(LineItem $lineItem)
+    private function getProductTaxCode(LineItem|OrderLineItemEntity $lineItem)
     {
-        $customFields = $lineItem->getPayloadValue('customFields');
+        $customFields = self::getPayloadValue($lineItem, 'customFields');
 
         if (!empty($customFields)
             && array_key_exists(Form::CUSTOM_FIELD_AVALARA_PRODUCT_TAX_CODE, $customFields)
@@ -151,12 +150,12 @@ class LineFactory extends AbstractFactory
     }
 
     /**
-     * @param LineItem $lineItem
+     * @param LineItem|OrderLineItemEntity $lineItem
      * @return string|bool
      */
-    private function getCategoryTaxCode(LineItem $lineItem)
+    private function getCategoryTaxCode(LineItem|OrderLineItemEntity $lineItem)
     {
-        $categoryIds = $lineItem->getPayloadValue('categoryIds');
+        $categoryIds = self::getPayloadValue($lineItem,'categoryIds');
         if (!is_array($categoryIds)) {
             return false;
         }
@@ -166,7 +165,7 @@ class LineFactory extends AbstractFactory
 
         $searchResults = $this->categoryRepository->search(
             new Criteria($categoryIds),
-            $this->context->getContext()
+            $this->context
         );
 
         /**
@@ -186,14 +185,43 @@ class LineFactory extends AbstractFactory
     }
 
     /**
-     * @param LineItem $lineItem
+     * @param LineItem|OrderLineItemEntity $lineItem
      * @return bool
      */
-    public static function isDiscount(LineItem $lineItem): bool
+    public static function isDiscount(LineItem|OrderLineItemEntity $lineItem): bool
     {
-        if ($lineItem->getPayloadValue('discountId')) {
+        if (self::getPayloadValue($lineItem, 'discountId')) {
             return true;
         }
         return false;
+    }
+
+    /**
+     * @param LineItem|OrderLineItemEntity $item
+     * @param string $key
+     * @return ?mixed
+     */
+    private static function getPayloadValue(LineItem|OrderLineItemEntity $item, string $key)
+    {
+        $payload = $item->getPayload();
+        if (!array_key_exists($key, $payload)) {
+            return null;
+        }
+
+        return $payload[$key];
+    }
+
+    /**
+     * @param LineItem|OrderLineItemEntity $lineItem
+     * @return array
+     */
+    public static function getLineItemDetails(LineItem|OrderLineItemEntity $lineItem): array
+    {
+        if (is_null($lineItem->getPrice())) {
+            return [0, 0];
+
+        }
+
+        return [$lineItem->getPrice()->getUnitPrice(), $lineItem->getPrice()->getQuantity()];
     }
 }

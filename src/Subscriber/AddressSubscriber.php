@@ -4,6 +4,7 @@ namespace MoptAvalara6\Subscriber;
 
 use MoptAvalara6\Adapter\AvalaraSDKAdapter;
 use MoptAvalara6\Bootstrap\Form;
+use MoptAvalara6\Service\SessionService;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Shopware\Storefront\Event\StorefrontRenderEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -13,6 +14,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Routing\RouterInterface;
 
 class AddressSubscriber implements EventSubscriberInterface
 {
@@ -22,25 +24,24 @@ class AddressSubscriber implements EventSubscriberInterface
 
     private Logger $logger;
 
-    private ContainerInterface $container;
+    private RouterInterface $router;
 
     /**
-     * @param ContainerInterface $container
+     * @param RouterInterface $router
      * @param SystemConfigService $systemConfigService
      * @param Logger $logger
      * @param Session $session
      */
     public function __construct(
-        ContainerInterface        $container,
-        SystemConfigService       $systemConfigService,
-        Logger                    $logger,
-        Session                   $session
+        RouterInterface     $router,
+        SystemConfigService $systemConfigService,
+        Logger              $logger
     )
     {
-        $this->container = $container;
+        $this->router = $router;
         $this->systemConfigService = $systemConfigService;
         $this->logger = $logger;
-        $this->session = $session;
+        $this->session = new Session();
     }
 
     /**
@@ -94,7 +95,7 @@ class AddressSubscriber implements EventSubscriberInterface
             if (is_array($sessionAddresses) && array_key_exists($addressId, $sessionAddresses)) {
                 if (!$sessionAddresses[$addressId]['valid']) {
                     $this->session->set(Form::SESSION_AVALARA_REDIRECT_AFTER_ADDRESS_CHANGE, $route);
-                    $url = $this->container->get('router')->generate(
+                    $url = $this->router->generate(
                         'frontend.account.address.edit.page',
                         ['addressId' => $addressId]
                     );

@@ -18,7 +18,7 @@ use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Kernel;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\HttpFoundation\Session\Session;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 
 /**
  * @author Mediaopt GmbH
@@ -44,18 +44,19 @@ class GetTax extends AbstractService
      * @throws \Doctrine\DBAL\Exception
      */
     public function getAvalaraTaxes(
-        Cart $cart,
+        Cart                $cart,
         SalesChannelContext $context,
-        Session $session,
-        EntityRepositoryInterface $entityRepository
+        Session             $session,
+        EntityRepository    $entityRepository
     )
     {
         $customer = $context->getCustomer();
         if (!$customer) {
-            return $session->get(Form::SESSION_AVALARA_TAXES_TRANSFORMED);
+            return $session->getValue(Form::SESSION_AVALARA_TAXES_TRANSFORMED, $this->getAdapter());
         }
 
-        $customerId = $customer->customerNumber;
+        $customerId = $customer->getCustomerNumber();
+
         $taxIncluded = $this->isTaxIncluded($customer, $session);
         $currencyIso = $context->getCurrency()->getIsoCode();
         $avalaraRequest = $this->prepareAvalaraRequest(
@@ -68,18 +69,22 @@ class GetTax extends AbstractService
             $context
         );
         if (!$avalaraRequest) {
-            return null;
+            return [Form::TAX_REQUEST_STATUS => Form::TAX_REQUEST_STATUS_NOT_NEEDED];
         }
 
         $avalaraRequestKey = md5(json_encode($avalaraRequest));
-        $sessionAvalaraRequestKey = $session->get(Form::SESSION_AVALARA_MODEL_KEY);
-        if ($avalaraRequestKey != $sessionAvalaraRequestKey) {
-            $session->set(Form::SESSION_AVALARA_MODEL, serialize($avalaraRequest));
-            $session->set(Form::SESSION_AVALARA_MODEL_KEY, $avalaraRequestKey);
+        $sessionAvalaraRequestKey = $session->getValue(Form::SESSION_AVALARA_MODEL_KEY, $this->getAdapter());
+        $sessionTaxes = $session->getValue(Form::SESSION_AVALARA_TAXES_TRANSFORMED, $this->getAdapter());
+
+        if ($avalaraRequestKey != $sessionAvalaraRequestKey
+            || $sessionTaxes[Form::TAX_REQUEST_STATUS] == Form::TAX_REQUEST_STATUS_FAILED
+        ) {
+            $session->setValue(Form::SESSION_AVALARA_MODEL, serialize($avalaraRequest), $this->getAdapter());
+            $session->setValue(Form::SESSION_AVALARA_MODEL_KEY, $avalaraRequestKey, $this->getAdapter());
             return $this->makeAvalaraCall($avalaraRequest, $session, $cart);
         }
 
-        return $session->get(Form::SESSION_AVALARA_TAXES_TRANSFORMED);
+        return $sessionTaxes;
     }
 
     /**
@@ -88,17 +93,17 @@ class GetTax extends AbstractService
      * @param string $currencyIso
      * @param bool $taxIncluded
      * @param Session $session
-     * @param EntityRepositoryInterface $categoryRepository
+     * @param EntityRepository $categoryRepository
      * @param SalesChannelContext $context
      * @return CreateTransactionModel|bool
      */
     private function prepareAvalaraRequest(
-        Cart $cart,
-        string $customerId,
-        string $currencyIso,
-        bool $taxIncluded,
-        Session $session,
-        EntityRepositoryInterface $categoryRepository,
+        Cart                $cart,
+        string              $customerId,
+        string              $currencyIso,
+        bool                $taxIncluded,
+        Session             $session,
+        EntityRepository    $categoryRepository,
         SalesChannelContext $context
     )
     {
@@ -109,15 +114,30 @@ class GetTax extends AbstractService
         $shippingCountryIso3 = $shippingCountry->getIso3();
 
         if (!$this->adapter->getFactory('AddressFactory')->checkCountryRestriction($shippingCountryIso3)) {
-            $session->set(Form::SESSION_AVALARA_TAXES, null);
-            $session->set(Form::SESSION_AVALARA_TAXES_TRANSFORMED, null);
-            $session->set(Form::SESSION_AVALARA_MODEL, null);
-            $session->set(Form::SESSION_AVALARA_MODEL_KEY, null);
+            $session->setValue(Form::SESSION_AVALARA_TAXES, null, $this->getAdapter());
+            $session->setValue(Form::SESSION_AVALARA_TAXES_TRANSFORMED, [Form::TAX_REQUEST_STATUS => Form::TAX_REQUEST_STATUS_NOT_NEEDED], $this->getAdapter());
+            $session->setValue(Form::SESSION_AVALARA_MODEL, null, $this->getAdapter());
+            $session->setValue(Form::SESSION_AVALARA_MODEL_KEY, null, $this->getAdapter());
             return false;
         }
 
-        return $this->adapter->getFactory('OrderTransactionModelFactory')
-            ->build($cart, $customerId, $currencyIso, $taxIncluded, $categoryRepository, $context);
+        $customerAddress = $cart->getDeliveries()->getAddresses()->first();
+        $lineItems = $cart->getLineItems()->getFlat();
+        $shippingMethod = $cart->getDeliveries()->first()->getShippingMethod();
+        $shippingPrice = $cart->getShippingCosts()->getUnitPrice();
+
+        return $this->adapter->getFactory('TransactionModelFactory')
+            ->build(
+                $customerAddress,
+                $lineItems,
+                $shippingMethod,
+                $shippingPrice,
+                $customerId,
+                $currencyIso,
+                $taxIncluded,
+                $categoryRepository,
+                $context->getContext()
+            );
     }
 
     /**
@@ -132,8 +152,8 @@ class GetTax extends AbstractService
 
         $transformedTaxes = $this->transformResponse($response, $cart);
 
-        $session->set(Form::SESSION_AVALARA_TAXES, $response);
-        $session->set(Form::SESSION_AVALARA_TAXES_TRANSFORMED, $transformedTaxes);
+        $session->setValue(Form::SESSION_AVALARA_TAXES, $response, $this->getAdapter());
+        $session->setValue(Form::SESSION_AVALARA_TAXES_TRANSFORMED, $transformedTaxes, $this->getAdapter());
 
         return $transformedTaxes;
     }
@@ -145,7 +165,7 @@ class GetTax extends AbstractService
      */
     private function transformResponse($response, Cart $cart): array
     {
-        $transformedTax = [];
+        $transformedTax = [Form::TAX_REQUEST_STATUS => Form::TAX_REQUEST_STATUS_FAILED];
         if (!is_object($response)) {
             return $transformedTax;
         }
@@ -176,6 +196,7 @@ class GetTax extends AbstractService
             ];
         }
 
+        $transformedTax[Form::TAX_REQUEST_STATUS] = Form::TAX_REQUEST_STATUS_SUCCESS;
         return $transformedTax;
     }
 
@@ -187,7 +208,7 @@ class GetTax extends AbstractService
      */
     private function isTaxIncluded(CustomerEntity $customer, $session): bool
     {
-        $isTaxIncluded = $session->get(Form::SESSION_AVALARA_IS_GROSS_PRICE);
+        $isTaxIncluded = $session->getValue(Form::SESSION_AVALARA_IS_GROSS_PRICE, $this->getAdapter());
 
         if (is_null($isTaxIncluded)) {
             $groupId = $customer->getGroupId();
@@ -197,8 +218,8 @@ class GetTax extends AbstractService
 
             $isTaxIncluded = $connection->executeQuery($sql)->fetchAssociative();
 
-            $isTaxIncluded = (bool) $isTaxIncluded['display_gross'];
-            $session->set(Form::SESSION_AVALARA_IS_GROSS_PRICE, $isTaxIncluded);
+            $isTaxIncluded = (bool)$isTaxIncluded['display_gross'];
+            $session->setValue(Form::SESSION_AVALARA_IS_GROSS_PRICE, $isTaxIncluded, $this->getAdapter());
         }
 
         return $isTaxIncluded;

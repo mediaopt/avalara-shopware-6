@@ -1,5 +1,10 @@
 {
     "moptavalara6": {
         "promotion_VAT_message" : "Im Produkt enthalten"
+    },
+    "checkout": {
+        "moptavalara6": {
+            "tax-calculation-error" : "Die Steuer kann nicht berechnet werden."
+        }
     }
 }

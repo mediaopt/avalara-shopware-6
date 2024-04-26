@@ -19,7 +19,7 @@ class MoptAvalara6 extends Plugin
 {
     const PLUGIN_NAME = 'MoptAvalara6';
 
-    const PLUGIN_VERSION = '1.0';
+    const PLUGIN_VERSION = '2.0';
 
     const ORDER_OPTIONS_LANG = 'Deutsch';
 

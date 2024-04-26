@@ -5,5 +5,6 @@
         https://symfony.com/schema/routing/routing-1.0.xsd">
 
     <import resource="../../Controller/Api/ApiTestController.php" type="annotation"/>
+    <import resource="../../Controller/AddressValidationController.php" type="annotation"/>
     <import resource="../../Storefront/Controller/AddressController.php" type="annotation" />
 </routes>
