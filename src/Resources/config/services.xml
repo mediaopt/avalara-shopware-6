@@ -34,12 +34,11 @@
             <tag name="kernel.event_subscriber" priority="-5100"/>
         </service>
 
-        <service id="MoptAvalara6\Core\Checkout\Cart\OverwritePriceProcessor">
-            <argument type="service" id="Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator"/>
+        <service id="MoptAvalara6\Service\AvalaraTaxProvider">
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <argument type="service" id="category.repository" />
             <argument type="service" id="monolog.logger" />
-            <tag name="shopware.cart.processor" priority="-5200"/>
+            <tag name="shopware.tax.provider" />
         </service>
 
         <service id="MoptAvalara6\Storefront\Controller\AddressController" public="true">

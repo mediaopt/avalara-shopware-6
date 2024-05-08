@@ -3,8 +3,12 @@ declare(strict_types=1);
 
 namespace MoptAvalara6;
 
+use MoptAvalara6\Service\AvalaraTaxProvider;
+use MoptAvalara6\Service\TaxProvider;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\ActivateContext;
+use Shopware\Core\Framework\Plugin\Context\DeactivateContext;
 use Shopware\Core\Framework\Plugin\Context\InstallContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Shopware\Core\Framework\Uuid\Uuid;
@@ -32,6 +36,10 @@ class MoptAvalara6 extends Plugin
         parent::install($installContext);
 
         $this->addCustomFields($installContext);
+
+        $ruleRepo = $this->container->get('rule.repository');
+        $taxRepo = $this->container->get('tax_provider.repository');
+        AvalaraTaxProvider::createProvider($installContext, $ruleRepo, $taxRepo);
     }
 
     /**
@@ -52,11 +60,24 @@ class MoptAvalara6 extends Plugin
     /**
      * @param ActivateContext $activateContext
      * @return void
+     * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws \Doctrine\DBAL\Exception
      */
     public function activate(ActivateContext $activateContext): void
     {
         parent::activate($activateContext);
+        //todo activate tax provider
         $this->addOrderStatusSelector();
+    }
+
+    /**
+     * @param DeactivateContext $deactivateContext
+     * @return void
+     */
+    public function deactivate(DeactivateContext $deactivateContext): void
+    {
+        parent::deactivate($deactivateContext);
+        //todo deactivate tax provider
     }
 
     /**
