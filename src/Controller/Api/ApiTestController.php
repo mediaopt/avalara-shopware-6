@@ -8,15 +8,13 @@ use MoptAvalara6\Adapter\AvalaraSDKAdapter;
 use MoptAvalara6\Bootstrap\Form;
 use MoptAvalara6\Service\ValidateAddress;
 use Shopware\Core\Framework\Context;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 
-/**
- * @Route(defaults={"_routeScope"={"api"}})
- */
+#[Route(defaults: ['_routeScope' => ['api']])]
 class ApiTestController extends AbstractController
 {
     private SystemConfigService $systemConfigService;
@@ -29,13 +27,11 @@ class ApiTestController extends AbstractController
         $this->logger = $logger;
     }
 
-    /**
-     * @Route(
-     *     "/api/_action/avalara-api-test/test-connection",
-     *     name="api.action.avalara.test.connection",
-     *     methods={"POST"}
-     * )
-     */
+    #[Route(
+        path: '/api/_action/avalara-api-test/test-connection',
+        name: 'api.action.avalara.test.connection',
+        methods: ['POST']
+    )]
     public function testConnection(Request $request, Context $context): JsonResponse
     {
         $credentials = [
@@ -59,13 +55,11 @@ class ApiTestController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route(
-     *     "/api/_action/avalara-address-test/test-address",
-     *     name="api.action.avalara.test.address",
-     *     methods={"POST"}
-     * )
-     */
+    #[Route(
+        path: '/api/_action/avalara-address-test/test-address',
+        name: 'api.action.avalara.test.address',
+        methods: ['POST']
+    )]
     public function testAddress(Request $request, Context $context): JsonResponse
     {
         $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);

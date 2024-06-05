@@ -97,12 +97,12 @@
         <title>Order statuses</title>
         <input-field type="single-select">
             <name>orderCancel</name>
-            <!--options-->
+            <options><option><id>018ecd26ea347034b74aba619cdb0ed4</id><name>Offen</name></option><option><id>018ecd26ea347034b74aba619cf2cba5</id><name>Abgeschlossen</name></option><option><id>018ecd26ea347034b74aba619d422282</id><name>In Bearbeitung</name></option><option><id>018ecd26ea347034b74aba619db0ea89</id><name>Abgebrochen</name></option></options>
             <label>Cancel status</label>
         </input-field>
         <input-field type="single-select">
             <name>orderRefund</name>
-            <!--options-->
+            <options><option><id>018ecd26ea347034b74aba619cdb0ed4</id><name>Offen</name></option><option><id>018ecd26ea347034b74aba619cf2cba5</id><name>Abgeschlossen</name></option><option><id>018ecd26ea347034b74aba619d422282</id><name>In Bearbeitung</name></option><option><id>018ecd26ea347034b74aba619db0ea89</id><name>Abgebrochen</name></option></options>
             <label>Refund status</label>
         </input-field>
     </card>
