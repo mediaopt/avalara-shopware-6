@@ -40,9 +40,7 @@ use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Request;
 
-/**
- * @Route(defaults={"_routeScope"={"storefront"}})
- */
+#[Route(defaults: ['_routeScope' => ['storefront']])]
 class AddressController extends StorefrontController
 {
     private const ADDRESS_TYPE_BILLING = 'billing';
