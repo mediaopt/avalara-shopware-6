@@ -217,7 +217,7 @@ class MoptAvalara6 extends Plugin
         $configFile = __DIR__ . "/Resources/config/config.xml";
         $config = file_get_contents($configFile);
         $options = $this->buildOptionsNode();
-        $config = str_replace("<!--options-->", $options, $config);
+        $config = str_replace("<options><option><id>0</id><name>This line should be replaced on plugin installation.</name></option></options>", $options, $config);
         file_put_contents($configFile, $config);
     }
 
