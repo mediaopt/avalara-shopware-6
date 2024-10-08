@@ -1,3 +1,6 @@
+# 2.0.4
+- Config fix
+
 # 2.0.3
 - Voucher update 
 

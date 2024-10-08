@@ -97,12 +97,12 @@
         <title>Order statuses</title>
         <input-field type="single-select">
             <name>orderCancel</name>
-            <!--options-->
+            <options><option><id>0</id><name>This line should be replaced on plugin installation.</name></option></options>
             <label>Cancel status</label>
         </input-field>
         <input-field type="single-select">
             <name>orderRefund</name>
-            <!--options-->
+            <options><option><id>0</id><name>This line should be replaced on plugin installation.</name></option></options>
             <label>Refund status</label>
         </input-field>
     </card>
