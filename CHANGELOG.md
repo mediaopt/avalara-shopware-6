@@ -1,3 +1,6 @@
+# 3.0.2
+- Unnecessary validation fix
+
 # 3.0.1
 - Order number validation fix
 
