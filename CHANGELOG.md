@@ -1,3 +1,6 @@
+# 2.0.5
+- Dependency fix
+
 # 2.0.4
 - Config fix
 
