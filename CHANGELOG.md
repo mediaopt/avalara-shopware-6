@@ -1,3 +1,6 @@
+# 2.0.6
+- Guzzle lib update
+
 # 2.0.5
 - Dependency fix
 
