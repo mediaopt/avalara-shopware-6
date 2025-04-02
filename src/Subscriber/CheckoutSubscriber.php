@@ -81,15 +81,14 @@ class CheckoutSubscriber implements EventSubscriberInterface
             $service = $adapter->getService('GetTax');
             $result = $service->calculate($avalaraRequestModel);
 
-            $order = $event->getOrder();
             if (!is_object($result)) {
                 $service->log('Unexpected response from Avalara.', Logger::ERROR, $result);
             } else {
                 if (is_null($result->code)) {
                     $service->log('Can not get tax document code from Avalara response.', Logger::ERROR, $result);
-                } elseif ($result->code != $order->getId()) {
+                } elseif ($result->code != $orderNumber) {
                     $service->log(
-                        "Tax code ({$result->code}) is not the same as order ID {$order->getId()}",
+                        "Tax code ({$result->code}) is not the same as order number {$orderNumber}",
                         Logger::ERROR,
                         $result
                     );

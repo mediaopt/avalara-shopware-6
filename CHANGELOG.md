@@ -1,3 +1,9 @@
+# 3.0.2
+- Unnecessary validation fix
+
+# 3.0.1
+- Order number validation fix
+
 # 3.0.0
 - Shopware 6.6 compatibility
 
