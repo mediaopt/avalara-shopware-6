@@ -1,3 +1,6 @@
+# 3.0.3
+- Guzzle lib update
+
 # 3.0.2
 - Unnecessary validation fix
 
