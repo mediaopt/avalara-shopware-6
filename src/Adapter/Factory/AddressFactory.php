@@ -219,15 +219,11 @@ class AddressFactory extends AbstractFactory
      */
     public function isAddressToBeValidated(AddressLocationInfo $address, Session $session, ?string $addressId, bool $checkSession)
     {
-        if (is_null($addressId)) {
-            return true;
-        }
-
-        if (!$this->checkCountryRestriction($address->country)) {
+        if (!$this->getPluginConfig(Form::ADDRESS_VALIDATION_REQUIRED_FIELD)) {
             return false;
         }
 
-        if (!$this->getPluginConfig(Form::ADDRESS_VALIDATION_REQUIRED_FIELD)) {
+        if (!$this->checkCountryRestriction($address->country)) {
             return false;
         }
 
