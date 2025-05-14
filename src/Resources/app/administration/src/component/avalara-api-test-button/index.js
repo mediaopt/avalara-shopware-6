@@ -26,7 +26,10 @@ Component.register('avalara-api-test-button', {
                 $parent = $parent.$parent;
             }
 
-            return $parent.actualConfigData.null;
+            return {
+                'сonfigData': $parent.actualConfigData,
+                'salesChannelId': $parent.currentSalesChannelId
+            }
         }
     },
 
