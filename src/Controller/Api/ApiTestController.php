@@ -21,6 +21,22 @@ class ApiTestController extends AbstractController
 
     private Logger $logger;
 
+    private array $credentialKeys = [
+        'accountNumber' => Form::ACCOUNT_NUMBER_FIELD,
+        'licenseKey' => Form::LICENSE_KEY_FIELD,
+        'isLiveMode' => Form::IS_LIVE_MODE_FIELD,
+    ];
+
+    private array $addressKeys = [
+        'address_line_1' => Form::ORIGIN_ADDRESS_LINE_1_FIELD,
+        'address_line_2' => Form::ORIGIN_ADDRESS_LINE_2_FIELD,
+        'address_line_3' => Form::ORIGIN_ADDRESS_LINE_3_FIELD,
+        'city' => Form::ORIGIN_CITY_FIELD,
+        'postcode' => Form::ORIGIN_POSTAL_CODE_FIELD,
+        'region' => Form::ORIGIN_REGION_FIELD,
+        'country' => Form::ORIGIN_COUNTRY_FIELD,
+    ];
+
     public function __construct(SystemConfigService $systemConfigService, $logger)
     {
         $this->systemConfigService = $systemConfigService;
@@ -34,11 +50,17 @@ class ApiTestController extends AbstractController
     )]
     public function testConnection(Request $request, Context $context): JsonResponse
     {
-        $credentials = [
-            'accountNumber' => $request->request->get(Form::ACCOUNT_NUMBER_FIELD),
-            'licenseKey' => $request->request->get(Form::LICENSE_KEY_FIELD),
-            'isLiveMode' => $request->request->get(Form::IS_LIVE_MODE_FIELD),
-        ];
+        $configFormData = $request->request->all('сonfigData');
+
+        if (empty($configFormData)) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => "There is no config data."
+            ]);
+        }
+
+        $salesChannelId = $request->request->get('salesChannelId');
+        $credentials = $this->buildFormData($salesChannelId, $configFormData, $this->credentialKeys);
 
         $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
         $client = $adapter->getAvaTaxClient($credentials);
@@ -62,11 +84,21 @@ class ApiTestController extends AbstractController
     )]
     public function testAddress(Request $request, Context $context): JsonResponse
     {
+        $configFormData = $request->request->all('сonfigData');
+
+        if (empty($configFormData)) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => "There is no config data."
+            ]);
+        }
+
+        $salesChannelId = $request->request->get('salesChannelId');
+        $formData = $this->buildFormData($salesChannelId, $configFormData, $this->addressKeys);
+
         $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
         $addressFactory = $adapter->getFactory('AddressFactory');
-        $originAddress = $addressFactory->buildAddressFromArray(
-            $this->getAddressFromRequest($request)
-        );
+        $originAddress = $addressFactory->buildAddressFromArray($formData);
         $service = $adapter->getService('ValidateAddress');
         $emptyFields = $service->getEmptyFields($originAddress);
 
@@ -83,25 +115,42 @@ class ApiTestController extends AbstractController
         }
 
         $result['message'] = implode('</br>', $result['messages']);
+        unset($result['messages']);
 
         return new JsonResponse($result);
     }
 
     /**
-     * @param Request $request
+     * @param string|null $salesChannelId
+     * @param array $configData
+     * @param array $keys
      * @return array
      */
-    private function getAddressFromRequest(Request $request): array
+    private function buildFormData(?string $salesChannelId, array $configData, array $keys): array
     {
-        return [
-            'address_line_1' => $request->request->get(Form::ORIGIN_ADDRESS_LINE_1_FIELD),
-            'address_line_2' => $request->request->get(Form::ORIGIN_ADDRESS_LINE_2_FIELD),
-            'address_line_3' => $request->request->get(Form::ORIGIN_ADDRESS_LINE_3_FIELD),
-            'city' => $request->request->get(Form::ORIGIN_CITY_FIELD),
-            'postcode' => $request->request->get(Form::ORIGIN_POSTAL_CODE_FIELD),
-            'region' => $request->request->get(Form::ORIGIN_REGION_FIELD),
-            'country' => $request->request->get(Form::ORIGIN_COUNTRY_FIELD),
-        ];
+        $globalConfig = [];
+        if (array_key_exists('null', $configData)) {
+            $globalConfig = $configData['null'];
+        }
+
+        //For "All Sales Channels" data will be in "null" part of configData
+        $salesChannelId = $salesChannelId ?? 'null';
+
+        $formData = [];
+        if (array_key_exists($salesChannelId, $configData)) {
+            $channelConfig = $configData[$salesChannelId];
+            foreach ($keys as $key => $formKey) {
+                if (array_key_exists($formKey, $channelConfig) && !is_null($channelConfig[$formKey])) {
+                    $formData[$key] = $channelConfig[$formKey];
+                } elseif (array_key_exists($formKey, $globalConfig) && !is_null($globalConfig[$formKey])) {
+                    $formData[$key] = $globalConfig[$formKey];
+                } else {
+                    $formData[$key] = '';
+                }
+            }
+        }
+
+        return $formData;
     }
 
     /**
