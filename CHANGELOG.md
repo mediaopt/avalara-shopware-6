@@ -1,5 +1,8 @@
-# 3.0.4
-- Guzzle lib update
+# 3.0.5
+- Improved error handling
+
+ # 3.0.4
+- SalesChannel-based config
  
 # 3.0.3
 - Guzzle lib update

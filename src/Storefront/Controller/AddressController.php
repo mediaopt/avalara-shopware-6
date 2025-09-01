@@ -39,6 +39,7 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Validator\ConstraintViolationList;
 
 #[Route(defaults: ['_routeScope' => ['storefront']])]
 class AddressController extends StorefrontController
@@ -93,6 +94,14 @@ class AddressController extends StorefrontController
         $page = $this->addressDetailPageLoader->load($request, $context, $customer);
 
         $formViolations = $this->buildFormError($request->get('addressId'));
+
+        $existingViolationException = $request->attributes->get('formViolations');
+        if (!$formViolations instanceof ConstraintViolationException) {
+            $formViolations = new ConstraintViolationException(new ConstraintViolationList(), []);
+        }
+        if (!is_null($existingViolationException)) {
+            $formViolations->getViolations()->addAll($existingViolationException->getViolations());
+        }
 
         $this->hook(new AddressDetailPageLoadedHook($page, $context));
 
