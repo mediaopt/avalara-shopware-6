@@ -4,7 +4,7 @@
 # 3.0.5
 - Improved error handling
 
- # 3.0.4
+# 3.0.4
 - SalesChannel-based config
  
 # 3.0.3
