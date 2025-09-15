@@ -1,10 +1,10 @@
-# 3.0.5
+# 3.0.6
 - Duplicate error fix
 
 # 3.0.5
 - Improved error handling
 
- # 3.0.4
+# 3.0.4
 - SalesChannel-based config
  
 # 3.0.3
