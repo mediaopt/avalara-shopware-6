@@ -63,6 +63,7 @@ class AddressController extends StorefrontController
     private SystemConfigService $systemConfigService;
     private Logger $logger;
     private Session $session;
+    private $listOfProcessedAddresses = [];
 
     public function __construct(
         AddressListingPageLoader           $addressListingPageLoader,
@@ -389,6 +390,13 @@ class AddressController extends StorefrontController
 
     private function buildFormError($addressId)
     {
+        if (in_array($addressId, $this->listOfProcessedAddresses))
+        {
+            return [];
+        }
+
+        $this->listOfProcessedAddresses[] = $addressId;
+
         $sessionAddresses = $this->session->get(Form::SESSION_AVALARA_ADDRESS_VALIDATION);
 
         if (is_array($sessionAddresses) && array_key_exists($addressId, $sessionAddresses)) {

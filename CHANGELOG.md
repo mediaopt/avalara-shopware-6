@@ -1,4 +1,7 @@
 # 3.0.5
+- Duplicate error fix
+
+# 3.0.5
 - Improved error handling
 
  # 3.0.4
