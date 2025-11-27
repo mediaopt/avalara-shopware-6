@@ -3,6 +3,7 @@
 namespace MoptAvalara6\Controller\Api;
 
 use Avalara\AddressLocationInfo;
+use Monolog\Level;
 use MoptAvalara6\Adapter\AvalaraSDKAdapter;
 use MoptAvalara6\Bootstrap\Form;
 use MoptAvalara6\Service\LogHelper;
@@ -17,7 +18,7 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 #[Route(defaults: ['_routeScope' => ['api']])]
 class ApiTestController extends AbstractController
 {
-    private SystemConfigService $systemConfigService;
+    private AvalaraSDKAdapter $adapter;
 
     private array $credentialKeys = [
         'accountNumber' => Form::ACCOUNT_NUMBER_FIELD,
@@ -35,9 +36,9 @@ class ApiTestController extends AbstractController
         'country' => Form::ORIGIN_COUNTRY_FIELD,
     ];
 
-    public function __construct(SystemConfigService $systemConfigService, $logger)
+    public function __construct(SystemConfigService $systemConfigService)
     {
-        $this->systemConfigService = $systemConfigService;
+        $this->adapter = new AvalaraSDKAdapter($systemConfigService);
     }
 
     #[Route(
@@ -59,8 +60,7 @@ class ApiTestController extends AbstractController
         $salesChannelId = $request->request->get('salesChannelId');
         $credentials = $this->buildFormData($salesChannelId, $configFormData, $this->credentialKeys);
 
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService);
-        $client = $adapter->getAvaTaxClient($credentials);
+        $client = $this->adapter->getAvaTaxClient($credentials);
 
         $pingResponse = $client->ping();
 
@@ -93,10 +93,9 @@ class ApiTestController extends AbstractController
         $salesChannelId = $request->request->get('salesChannelId');
         $formData = $this->buildFormData($salesChannelId, $configFormData, $this->addressKeys);
 
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService);
-        $addressFactory = $adapter->getFactory('AddressFactory');
+        $addressFactory = $this->adapter->getFactory('AddressFactory');
         $originAddress = $addressFactory->buildAddressFromArray($formData);
-        $service = $adapter->getService('ValidateAddress');
+        $service = $this->adapter->getService('ValidateAddress');
         $emptyFields = $service->getEmptyFields($originAddress);
 
         $result = [
@@ -159,7 +158,9 @@ class ApiTestController extends AbstractController
     private function avalaraValidation(ValidateAddress $service, AddressLocationInfo $originAddress, array &$result)
     {
         $logHelper = new LogHelper($this->adapter);
+        $logHelper->log(Level::Debug, 'Sending address to Avalara', $originAddress);
         $response = $service->validate($originAddress);
+        $logHelper->log(Level::Debug, 'Getting address validation from Avalara', $response);
         $validation = $service->parseAvalaraResponse($originAddress, $response);
 
         $messages = [];

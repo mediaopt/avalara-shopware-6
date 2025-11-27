@@ -2,7 +2,6 @@
 
 namespace MoptAvalara6\Controller;
 
-use Monolog\Logger;
 use MoptAvalara6\Adapter\AvalaraSDKAdapter;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
@@ -18,7 +17,6 @@ class AddressValidationController extends StorefrontController
 
     public function __construct(
         SystemConfigService                $systemConfigService,
-        Logger                             $logger
     )
     {
         $this->systemConfigService = $systemConfigService;
