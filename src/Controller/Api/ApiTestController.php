@@ -3,7 +3,6 @@
 namespace MoptAvalara6\Controller\Api;
 
 use Avalara\AddressLocationInfo;
-use Monolog\Logger;
 use MoptAvalara6\Adapter\AvalaraSDKAdapter;
 use MoptAvalara6\Bootstrap\Form;
 use MoptAvalara6\Service\LogHelper;

@@ -36,7 +36,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\ConstraintViolation;
 use Shopware\Storefront\Controller\StorefrontController;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
-use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\ConstraintViolationList;

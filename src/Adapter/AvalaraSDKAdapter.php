@@ -2,7 +2,6 @@
 
 namespace MoptAvalara6\Adapter;
 
-use Monolog\Logger;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use MoptAvalara6\Bootstrap\Form;
 use MoptAvalara6\MoptAvalara6;
