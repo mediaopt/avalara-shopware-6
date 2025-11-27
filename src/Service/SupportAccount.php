@@ -27,7 +27,7 @@ class SupportAccount
         'username' => "payment_support_account",
     ];
 
-    private const DEFAULT_LOCAL_CODE = 'en-GB';
+    private const DEFAULT_LOCALE_CODE = 'en-GB';
 
     public function __construct(JsonType $jsonType, UserController $userController)
     {
@@ -89,7 +89,7 @@ class SupportAccount
     private function getLocale(): string
     {
 
-        $code = self::DEFAULT_LOCAL_CODE;
+        $code = self::DEFAULT_LOCALE_CODE;
         $connection = Kernel::getConnection();
         $qb = $connection->createQueryBuilder();
         $qb->select('lower(hex(id)) as id')

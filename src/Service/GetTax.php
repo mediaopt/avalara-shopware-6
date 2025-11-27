@@ -237,7 +237,7 @@ class GetTax extends AbstractService
         try {
             $logHelper->log(Level::Info, 'Avalara request', $model);
             $response = $client->createTransaction(null, $model);
-            $logHelper->log(Level::Info, 'Avalara response', $model);
+            $logHelper->log(Level::Info, 'Avalara response', $response);
             return $response;
         } catch (\Exception $e) {
             LogHelper::addLog(Level::Error, $e->getMessage());

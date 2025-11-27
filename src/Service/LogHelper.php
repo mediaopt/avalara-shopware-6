@@ -58,19 +58,19 @@ class LogHelper
 
         //set levels
         return match ($logLevel) {
-            'INFO' => Level::Info,
             'ERROR' => Level::Error,
-            'DEBUG' => Level::Debug
+            'DEBUG' => Level::Debug,
+            default => Level::Info,
         };
     }
 
     /**
-     * @param int|Level $logLevel
+     * @param Level $logLevel
      * @param string $message
      * @param mixed $additionalData
      * @return void
      */
-    public static function addLog(int|Level $logLevel, string $message, mixed $additionalData = ''): void
+    public static function addLog(Level $logLevel, string $message, mixed $additionalData = ''): void
     {
         $logger = new Logger('Avalara');
         self::addRecord($logger, $logLevel, $message, $additionalData);
@@ -78,12 +78,12 @@ class LogHelper
     }
 
     /**
-     * @param int|Level $logLevel
+     * @param Level $logLevel
      * @param string $message
      * @param mixed $additionalData
      * @return void
      */
-    public static function addPluginLog(int|Level $logLevel, string $message, mixed $additionalData = ''): void
+    public static function addPluginLog(Level $logLevel, string $message, mixed $additionalData = ''): void
     {
         $fullPath = dirname(__DIR__, 5) . Form::LOG_DIR_PATH . 'log';
         $streamHandler = new RotatingFileHandler($fullPath, Form::LOG_FILE_MAX, $logLevel);
@@ -93,12 +93,12 @@ class LogHelper
 
     /**
      * @param Logger $logger
-     * @param int|Level $logLevel
+     * @param Level $logLevel
      * @param string $message
      * @param mixed $additionalData
      * @return void
      */
-    public static function addRecord(Logger $logger, int|Level $logLevel, string $message, mixed $additionalData = '')
+    public static function addRecord(Logger $logger, Level $logLevel, string $message, mixed $additionalData = '')
     {
         $logger->addRecord(
             $logLevel,
