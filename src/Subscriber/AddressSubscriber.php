@@ -22,25 +22,19 @@ class AddressSubscriber implements EventSubscriberInterface
 
     private Session $session;
 
-    private Logger $logger;
-
     private RouterInterface $router;
 
     /**
      * @param RouterInterface $router
      * @param SystemConfigService $systemConfigService
-     * @param Logger $logger
-     * @param Session $session
      */
     public function __construct(
         RouterInterface     $router,
-        SystemConfigService $systemConfigService,
-        Logger              $logger
+        SystemConfigService $systemConfigService
     )
     {
         $this->router = $router;
         $this->systemConfigService = $systemConfigService;
-        $this->logger = $logger;
         $this->session = new Session();
     }
 
@@ -72,7 +66,7 @@ class AddressSubscriber implements EventSubscriberInterface
             $this->session->set(Form::SESSION_AVALARA_CURRENT_ADDRESS_ID, $address->getId());
 
             $salesChannelId = $event->getSalesChannelContext()->getSalesChannel()->getId();
-            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
+            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $salesChannelId);
             $addressFactory = $adapter->getFactory('AddressFactory');
             $addressLocationInfo = $addressFactory->buildDeliveryAddress($address);
             $addressFactory->validate($addressLocationInfo, $address->getId(), $this->session);

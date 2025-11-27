@@ -77,16 +77,16 @@
             <name>logLevel</name>
             <options>
                 <option>
-                    <id>DEBUG</id>
-                    <name>DEBUG</name>
-                </option>
-                <option>
                     <id>ERROR</id>
                     <name>ERROR</name>
                 </option>
                 <option>
                     <id>INFO</id>
                     <name>INFO</name>
+                </option>
+                <option>
+                    <id>DEBUG</id>
+                    <name>DEBUG</name>
                 </option>
             </options>
             <defaultValue>INFO</defaultValue>

@@ -19,7 +19,6 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Session\Session;
 use MoptAvalara6\Bootstrap\Form;
-use Monolog\Logger;
 use Avalara\DocumentType;
 
 class CheckoutSubscriber implements EventSubscriberInterface
@@ -28,23 +27,19 @@ class CheckoutSubscriber implements EventSubscriberInterface
 
     private Session $session;
 
-    private Logger $logger;
     private EntityRepository $categoryRepository;
 
     /**
      * @param SystemConfigService $systemConfigService
-     * @param Logger $logger
      * @param EntityRepository $categoryRepository
      */
     public function __construct(
         SystemConfigService $systemConfigService,
-        Logger $logger,
         EntityRepository $categoryRepository
     )
     {
         $this->systemConfigService = $systemConfigService;
         $this->categoryRepository = $categoryRepository;
-        $this->logger = $logger;
         $this->session = new SessionService();
     }
 
@@ -65,7 +60,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
     public function makeAvalaraCommitCall(CheckoutOrderPlacedEvent $event): void
     {
         $salesChannelId = $event->getSalesChannelId();
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $salesChannelId);
         if ($adapter->getPluginConfig(Form::SEND_GET_TAX_ONLY)) {
             return;
         }

@@ -31,14 +31,14 @@ class LogHelper
 
     /**
      * @param string $message
-     * @param int|Level $logLevel
+     * @param Level $logLevel
      * @param mixed $additionalData
      * @return void
      */
-    public function log(string $message, int|Level $logLevel = 0, mixed $additionalData = ''): void
+    public function log(Level $logLevel, string $message, mixed $additionalData = ''): void
     {
-        if ($logLevel == 0) {
-            $logLevel = $this->getLogLevel();
+        if ($logLevel->isLowerThan($this->getLogLevel())) {
+            return;
         }
 
         self::addLog($logLevel, $message, $additionalData);

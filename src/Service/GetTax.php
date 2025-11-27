@@ -230,12 +230,14 @@ class GetTax extends AbstractService
      */
     public function calculate(CreateTransactionModel $model)
     {
-        $client = $this->getAdapter()->getAvaTaxClient();
+        $adapter = $this->getAdapter();
+        $client = $adapter->getAvaTaxClient();
+        $logHelper = new LogHelper($adapter);
         $model->date = date(DATE_W3C);
         try {
-            LogHelper::addLog(Level::Info, 'Avalara request', $model);
+            $logHelper->log(Level::Info, 'Avalara request', $model);
             $response = $client->createTransaction(null, $model);
-            LogHelper::addLog(Level::Info, 'Avalara response', $model);
+            $logHelper->log(Level::Info, 'Avalara response', $model);
             return $response;
         } catch (\Exception $e) {
             LogHelper::addLog(Level::Error, $e->getMessage());

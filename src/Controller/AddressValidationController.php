@@ -15,7 +15,6 @@ use Symfony\Component\Routing\Annotation\Route;
 class AddressValidationController extends StorefrontController
 {
     private SystemConfigService $systemConfigService;
-    private Logger $logger;
 
     public function __construct(
         SystemConfigService                $systemConfigService,
@@ -23,7 +22,6 @@ class AddressValidationController extends StorefrontController
     )
     {
         $this->systemConfigService = $systemConfigService;
-        $this->logger = $logger;
     }
 
     #[Route(path: "/store-api/avalara/address-validate", name: "frontend.api.avalara.address-validate", methods: ['POST'])]
@@ -32,7 +30,7 @@ class AddressValidationController extends StorefrontController
         $salesChannelId = $request->get('salesChannelId');
         $address = $request->get('address');
 
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $salesChannelId);
 
         $addressFactory = $adapter->getFactory('AddressFactory');
         $addressLocationInfo = $addressFactory->buildAddressBookAddress($address);

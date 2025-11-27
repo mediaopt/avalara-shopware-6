@@ -34,6 +34,7 @@ class RefundOrder extends AbstractService
      */
     public function processTransaction(string $docCode)
     {
+        $logHelper = new LogHelper($this->adapter);
         $adapter = $this->getAdapter();
         if ($adapter->getPluginConfig(Form::SEND_GET_TAX_ONLY)) {
             LogHelper::addLog(Level::Error, "Cannot refund Avalara transaction. Only get tax requests are enabled.");
@@ -60,7 +61,7 @@ class RefundOrder extends AbstractService
                 'model' => $model
             ];
 
-            LogHelper::addLog(Level::Info, 'Avalara refund request', $model);
+            $logHelper->log(Level::Info, 'Avalara refund request', $model);
 
             $client = $adapter->getAvaTaxClient();
             if (!$response = $client->refundTransaction(
@@ -74,6 +75,7 @@ class RefundOrder extends AbstractService
                 LogHelper::addLog(Level::Error, 'Empty response from Avalara on refund transaction ' . $docCode, $response);
                 return;
             } else {
+                $logHelper->log(Level::Info, 'Avalara refund response', $response);
                 $this->checkResponse($response, $docCode, 'refund');
             }
         } catch (\Exception $e) {

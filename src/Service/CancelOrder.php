@@ -36,6 +36,7 @@ class CancelOrder extends AbstractService
     public function processTransaction(string $docCode)
     {
         $adapter = $this->getAdapter();
+        $logHelper = new LogHelper($adapter);
         if ($adapter->getPluginConfig(Form::SEND_GET_TAX_ONLY)) {
             LogHelper::addLog(Level::Error, "Cannot void Avalara transaction. Only get tax requests are enabled.");
             return;
@@ -58,7 +59,7 @@ class CancelOrder extends AbstractService
                 'model' => $model
             ];
 
-            LogHelper::addLog(Level::Info, "Avalara void request", $request);
+            $logHelper->log(Level::Info, "Avalara void request", $request);
 
             $client = $adapter->getAvaTaxClient();
             if (!$response = $client->voidTransaction(

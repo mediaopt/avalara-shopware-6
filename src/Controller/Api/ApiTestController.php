@@ -6,6 +6,7 @@ use Avalara\AddressLocationInfo;
 use Monolog\Logger;
 use MoptAvalara6\Adapter\AvalaraSDKAdapter;
 use MoptAvalara6\Bootstrap\Form;
+use MoptAvalara6\Service\LogHelper;
 use MoptAvalara6\Service\ValidateAddress;
 use Shopware\Core\Framework\Context;
 use Symfony\Component\Routing\Attribute\Route;
@@ -18,8 +19,6 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 class ApiTestController extends AbstractController
 {
     private SystemConfigService $systemConfigService;
-
-    private Logger $logger;
 
     private array $credentialKeys = [
         'accountNumber' => Form::ACCOUNT_NUMBER_FIELD,
@@ -40,7 +39,6 @@ class ApiTestController extends AbstractController
     public function __construct(SystemConfigService $systemConfigService, $logger)
     {
         $this->systemConfigService = $systemConfigService;
-        $this->logger = $logger;
     }
 
     #[Route(
@@ -62,7 +60,7 @@ class ApiTestController extends AbstractController
         $salesChannelId = $request->request->get('salesChannelId');
         $credentials = $this->buildFormData($salesChannelId, $configFormData, $this->credentialKeys);
 
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService);
         $client = $adapter->getAvaTaxClient($credentials);
 
         $pingResponse = $client->ping();
@@ -96,7 +94,7 @@ class ApiTestController extends AbstractController
         $salesChannelId = $request->request->get('salesChannelId');
         $formData = $this->buildFormData($salesChannelId, $configFormData, $this->addressKeys);
 
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger);
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService);
         $addressFactory = $adapter->getFactory('AddressFactory');
         $originAddress = $addressFactory->buildAddressFromArray($formData);
         $service = $adapter->getService('ValidateAddress');
@@ -161,6 +159,7 @@ class ApiTestController extends AbstractController
      */
     private function avalaraValidation(ValidateAddress $service, AddressLocationInfo $originAddress, array &$result)
     {
+        $logHelper = new LogHelper($this->adapter);
         $response = $service->validate($originAddress);
         $validation = $service->parseAvalaraResponse($originAddress, $response);
 

@@ -69,11 +69,6 @@ class AvalaraSDKAdapter implements AdapterInterface
     private $systemConfigService;
 
     /**
-     * @var Logger
-     */
-    private $logger;
-
-    /**
      * @var AbstractService
      */
     private $services;
@@ -85,13 +80,11 @@ class AvalaraSDKAdapter implements AdapterInterface
 
     /**
      * @param SystemConfigService $cachedConfigService
-     * @param Logger $logger
      * @param string|null $salesChannelId
      */
-    public function __construct(SystemConfigService $cachedConfigService, Logger $logger, $salesChannelId = null)
+    public function __construct(SystemConfigService $cachedConfigService, ?string $salesChannelId = null)
     {
         $this->systemConfigService = $cachedConfigService;
-        $this->logger = $logger;
         $this->salesChannelId = $salesChannelId;
     }
 
@@ -167,7 +160,7 @@ class AvalaraSDKAdapter implements AdapterInterface
     {
         if (!isset($this->services[$type])) {
             $name = self::SEVICES_NAMESPACE . ucfirst($type);
-            $this->services[$type] = new $name($this, $this->logger);
+            $this->services[$type] = new $name($this);
         }
 
         return $this->services[$type];

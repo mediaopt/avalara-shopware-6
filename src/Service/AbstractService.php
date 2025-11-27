@@ -49,6 +49,7 @@ abstract class AbstractService
      */
     public function checkResponse(mixed $response, string $docCode, string $process)
     {
+        $logHelper = new LogHelper($this->adapter);
         if (!is_object($response)) {
             LogHelper::addLog(Level::Error, "Avalara $process can not be parsed", $response);
             return false;
@@ -60,9 +61,9 @@ abstract class AbstractService
         }
 
         if ($response->status == 'Cancelled') {
-            LogHelper::addLog(Level::Info, "Order with docCode: $docCode has been canceled", $response);
+            $logHelper->log(Level::Info, "Order with docCode: $docCode has been canceled", $response);
         } elseif ($response->totalTax < 0) {
-            LogHelper::addLog(Level::Info, "Refund request for docCode: $docCode was created", $response);
+            $logHelper->log(Level::Info, "Refund request for docCode: $docCode was created", $response);
             return $response;
         } else {
             LogHelper::addLog(Level::Error, "Avalara transaction was not $process, docCode is $docCode", $response);

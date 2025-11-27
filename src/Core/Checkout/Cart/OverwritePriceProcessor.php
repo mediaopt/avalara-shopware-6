@@ -18,7 +18,6 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\HttpFoundation\Session\Session;
 use MoptAvalara6\Adapter\AvalaraSDKAdapter;
-use Monolog\Logger;
 
 class OverwritePriceProcessor implements CartProcessorInterface
 {
@@ -32,25 +31,21 @@ class OverwritePriceProcessor implements CartProcessorInterface
 
     private $avalaraTaxes;
 
-    private Logger $logger;
-
     public function __construct(
         QuantityPriceCalculator $calculator,
         SystemConfigService $systemConfigService,
         EntityRepository $categoryRepository,
-        Logger $loggerMonolog
     ) {
         $this->calculator = $calculator;
         $this->systemConfigService = $systemConfigService;
         $this->session = new SessionService();
         $this->categoryRepository = $categoryRepository;
-        $this->logger = $loggerMonolog;
     }
 
     public function process(CartDataCollection $data, Cart $original, Cart $toCalculate, SalesChannelContext $context, CartBehavior $behavior): void
     {
         $salesChannelId = $context->getSalesChannel()->getId();
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $salesChannelId);
         $this->avalaraTaxes = $this->session->getValue(Form::SESSION_AVALARA_TAXES_TRANSFORMED, $adapter);
 
         if ($this->isTaxesUpdateNeeded()) {
