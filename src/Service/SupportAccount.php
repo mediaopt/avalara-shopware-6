@@ -94,16 +94,12 @@ class SupportAccount
         $qb = $connection->createQueryBuilder();
         $qb->select('lower(hex(id)) as id')
             ->from('locale')
-            ->where("code = '$code'");
+            ->where("code = '$code'")
+            ->orWhere('code IS NOT NULL');
 
         $id = '';
 
         try {
-            $id = $qb->fetchOne();
-
-            if (empty($id)) {
-                $qb->orWhere('code IS NOT NULL');
-            }
             $id = $qb->fetchOne();
         } catch (\Exception $e) {
             LogHelper::addLog(Level::Error, $e->getMessage());
