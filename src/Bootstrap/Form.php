@@ -221,4 +221,11 @@ class Form
     const TAX_REQUEST_STATUS_FAILED = 'failed';
     const TAX_REQUEST_STATUS_SUCCESS = 'success';
     const TAX_REQUEST_STATUS_NOT_NEEDED = 'notNeeded';
+
+    const LOG_DIR_PATH = '/var/log/avalara/';
+    const LOG_ARCHIVE_PATH = '/var/log/avalara.zip';
+    const LOG_FILENAME = 'avalara';
+    const LOG_FILE_EXT = 'zip';
+    const LOG_FILE_MIME_TYPE = 'application/zip';
+    const LOG_FILE_MAX = 14;
 }

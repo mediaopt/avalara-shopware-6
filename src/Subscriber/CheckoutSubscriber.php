@@ -3,7 +3,9 @@
 namespace MoptAvalara6\Subscriber;
 
 use Avalara\CreateTransactionModel;
+use Monolog\Level;
 use MoptAvalara6\Adapter\AvalaraSDKAdapter;
+use MoptAvalara6\Service\LogHelper;
 use MoptAvalara6\Service\SessionService;
 use OpenApi\Context;
 use Shopware\Core\Checkout\Cart\Cart;
@@ -82,16 +84,12 @@ class CheckoutSubscriber implements EventSubscriberInterface
             $result = $service->calculate($avalaraRequestModel);
 
             if (!is_object($result)) {
-                $service->log('Unexpected response from Avalara.', Logger::ERROR, $result);
+                LogHelper::addLog(Level::Error, 'Unexpected response from Avalara.', $result);
             } else {
                 if (is_null($result->code)) {
-                    $service->log('Can not get tax document code from Avalara response.', Logger::ERROR, $result);
+                    LogHelper::addLog(Level::Error, 'Can not get tax document code from Avalara response.', $result);
                 } elseif ($result->code != $orderNumber) {
-                    $service->log(
-                        "Tax code ({$result->code}) is not the same as order number {$orderNumber}",
-                        Logger::ERROR,
-                        $result
-                    );
+                    LogHelper::addLog(Level::Error, "Tax code ({$result->code}) is not the same as order number {$orderNumber}", $result);
                 }
             }
 

@@ -140,5 +140,8 @@
             <name>addressTest</name>
             <label>Test address</label>
         </component>
+        <component name="support-form">
+            <name>supportForm</name>
+        </component>
     </card>
 </config>

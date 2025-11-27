@@ -9,7 +9,7 @@
 namespace MoptAvalara6\Service;
 
 use Avalara\RefundTransactionModel;
-use Monolog\Logger;
+use Monolog\Level;
 use MoptAvalara6\Adapter\AdapterInterface;
 use MoptAvalara6\Bootstrap\Form;
 use Avalara\DocumentType;
@@ -22,28 +22,27 @@ class RefundOrder extends AbstractService
 {
     /**
      * @param AdapterInterface $adapter
-     * @param Logger $logger
      */
-    public function __construct(AdapterInterface $adapter, Logger $logger)
+    public function __construct(AdapterInterface $adapter)
     {
-        parent::__construct($adapter, $logger);
+        parent::__construct($adapter);
     }
 
     /**
-     * @param string $orderId
+     * @param string $docCode
      * @throws \RuntimeException
      */
     public function processTransaction(string $docCode)
     {
         $adapter = $this->getAdapter();
         if ($adapter->getPluginConfig(Form::SEND_GET_TAX_ONLY)) {
-            $this->log("Cannot refund Avalara transaction. Only get tax requests are enabled.", Logger::INFO);
+            LogHelper::addLog(Level::Error, "Cannot refund Avalara transaction. Only get tax requests are enabled.");
             return;
         }
 
         try {
             if (empty($docCode)) {
-                $this->log("Cannot refund Avalara transaction with empty DocCode",Logger::ERROR);
+                LogHelper::addLog(Level::Error, "Cannot refund Avalara transaction with empty DocCode");
                 return;
             }
 
@@ -61,7 +60,7 @@ class RefundOrder extends AbstractService
                 'model' => $model
             ];
 
-            $this->log('Avalara refund request', 0, $model);
+            LogHelper::addLog(Level::Info, 'Avalara refund request', $model);
 
             $client = $adapter->getAvaTaxClient();
             if (!$response = $client->refundTransaction(
@@ -72,13 +71,13 @@ class RefundOrder extends AbstractService
                 null,
                 $request['model']
             )) {
-                $this->log('Empty response from Avalara on refund transaction ' . $docCode, Logger::ERROR);
+                LogHelper::addLog(Level::Error, 'Empty response from Avalara on refund transaction ' . $docCode, $response);
                 return;
             } else {
                 $this->checkResponse($response, $docCode, 'refund');
             }
         } catch (\Exception $e) {
-            $this->log('RefundTax call failed', Logger::ERROR, $e->getMessage());
+            LogHelper::addLog(Level::Error, 'RefundTax call failed', $e->getMessage());
         }
     }
 }

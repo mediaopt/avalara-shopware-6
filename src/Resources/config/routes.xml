@@ -6,5 +6,6 @@
 
     <import resource="../../Controller/Api/ApiTestController.php" type="attribute"/>
     <import resource="../../Controller/AddressValidationController.php" type="attribute"/>
+    <import resource="../../Controller/SupportForm/SupportFormController.php" type="attribute"/>
     <import resource="../../Storefront/Controller/AddressController.php" type="attribute" />
 </routes>
