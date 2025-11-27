@@ -1,3 +1,6 @@
+# 3.0.7
+- Improved logs
+
 # 3.0.6
 - Duplicate error fix
 
