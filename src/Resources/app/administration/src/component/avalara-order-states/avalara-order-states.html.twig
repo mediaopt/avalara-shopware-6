@@ -1,0 +1,20 @@
+<div class="component">
+    <sw-select-field
+            v-model:value="cancelStatusId"
+            :label="$tc('avalara-order-states.state-cancel')"
+            @update:value="setCancelStatusId">
+        <option v-for="selectOption in selectOptions"
+                :value="selectOption.value">
+            {{ selectOption.label }}
+        </option>
+    </sw-select-field>
+    <sw-select-field
+            v-model:value="refundStatusId"
+            :label="$tc('avalara-order-states.state-refund')"
+            @update:value="setRefundStatusId">
+        <option v-for="selectOption in selectOptions"
+                :value="selectOption.value">
+            {{ selectOption.label }}
+        </option>
+    </sw-select-field>
+</div>
