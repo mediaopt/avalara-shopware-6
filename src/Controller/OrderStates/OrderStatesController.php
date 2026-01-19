@@ -81,7 +81,7 @@ class OrderStatesController extends AbstractController
             ->leftJoin('sms', 'state_machine_state_translation', 'smst', 'smst.state_machine_state_id = sms.id')
             ->where('sm.technical_name = :technicalName')
             ->andWhere('smst.language_id = UNHEX(:lang)')
-            ->setParameter('technicalName', 'order_transaction.state')
+            ->setParameter('technicalName', 'order.state')
             ->setParameter('lang', $lang);
 
         try {
