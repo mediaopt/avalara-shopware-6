@@ -12,6 +12,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\RouterInterface;
+use function Symfony\Component\Translation\t;
 
 class AddressSubscriber implements EventSubscriberInterface
 {
@@ -50,7 +51,7 @@ class AddressSubscriber implements EventSubscriberInterface
      * @param StorefrontRenderEvent $event
      * @return void
      */
-    public function storefrontRenderEvent(StorefrontRenderEvent $event)
+    public function storefrontRenderEvent(StorefrontRenderEvent $event): void
     {
         if ($this->isCheckoutPage($event)) {
             $customer = $event->getSalesChannelContext()->getCustomer();
@@ -59,39 +60,38 @@ class AddressSubscriber implements EventSubscriberInterface
             }
 
             $address = $customer->getActiveShippingAddress();
-
-            $this->session->set(Form::SESSION_AVALARA_CURRENT_ADDRESS_ID, $address->getId());
+            $addressId = $address->getId();
 
             $salesChannelId = $event->getSalesChannelContext()->getSalesChannel()->getId();
             $adapter = new AvalaraSDKAdapter($this->systemConfigService, $salesChannelId);
             $addressFactory = $adapter->getFactory('AddressFactory');
             $addressLocationInfo = $addressFactory->buildDeliveryAddress($address);
-            $addressFactory->validate($addressLocationInfo, $address->getId(), $this->session);
+            $isValid = $addressFactory->validate($addressLocationInfo, $addressId, $this->session);
+
+            if (!$isValid) {
+                $url = $this->router->generate(
+                    'frontend.account.address.edit.page',
+                    ['addressId' => $addressId],
+                );
+                $this->session->set(Form::SESSION_AVALARA_REDIRECT_TO_ADDRESS_CHANGE . $salesChannelId, $url);
+            }
         }
     }
 
     /**
      * @param RequestEvent $event
      * @return void
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
      */
-    public function requestEvent(RequestEvent $event)
+    public function requestEvent(RequestEvent $event): void
     {
         if ($this->isCheckoutPage($event)) {
-            $route = $event->getRequest()->attributes->get('_route');
-            $addressId = $this->session->get(Form::SESSION_AVALARA_CURRENT_ADDRESS_ID);
-            $sessionAddresses = $this->session->get(Form::SESSION_AVALARA_ADDRESS_VALIDATION);
-
-            if (is_array($sessionAddresses) && array_key_exists($addressId, $sessionAddresses)) {
-                if (!$sessionAddresses[$addressId]['valid']) {
-                    $this->session->set(Form::SESSION_AVALARA_REDIRECT_AFTER_ADDRESS_CHANGE, $route);
-                    $url = $this->router->generate(
-                        'frontend.account.address.edit.page',
-                        ['addressId' => $addressId]
-                    );
-                    $event->setResponse(new RedirectResponse($url));
-                }
+            $salesChannelId = $event->getRequest()->attributes->get('sw-sales-channel-id');
+            $url = $this->session->get(Form::SESSION_AVALARA_REDIRECT_TO_ADDRESS_CHANGE . $salesChannelId);
+            if ($url) {
+                $this->session->set($url, null);
+                $route = $event->getRequest()->attributes->get('_route');
+                $this->session->set(Form::SESSION_AVALARA_REDIRECT_AFTER_ADDRESS_CHANGE, $route);
+                $event->setResponse(new RedirectResponse($url));
             }
         }
     }

@@ -18,7 +18,7 @@ class MoptAvalara6 extends Plugin
 {
     const PLUGIN_NAME = 'MoptAvalara6';
 
-    const PLUGIN_VERSION = '3.0.7';
+    const PLUGIN_VERSION = '3.0.8';
 
     /**
      * @param InstallContext $installContext

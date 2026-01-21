@@ -159,6 +159,7 @@ class Form
      * @var string Field name for the plugin session key
      */
     const SESSION_AVALARA_REDIRECT_AFTER_ADDRESS_CHANGE = 'avalaraRedirectAfterAddressChange';
+    const SESSION_AVALARA_REDIRECT_TO_ADDRESS_CHANGE = 'avalaraRedirectToAddressChange';
 
     /**
      * @var string Field name for the plugin custom field

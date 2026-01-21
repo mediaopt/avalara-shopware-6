@@ -177,4 +177,12 @@ class AvalaraSDKAdapter implements AdapterInterface
 
         return new $name($this);
     }
+
+    /**
+     * @return string|null
+     */
+    public function getSalesChannelId(): string|null
+    {
+        return $this->salesChannelId;
+    }
 }

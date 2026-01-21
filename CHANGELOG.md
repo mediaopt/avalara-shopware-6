@@ -1,3 +1,7 @@
+# 3.0.8
+- Address validation improvements
+- Language for Order State mapping
+
 # 3.0.7
 - Improved logs
 

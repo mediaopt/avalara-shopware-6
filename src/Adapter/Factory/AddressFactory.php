@@ -176,38 +176,40 @@ class AddressFactory extends AbstractFactory
      * @param string|null $addressId
      * @param Session $session
      * @param bool $checkSession
-     * @return void
+     * @return bool
      */
     public function validate(
         AddressLocationInfo $addressLocationInfo,
         ?string             $addressId,
         Session             $session,
         bool                $checkSession = true
-    )
+    ): bool
     {
         $adapter = $this->getAdapter();
 
-        if ($this->isAddressToBeValidated($addressLocationInfo, $session, $addressId, $checkSession)) {
-            $service = $adapter->getService('ValidateAddress');
-            $response = $service->validate($addressLocationInfo);
-            $parsed = $service->parseAvalaraResponse($addressLocationInfo, $response);
-            $sessionAddresses = $session->get(Form::SESSION_AVALARA_ADDRESS_VALIDATION);
-
-            if ($parsed['code'] == ValidateAddress::VALIDATION_CODE_VALID) {
-                $sessionAddresses[$addressId] = [
-                    'hash' => $parsed['hash'],
-                    'messages' => $parsed['messages'],
-                    'valid' => true
-                ];
-            } else {
-                $sessionAddresses[$addressId] = [
-                    'hash' => $parsed['hash'],
-                    'messages' => $parsed['messages'],
-                    'valid' => false
-                ];
-            }
-            $session->set(Form::SESSION_AVALARA_ADDRESS_VALIDATION, $sessionAddresses);
+        if (!$this->isAddressToBeValidated($addressLocationInfo, $session, $addressId, $checkSession)) {
+            return true;
         }
+
+        $service = $adapter->getService('ValidateAddress');
+        $response = $service->validate($addressLocationInfo);
+        $parsed = $service->parseAvalaraResponse($addressLocationInfo, $response);
+        $sessionAddresses = $session->get(Form::SESSION_AVALARA_ADDRESS_VALIDATION);
+
+        $isValid = false;
+        if ($parsed['code'] == ValidateAddress::VALIDATION_CODE_VALID) {
+            $isValid = true;
+            $session->set(Form::SESSION_AVALARA_REDIRECT_TO_ADDRESS_CHANGE . $adapter->getSalesChannelId() , null);
+        }
+
+        $sessionAddresses[$addressId] = [
+            'hash' => $parsed['hash'],
+            'messages' => $parsed['messages'],
+            'valid' => $isValid
+        ];
+        $session->set(Form::SESSION_AVALARA_ADDRESS_VALIDATION, $sessionAddresses);
+
+        return $isValid;
     }
 
     /**
