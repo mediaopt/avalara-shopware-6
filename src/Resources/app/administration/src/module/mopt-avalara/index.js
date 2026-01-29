@@ -1,4 +1,5 @@
 import './page/mopt-avalara-settings';
+import './component/config-watcher';
 
 Shopware.Module.register('mopt-avalara', {
     type: 'plugin',
