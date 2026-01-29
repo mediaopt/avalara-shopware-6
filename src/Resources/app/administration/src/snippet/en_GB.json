@@ -30,5 +30,10 @@
     "avalara-order-states": {
         "state-cancel": "Canceled",
         "state-refund": "Refunded"
+    },
+    "mopt-avalara-settings": {
+        "settings": {
+            "saveButton": "save settings"
+        }
     }
 }
