@@ -94,9 +94,9 @@
         </input-field>
     </card>
     <card>
-        <title>Order statuses</title>
+        <title>Avalara settings</title>
         <component name="avalara-order-states">
-            <name>orderStates</name>
+            <name>orderStatesLink</name>
         </component>
     </card>
     <card>

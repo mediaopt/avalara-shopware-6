@@ -84,7 +84,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
                 }
             }
 
-            $this->cleanSession($adapter);
+            self::cleanSession($this->session, $adapter);
         } else {
             $order = $event->getOrder();
             $customer =  $order->getOrderCustomer()->getCustomer();
@@ -134,13 +134,17 @@ class CheckoutSubscriber implements EventSubscriberInterface
     }
 
     /**
+     * @param SessionService $session
      * @param AvalaraSDKAdapter $adapter
      * @return void
      */
-    private function cleanSession(AvalaraSDKAdapter $adapter)
+    public static function cleanSession(SessionService $session, AvalaraSDKAdapter $adapter): void
     {
         foreach (Form::SESSION_KEYS as $key) {
-            $this->session->setValue($key, null, $adapter);
+            if ($key === Form::SESSION_AVALARA_REDIRECT_TO_ADDRESS_CHANGE) {
+                $key .= $adapter->getSalesChannelId();
+            }
+            $session->setValue($key, null, $adapter);
         }
     }
 }

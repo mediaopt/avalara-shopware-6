@@ -1,0 +1,65 @@
+{% block mopt_avalara_settings_index %}
+    <sw-page class="mopt-avalara-settings-page">
+
+        {% block mopt_avalara_settings_header %}
+            <template #header>
+                <h2>
+                    {{ $tc('mopt-avalara.settings.title') }}
+                </h2>
+            </template>
+        {% endblock %}
+
+        {% block mopt_avalara_settings_smart_bar_actions %}
+            <template #smart-bar-actions>
+                <sw-button variant="primary" @click="onSave">
+                    {{ $tc('mopt-avalara.settings.saveButton') }}
+                </sw-button>
+            </template>
+        {% endblock %}
+
+        {% block mopt_avalara_settings_content %}
+            <template #content>
+                <sw-card-view>
+
+                        <sw-system-config
+                                ref="systemConfig"
+                                domain="MoptAvalara6.config"
+                                sales-channel-switchable
+                                :sales-channel-id="salesChannelId"
+                        >
+                            <template #afterElements="{ config, index }">
+                                <mopt-avalara-config-watcher
+                                        v-if="index == 1"
+                                        :config="config"
+                                        @config-changed="onConfigChanged"
+                                />
+                            </template>
+                        </sw-system-config>
+
+                    <sw-card :title="'Order statuses'">
+                        <sw-select-field
+                                v-model:value="cancelStatusId"
+                                :label="$tc('avalara-order-states.state-cancel')"
+                                @update:value="setCancelStatusId">
+                            <option v-for="selectOption in selectOptions"
+                                    :value="selectOption.value">
+                                {{ selectOption.label }}
+                            </option>
+                        </sw-select-field>
+
+                        <sw-select-field
+                                v-model:value="refundStatusId"
+                                :label="$tc('avalara-order-states.state-refund')"
+                                @update:value="setRefundStatusId">
+                            <option v-for="selectOption in selectOptions"
+                                    :value="selectOption.value">
+                                {{ selectOption.label }}
+                            </option>
+                        </sw-select-field>
+                    </sw-card>
+                </sw-card-view>
+            </template>
+        {% endblock %}
+
+    </sw-page>
+{% endblock %}

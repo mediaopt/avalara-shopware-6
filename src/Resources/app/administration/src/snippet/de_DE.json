@@ -30,5 +30,10 @@
     "avalara-order-states": {
         "state-cancel": "Abgebrochen",
         "state-refund": "Erstattet"
+    },
+    "mopt-avalara-settings": {
+        "settings": {
+            "saveButton": "Einstellungen speichern"
+        }
     }
 }

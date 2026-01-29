@@ -1,0 +1,11 @@
+{
+  "mopt-avalara": {
+    "general": {
+      "mainMenuItemGeneral": "Avalara settings",
+      "descriptionTextModule": "Custom settings for Avalara integration"
+    },
+    "settings": {
+      "saveButton": "Save settings"
+    }
+  }
+}

@@ -29,8 +29,8 @@ class OrderStatesController extends AbstractController
     )]
     public function getStates(Request $request): JsonResponse
     {
-        $languageId = $request->request->get('languageId');
-        $selectOptions = $this->getOptions($languageId);
+        $localeId = $request->request->get('localeId');
+        $selectOptions = $this->getOptions($localeId);
 
         return new JsonResponse([
             'cancelStatusId' => $this->systemConfigService->get(Form::CANCEL_ORDER_STATUS_FIELD),
@@ -68,10 +68,10 @@ class OrderStatesController extends AbstractController
     }
 
     /**
-     * @param string $lang
+     * @param string $localeId
      * @return array
      */
-    private function getOptions(string $lang): array
+    private function getOptions(string $localeId): array
     {
         $connection = Kernel::getConnection();
         $qb = $connection->createQueryBuilder();
@@ -79,10 +79,11 @@ class OrderStatesController extends AbstractController
             ->from('state_machine', 'sm')
             ->leftJoin('sm', 'state_machine_state', 'sms', 'sms.state_machine_id = sm.id')
             ->leftJoin('sms', 'state_machine_state_translation', 'smst', 'smst.state_machine_state_id = sms.id')
+            ->leftJoin('smst', 'language', 'l', 'smst.language_id = l.id')
             ->where('sm.technical_name = :technicalName')
-            ->andWhere('smst.language_id = UNHEX(:lang)')
+            ->andWhere('l.locale_id = UNHEX(:localeId)')
             ->setParameter('technicalName', 'order.state')
-            ->setParameter('lang', $lang);
+            ->setParameter('localeId', $localeId);
 
         try {
             $options = $qb->fetchAllAssociative();
