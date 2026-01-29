@@ -4,9 +4,7 @@
         {% block mopt_avalara_settings_header %}
             <template #header>
                 <h2>
-                    {{ $tc('mopt-avalara-settings.general.mainMenuItemGeneral') }}
-                    <sw-icon name="regular-chevron-right-xs" small></sw-icon>
-                    {{ $tc('mopt-avalara-settings.settings.title') }}
+                    {{ $tc('mopt-avalara.settings.title') }}
                 </h2>
             </template>
         {% endblock %}
@@ -14,7 +12,7 @@
         {% block mopt_avalara_settings_smart_bar_actions %}
             <template #smart-bar-actions>
                 <sw-button variant="primary" @click="onSave">
-                    {{ $tc('mopt-avalara-settings.settings.saveButton') }}
+                    {{ $tc('mopt-avalara.settings.saveButton') }}
                 </sw-button>
             </template>
         {% endblock %}
@@ -29,6 +27,13 @@
                                 sales-channel-switchable
                                 :sales-channel-id="salesChannelId"
                         >
+                            <template #afterElements="{ config, index }">
+                                <mopt-avalara-config-watcher
+                                        v-if="index == 1"
+                                        :config="config"
+                                        @config-changed="onConfigChanged"
+                                />
+                            </template>
                         </sw-system-config>
 
                     <sw-card :title="'Order statuses'">
