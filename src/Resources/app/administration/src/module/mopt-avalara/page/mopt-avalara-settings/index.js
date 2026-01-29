@@ -71,7 +71,7 @@ Component.register('mopt-avalara-settings', {
 
         getInitialData() {
             this.loading = true;
-            this.avalaraOrderStates.getStates({languageId: Shopware.Context.api.languageId})
+            this.avalaraOrderStates.getStates({localeId: Shopware.State.get('session').currentUser.localeId})
                 .then((res) => {
                     this.cancelStatusId = res.cancelStatusId;
                     this.refundStatusId = res.refundStatusId;

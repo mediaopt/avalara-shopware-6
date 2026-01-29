@@ -5,7 +5,7 @@
       "descriptionTextModule": "Custom settings for Avalara integration"
     },
     "settings": {
-      "saveButton": "save settings"
+      "saveButton": "Save settings"
     }
   }
 }

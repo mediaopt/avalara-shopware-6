@@ -5,6 +5,9 @@ namespace MoptAvalara6\Subscriber;
 use Monolog\Level;
 use MoptAvalara6\Bootstrap\Form;
 use MoptAvalara6\Service\LogHelper;
+use MoptAvalara6\Service\SessionService;
+use Shopware\Core\Checkout\Customer\Event\CustomerLoginEvent;
+use Shopware\Core\Checkout\Customer\Event\CustomerLogoutEvent;
 use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\Checkout\Order\OrderEvents;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -14,12 +17,14 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use MoptAvalara6\Adapter\AvalaraSDKAdapter;
 use Shopware\Core\Framework\Context;
+use Symfony\Contracts\EventDispatcher\Event;
 
 class OrderChangesSubscriber implements EventSubscriberInterface
 {
     private SystemConfigService $systemConfigService;
 
     private EntityRepository $orderRepository;
+    private SessionService $session;
 
     /**
      * @param SystemConfigService $systemConfigService
@@ -32,12 +37,15 @@ class OrderChangesSubscriber implements EventSubscriberInterface
     {
         $this->systemConfigService = $systemConfigService;
         $this->orderRepository = $orderRepository;
+        $this->session = new SessionService();
     }
 
     public static function getSubscribedEvents(): array
     {
         return [
             OrderEvents::ORDER_WRITTEN_EVENT => 'onOrderWritten',
+            CustomerLogoutEvent::EVENT_NAME => 'cleanSession',
+            CustomerLoginEvent::EVENT_NAME => 'cleanSession',
         ];
     }
 
@@ -124,5 +132,15 @@ class OrderChangesSubscriber implements EventSubscriberInterface
         $adapter = new AvalaraSDKAdapter($this->systemConfigService, $salesChannelId);
         $service = $adapter->getService($service);
         $service->processTransaction($docCode);
+    }
+
+    /**
+     * @param Event $event
+     * @return void
+     */
+    private function cleanSession(Event $event): void
+    {
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $event->getSalesChannelId());
+        CheckoutSubscriber::cleanSession($this->session, $adapter);
     }
 }
