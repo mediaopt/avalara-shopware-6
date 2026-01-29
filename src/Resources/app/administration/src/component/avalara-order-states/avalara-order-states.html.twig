@@ -1,20 +1,5 @@
-<div class="component">
-    <sw-select-field
-            v-model:value="cancelStatusId"
-            :label="$tc('avalara-order-states.state-cancel')"
-            @update:value="setCancelStatusId">
-        <option v-for="selectOption in selectOptions"
-                :value="selectOption.value">
-            {{ selectOption.label }}
-        </option>
-    </sw-select-field>
-    <sw-select-field
-            v-model:value="refundStatusId"
-            :label="$tc('avalara-order-states.state-refund')"
-            @update:value="setRefundStatusId">
-        <option v-for="selectOption in selectOptions"
-                :value="selectOption.value">
-            {{ selectOption.label }}
-        </option>
-    </sw-select-field>
+<div class="avalara-settings-link">
+    <sw-internal-link :router-link="{ name: 'mopt.avalara.index'}" icon="regular-long-arrow-right" :inline="false" :disabled="false" :hideIcon="false">
+        To settings overview
+    </sw-internal-link>
 </div>
