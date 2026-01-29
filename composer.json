@@ -6,7 +6,10 @@
     "license": "proprietary",
     "config": {
         "prepend-autoloader": false,
-        "vendor-dir": "src/vendor"
+        "vendor-dir": "src/vendor",
+        "allow-plugins": {
+            "symfony/runtime": true
+        }
     },
     "authors": [
         {
