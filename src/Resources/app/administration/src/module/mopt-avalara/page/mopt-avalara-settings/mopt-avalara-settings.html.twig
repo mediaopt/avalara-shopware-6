@@ -13,7 +13,7 @@
 
         {% block mopt_avalara_settings_smart_bar_actions %}
             <template #smart-bar-actions>
-                <sw-button variant="primary" @click="onSaveSettings">
+                <sw-button variant="primary" @click="onSave">
                     {{ $tc('mopt-avalara-settings.settings.saveButton') }}
                 </sw-button>
             </template>
@@ -22,12 +22,35 @@
         {% block mopt_avalara_settings_content %}
             <template #content>
                 <sw-card-view>
-                    <sw-card title="Card-1" large>
-                        Lorem ipsum dolor sit amet
-                    </sw-card>
 
-                    <sw-card title="Card-2" large>
-                        <avalara-order-states></avalara-order-states>
+                        <sw-system-config
+                                ref="systemConfig"
+                                domain="MoptAvalara6.config"
+                                sales-channel-switchable
+                                :sales-channel-id="salesChannelId"
+                        >
+                        </sw-system-config>
+
+                    <sw-card :title="'Order statuses'">
+                        <sw-select-field
+                                v-model:value="cancelStatusId"
+                                :label="$tc('avalara-order-states.state-cancel')"
+                                @update:value="setCancelStatusId">
+                            <option v-for="selectOption in selectOptions"
+                                    :value="selectOption.value">
+                                {{ selectOption.label }}
+                            </option>
+                        </sw-select-field>
+
+                        <sw-select-field
+                                v-model:value="refundStatusId"
+                                :label="$tc('avalara-order-states.state-refund')"
+                                @update:value="setRefundStatusId">
+                            <option v-for="selectOption in selectOptions"
+                                    :value="selectOption.value">
+                                {{ selectOption.label }}
+                            </option>
+                        </sw-select-field>
                     </sw-card>
                 </sw-card-view>
             </template>
