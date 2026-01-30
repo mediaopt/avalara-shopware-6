@@ -1,6 +1,3 @@
-# 4.0.0
-- Shopware 6.7 compatibility
-
 # 3.0.8
 - Address validation improvements
 - Language for Order State mapping
