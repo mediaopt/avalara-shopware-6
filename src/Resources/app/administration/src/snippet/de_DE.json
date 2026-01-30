@@ -26,5 +26,14 @@
         "success": "Successfully sent!",
         "error": "Error!",
         "user-have-no-rights": "Looks like you don’t have permission to create a support account. Reach out to an administrator to gain access."
+    },
+    "avalara-order-states": {
+        "state-cancel": "Abgebrochen",
+        "state-refund": "Erstattet"
+    },
+    "mopt-avalara-settings": {
+        "settings": {
+            "saveButton": "Einstellungen speichern"
+        }
     }
 }
