@@ -8,7 +8,7 @@
 
 namespace MoptAvalara6\Service;
 
-use Monolog\Logger;
+use Monolog\Level;
 use MoptAvalara6\Adapter\AdapterInterface;
 use MoptAvalara6\Bootstrap\Form;
 use Avalara\VoidTransactionModel;
@@ -23,28 +23,28 @@ class CancelOrder extends AbstractService
 {
     /**
      * @param AdapterInterface $adapter
-     * @param Logger $logger
      */
-    public function __construct(AdapterInterface $adapter, Logger $logger)
+    public function __construct(AdapterInterface $adapter)
     {
-        parent::__construct($adapter, $logger);
+        parent::__construct($adapter);
     }
 
     /**
-     * @param string $orderId
+     * @param string $docCode
      * @throws \RuntimeException
      */
     public function processTransaction(string $docCode)
     {
         $adapter = $this->getAdapter();
+        $logHelper = new LogHelper($adapter);
         if ($adapter->getPluginConfig(Form::SEND_GET_TAX_ONLY)) {
-            $this->log("Cannot void Avalara transaction. Only get tax requests are enabled.", Logger::INFO);
+            $logHelper->log(Level::Info, "Cannot void Avalara transaction. Only get tax requests are enabled.");
             return;
         }
 
         try {
             if (empty($docCode)) {
-                $this->log("Cannot void Avalara transaction with empty DocCode", Logger::ERROR);
+                LogHelper::addLog(Level::Error, "Cannot void Avalara transaction with empty DocCode");
                 return;
             }
 
@@ -59,7 +59,7 @@ class CancelOrder extends AbstractService
                 'model' => $model
             ];
 
-            $this->log('Avalara void request', 0, $request);
+            $logHelper->log(Level::Info, "Avalara void request", $request);
 
             $client = $adapter->getAvaTaxClient();
             if (!$response = $client->voidTransaction(
@@ -69,13 +69,14 @@ class CancelOrder extends AbstractService
                 null,
                 $request['model']
             )) {
-                $this->log('Empty response from Avalara on void transaction ' . $docCode, Logger::ERROR);
+                LogHelper::addLog(Level::Error, 'Empty response from Avalara on void transaction ' . $docCode, $request);
                 return;
             } else {
+                $logHelper->log(Level::Info, 'Avalara cancel response', $response);
                 $this->checkResponse($response, $docCode, 'cancel');
             }
         } catch (\Exception $e) {
-            $this->log('CancelTax call failed', Logger::ERROR, $e->getMessage());
+            LogHelper::addLog(Level::Error, 'CancelTax call failed', $e->getMessage());
         }
     }
 }

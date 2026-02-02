@@ -9,7 +9,7 @@
 namespace MoptAvalara6\Service;
 
 use Avalara\CreateTransactionModel;
-use Monolog\Logger;
+use Monolog\Level;
 use MoptAvalara6\Adapter\AdapterInterface;
 use MoptAvalara6\Bootstrap\Form;
 use Shopware\Core\Checkout\Cart\Cart;
@@ -28,11 +28,10 @@ class GetTax extends AbstractService
 {
     /**
      * @param AdapterInterface $adapter
-     * @param Logger $logger
      */
-    public function __construct(AdapterInterface $adapter, Logger $logger)
+    public function __construct(AdapterInterface $adapter)
     {
-        parent::__construct($adapter, $logger);
+        parent::__construct($adapter);
     }
 
     /**
@@ -231,15 +230,17 @@ class GetTax extends AbstractService
      */
     public function calculate(CreateTransactionModel $model)
     {
-        $client = $this->getAdapter()->getAvaTaxClient();
+        $adapter = $this->getAdapter();
+        $client = $adapter->getAvaTaxClient();
+        $logHelper = new LogHelper($adapter);
         $model->date = date(DATE_W3C);
         try {
-            $this->log('Avalara request', 0, $model);
+            $logHelper->log(Level::Info, 'Avalara request', $model);
             $response = $client->createTransaction(null, $model);
-            $this->log('Avalara response', 0, $response);
+            $logHelper->log(Level::Info, 'Avalara response', $response);
             return $response;
         } catch (\Exception $e) {
-            $this->log($e->getMessage(), Logger::ERROR);
+            LogHelper::addLog(Level::Error, $e->getMessage());
         }
 
         return false;

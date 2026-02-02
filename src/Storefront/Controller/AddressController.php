@@ -36,7 +36,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\ConstraintViolation;
 use Shopware\Storefront\Controller\StorefrontController;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
-use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\ConstraintViolationList;
@@ -61,7 +60,6 @@ class AddressController extends StorefrontController
 
     private AbstractChangeCustomerProfileRoute $updateCustomerProfileRoute;
     private SystemConfigService $systemConfigService;
-    private Logger $logger;
     private Session $session;
     private $listOfProcessedAddresses = [];
 
@@ -73,8 +71,7 @@ class AddressController extends StorefrontController
         AbstractUpsertAddressRoute         $updateAddressRoute,
         AbstractDeleteAddressRoute         $deleteAddressRoute,
         AbstractChangeCustomerProfileRoute $updateCustomerProfileRoute,
-        SystemConfigService                $systemConfigService,
-        Logger                             $logger
+        SystemConfigService                $systemConfigService
     )
     {
         $this->accountService = $accountService;
@@ -85,7 +82,6 @@ class AddressController extends StorefrontController
         $this->deleteAddressRoute = $deleteAddressRoute;
         $this->updateCustomerProfileRoute = $updateCustomerProfileRoute;
         $this->systemConfigService = $systemConfigService;
-        $this->logger = $logger;
         $this->session = new Session();
     }
 
@@ -131,7 +127,7 @@ class AddressController extends StorefrontController
 
             /** Custom validation for address*/
             $salesChannelId = $context->getSalesChannel()->getId();
-            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
+            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $salesChannelId);
             $addressFactory = $adapter->getFactory('AddressFactory');
             $addressLocationInfo = $addressFactory->buildDataBagAddress($address);
             $addressFactory->validate($addressLocationInfo, $address->get('id'), $this->session, false);
@@ -380,7 +376,7 @@ class AddressController extends StorefrontController
     {
         if ($addressId = $request->get('addressId')) {
             $address = $request->get('address');
-            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
+            $adapter = new AvalaraSDKAdapter($this->systemConfigService, $salesChannelId);
             $addressFactory = $adapter->getFactory('AddressFactory');
             $addressLocationInfo = $addressFactory->buildAddressBookAddress($address);
             $addressFactory->validate($addressLocationInfo, $addressId, $this->session, false);

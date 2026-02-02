@@ -1,3 +1,7 @@
+# 3.0.7
+- Improved logs
+- Language for Order State mapping
+
 # 3.0.6
 - Duplicate error fix
 
