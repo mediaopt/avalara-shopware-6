@@ -161,11 +161,6 @@ class Form
     const SESSION_AVALARA_CURRENT_ADDRESS_ID = 'avalaraAddressFlag';
 
     /**
-     * @var string Field name for the plugin session key
-     */
-    const SESSION_AVALARA_REDIRECT_AFTER_ADDRESS_CHANGE = 'avalaraRedirectAfterAddressChange';
-
-    /**
      * @var string Field name for the plugin custom field
      */
     const CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE = 'avalara_shipping_tax_code';
@@ -204,14 +199,12 @@ class Form
      * @var array plugin session keys
      */
     const SESSION_KEYS = [
-        self::SESSION_AVALARA_ADDRESS_VALIDATION,
         self::SESSION_AVALARA_TAXES_TRANSFORMED,
         self::SESSION_AVALARA_MODEL,
         self::SESSION_AVALARA_MODEL_KEY,
         self::SESSION_AVALARA_IS_GROSS_PRICE,
         self::SESSION_AVALARA_ADDRESS_VALIDATION,
         self::SESSION_AVALARA_CURRENT_ADDRESS_ID,
-        self::SESSION_AVALARA_REDIRECT_AFTER_ADDRESS_CHANGE,
     ];
 
     /**
