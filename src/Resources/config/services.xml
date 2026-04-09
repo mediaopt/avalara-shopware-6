@@ -46,6 +46,7 @@
 
         <service id="MoptAvalara6\Core\Checkout\Cart\CartValidator">
             <argument type="service" id="request_stack" />
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <tag name="shopware.cart.validator"/>
         </service>
 
