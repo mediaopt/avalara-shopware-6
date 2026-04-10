@@ -3,8 +3,6 @@
 namespace MoptAvalara6\Subscriber;
 
 use MoptAvalara6\Bootstrap\Form;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
-use Shopware\Storefront\Event\StorefrontRenderEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -16,8 +14,7 @@ class AddressSubscriber implements EventSubscriberInterface
     private RouterInterface $router;
 
     public function __construct(
-        RouterInterface     $router,
-        SystemConfigService $systemConfigService  // kept for DI compatibility; validation moved to CartValidator
+        RouterInterface     $router
     ) {
         $this->router = $router;
     }

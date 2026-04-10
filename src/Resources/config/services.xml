@@ -20,7 +20,6 @@
 
         <service id="MoptAvalara6\Subscriber\AddressSubscriber">
             <argument type="service" id="router" />
-            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <tag name="kernel.event_subscriber" priority="-5100"/>
         </service>
 
