@@ -8,7 +8,6 @@ use Shopware\Core\Framework\Plugin\Context\ActivateContext;
 use Shopware\Core\Framework\Plugin\Context\InstallContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Shopware\Core\Framework\Uuid\Uuid;
-use Shopware\Core\Kernel;
 use Shopware\Core\System\CustomField\CustomFieldTypes;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -19,7 +18,7 @@ class MoptAvalara6 extends Plugin
 {
     const PLUGIN_NAME = 'MoptAvalara6';
 
-    const PLUGIN_VERSION = '3.0.7';
+    const PLUGIN_VERSION = '3.0.8';
 
     /**
      * @param InstallContext $installContext

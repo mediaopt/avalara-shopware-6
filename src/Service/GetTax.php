@@ -202,26 +202,18 @@ class GetTax extends AbstractService
     /**
      * @param CustomerEntity $customer
      * @return bool
-     * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \Doctrine\DBAL\Exception
      */
-    private function isTaxIncluded(CustomerEntity $customer, $session): bool
+    private function isTaxIncluded(CustomerEntity $customer): bool
     {
-        $isTaxIncluded = $session->getValue(Form::SESSION_AVALARA_IS_GROSS_PRICE, $this->getAdapter());
+        $connection = Kernel::getConnection();
+        $qb = $connection->createQueryBuilder();
+        $qb->select('display_gross')
+            ->from('customer_group')
+            ->where('id = UNHEX(:groupId)')
+            ->setParameter('groupId', $customer->getGroupId());
 
-        if (is_null($isTaxIncluded)) {
-            $groupId = $customer->getGroupId();
-            $connection = Kernel::getConnection();
-
-            $sql = "SELECT display_gross FROM customer_group WHERE id = UNHEX('$groupId')";
-
-            $isTaxIncluded = $connection->executeQuery($sql)->fetchAssociative();
-
-            $isTaxIncluded = (bool)$isTaxIncluded['display_gross'];
-            $session->setValue(Form::SESSION_AVALARA_IS_GROSS_PRICE, $isTaxIncluded, $this->getAdapter());
-        }
-
-        return $isTaxIncluded;
+        return $qb->fetchOne();
     }
 
     /**

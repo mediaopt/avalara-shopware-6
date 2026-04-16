@@ -1,3 +1,7 @@
+# 3.0.8
+- Validation now runs without redirection to address edit page
+- Disable tax calculation in admin panel
+
 # 3.0.7
 - Improved logs
 - Language for Order State mapping

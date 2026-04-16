@@ -161,15 +161,22 @@ class OverwritePriceProcessor implements CartProcessorInterface
         if (!array_key_exists('REQUEST_URI', $_SERVER)) {
             return true;
         }
+        $currentPage = $_SERVER['REQUEST_URI'];
+
+        $pagesNotForUpdate = [
+            'store-api/'
+        ];
+        foreach ($pagesNotForUpdate as $page) {
+            if (strripos($currentPage, $page)) {
+                return false;
+            }
+        }
 
         $pagesForUpdate = [
             'checkout/cart',
             'checkout/confirm',
             'checkout/order'
         ];
-
-        $currentPage = $_SERVER['REQUEST_URI'];
-
         foreach ($pagesForUpdate as $page) {
             if (strripos($currentPage, $page)) {
                 return true;

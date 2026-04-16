@@ -4,7 +4,8 @@
     },
     "checkout": {
         "moptavalara6": {
-            "tax-calculation-error" : "Can't calculate tax."
+            "tax-calculation-error" : "Can't calculate tax.",
+            "address-validation-error": "Your shipping address could not be validated. Please check your address and try again."
         }
     }
 }

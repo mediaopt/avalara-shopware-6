@@ -20,7 +20,6 @@
 
         <service id="MoptAvalara6\Subscriber\AddressSubscriber">
             <argument type="service" id="router" />
-            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <tag name="kernel.event_subscriber" priority="-5100"/>
         </service>
 
@@ -37,23 +36,6 @@
             <tag name="shopware.cart.processor" priority="-5200"/>
         </service>
 
-        <service id="MoptAvalara6\Storefront\Controller\AddressController" public="true">
-            <argument type="service" id="Shopware\Storefront\Page\Address\Listing\AddressListingPageLoader"/>
-            <argument type="service" id="Shopware\Storefront\Page\Address\Detail\AddressDetailPageLoader"/>
-            <argument type="service" id="Shopware\Core\Checkout\Customer\SalesChannel\AccountService"/>
-            <argument type="service" id="Shopware\Core\Checkout\Customer\SalesChannel\ListAddressRoute"/>
-            <argument type="service" id="Shopware\Core\Checkout\Customer\SalesChannel\UpsertAddressRoute"/>
-            <argument type="service" id="Shopware\Core\Checkout\Customer\SalesChannel\DeleteAddressRoute"/>
-            <argument type="service" id="Shopware\Core\Checkout\Customer\SalesChannel\ChangeCustomerProfileRoute" />
-            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
-            <call method="setContainer">
-                <argument type="service" id="service_container"/>
-            </call>
-            <call method="setTwig">
-                <argument type="service" id="twig"/>
-            </call>
-        </service>
-
         <service id="MoptAvalara6\Controller\AddressValidationController" public="true">
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <call method="setContainer">
@@ -62,6 +44,8 @@
         </service>
 
         <service id="MoptAvalara6\Core\Checkout\Cart\CartValidator">
+            <argument type="service" id="request_stack" />
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService" />
             <tag name="shopware.cart.validator"/>
         </service>
 

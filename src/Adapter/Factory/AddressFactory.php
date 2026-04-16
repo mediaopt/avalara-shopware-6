@@ -207,6 +207,8 @@ class AddressFactory extends AbstractFactory
                 ];
             }
             $session->set(Form::SESSION_AVALARA_ADDRESS_VALIDATION, $sessionAddresses);
+        } else {
+            $session->set(Form::SESSION_AVALARA_ADDRESS_VALIDATION, null);
         }
     }
 
