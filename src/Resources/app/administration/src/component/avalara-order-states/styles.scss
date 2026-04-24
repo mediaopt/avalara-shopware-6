@@ -1,9 +1,12 @@
-.sw-system-config {
-  .sw-card-wrapper, .sw-system-config__global-sales-channel-switch {
-    display: none;
-  }
-  .sw-card-wrapper:has(.avalara-settings-link) {
-    display: block;
+.sw-extension-config {
+  .sw-system-config:has(.avalara-settings-link) {
+    .sw-card-wrapper, .sw-system-config__global-sales-channel-switch {
+      display: none;
+    }
+
+    .sw-card-wrapper:has(.avalara-settings-link) {
+      display: block;
+    }
   }
 }
 
