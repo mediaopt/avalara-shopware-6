@@ -75,4 +75,4 @@ div.component {
         }
     }
 }
-.sw-system-config .sw-card-wrapper,.sw-system-config .sw-system-config__global-sales-channel-switch{display:none}.sw-system-config .sw-card-wrapper:has(.avalara-settings-link){display:block}.mopt-avalara-settings-page .sw-card-wrapper,.mopt-avalara-settings-page .sw-system-config__global-sales-channel-switch{display:block}.mopt-avalara-settings-page .sw-card-wrapper:has(.avalara-settings-link){display:none}
+.sw-extension-config .sw-system-config:has(.avalara-settings-link) .sw-card-wrapper,.sw-extension-config .sw-system-config:has(.avalara-settings-link) .sw-system-config__global-sales-channel-switch{display:none}.sw-extension-config .sw-system-config:has(.avalara-settings-link) .sw-card-wrapper:has(.avalara-settings-link){display:block}.mopt-avalara-settings-page .sw-card-wrapper,.mopt-avalara-settings-page .sw-system-config__global-sales-channel-switch{display:block}.mopt-avalara-settings-page .sw-card-wrapper:has(.avalara-settings-link){display:none}
