@@ -4,7 +4,8 @@
     },
     "checkout": {
         "moptavalara6": {
-            "tax-calculation-error" : "Die Steuer kann nicht berechnet werden."
+            "tax-calculation-error" : "Die Steuer kann nicht berechnet werden.",
+            "address-validation-error": "Ihre Lieferadresse konnte nicht validiert werden. Bitte überprüfen Sie Ihre Adresse und versuchen Sie es erneut."
         }
     }
 }

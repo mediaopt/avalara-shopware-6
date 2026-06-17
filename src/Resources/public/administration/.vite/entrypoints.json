@@ -1,0 +1,25 @@
+{
+  "base": "/bundles/moptavalara6/administration/",
+  "entryPoints": {
+    "mopt-avalara6": {
+      "css": [
+        "/bundles/moptavalara6/administration/assets/mopt-avalara6-jDBbdnz7.css"
+      ],
+      "dynamic": [],
+      "js": [
+        "/bundles/moptavalara6/administration/assets/mopt-avalara6-CfAZTnM9.js"
+      ],
+      "legacy": false,
+      "preload": []
+    }
+  },
+  "legacy": false,
+  "metadatas": {},
+  "version": [
+    "7.1.0",
+    7,
+    1,
+    0
+  ],
+  "viteServer": null
+}

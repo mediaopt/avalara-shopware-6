@@ -5,6 +5,7 @@
         https://symfony.com/schema/routing/routing-1.0.xsd">
 
     <import resource="../../Controller/Api/ApiTestController.php" type="attribute"/>
+    <import resource="../../Controller/OrderStates/OrderStatesController.php" type="attribute"/>
     <import resource="../../Controller/AddressValidationController.php" type="attribute"/>
-    <import resource="../../Storefront/Controller/AddressController.php" type="attribute" />
+    <import resource="../../Controller/SupportForm/SupportFormController.php" type="attribute"/>
 </routes>

@@ -1,5 +1,22 @@
+# 4.0.1
+- Update from 6.6 version added
+
 # 4.0.0
 - Shopware 6.7 compatibility
+
+# 3.0.9
+- Fix for settings viewability
+
+# 3.0.8
+- Validation now runs without redirection to address edit page
+- Disable tax calculation in admin panel
+
+# 3.0.7
+- Improved logs
+- Language for Order State mapping
+
+# 3.0.6
+- Duplicate error fix
 
 # 3.0.5
 - Improved error handling
