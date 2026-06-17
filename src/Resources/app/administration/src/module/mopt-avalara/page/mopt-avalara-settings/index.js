@@ -14,7 +14,7 @@ Component.register('mopt-avalara-settings', {
             salesChannelId:null,
             cancelStatusId: '',
             refundStatusId: '',
-            selectOptions: '',
+            selectOptions: [],
         };
     },
 
@@ -70,29 +70,35 @@ Component.register('mopt-avalara-settings', {
         },
 
         getInitialData() {
-            this.loading = true;
-            this.avalaraOrderStates.getStates({localeId: Shopware.State.get('session').currentUser.localeId})
+            this.isLoading = true;
+            const localeId = Shopware.Store.get('session')?.currentUser?.localeId;
+
+            this.avalaraOrderStates.getStates({ localeId })
                 .then((res) => {
                     this.cancelStatusId = res.cancelStatusId;
                     this.refundStatusId = res.refundStatusId;
                     this.selectOptions = res.selectOptions;
                 })
                 .finally(() => {
-                    this.loading = false;
+                    this.isLoading = false;
                 })
             ;
         },
 
         setCancelStatusId(value) {
-            this.loading = true;
+            const salesChannelId = this.$refs.systemConfig.currentSalesChannelId ?? 'null';
             this.cancelStatusId = value;
-            this.$refs.systemConfig.actualConfigData[this.salesChannelId]["MoptAvalara6.config.orderCancel"] = value;
+            this.salesChannelId = salesChannelId;
+            this.$refs.systemConfig.actualConfigData[salesChannelId] = this.$refs.systemConfig.actualConfigData[salesChannelId] ?? {};
+            this.$refs.systemConfig.actualConfigData[salesChannelId]["MoptAvalara6.config.orderCancel"] = value;
         },
 
         setRefundStatusId(value) {
-            this.loading = true;
+            const salesChannelId = this.$refs.systemConfig.currentSalesChannelId ?? 'null';
             this.refundStatusId = value;
-            this.$refs.systemConfig.actualConfigData[this.salesChannelId]["MoptAvalara6.config.orderRefund"] = value;
+            this.salesChannelId = salesChannelId;
+            this.$refs.systemConfig.actualConfigData[salesChannelId] = this.$refs.systemConfig.actualConfigData[salesChannelId] ?? {};
+            this.$refs.systemConfig.actualConfigData[salesChannelId]["MoptAvalara6.config.orderRefund"] = value;
         },
 
     }

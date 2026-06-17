@@ -131,8 +131,11 @@
         </input-field>
         <component name="avalara-address-test-button">
             <name>addressTest</name>
-            <label>Test address</label>
         </component>
+    </card>
+
+    <card>
+        <title>Support form</title>
         <component name="support-form">
             <name>supportForm</name>
         </component>

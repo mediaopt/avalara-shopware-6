@@ -38,23 +38,17 @@
 
                     <sw-card :title="'Order statuses'">
                         <sw-select-field
-                                v-model:value="cancelStatusId"
+                                v-model="cancelStatusId"
+                                :options="selectOptions"
                                 :label="$tc('avalara-order-states.state-cancel')"
-                                @update:value="setCancelStatusId">
-                            <option v-for="selectOption in selectOptions"
-                                    :value="selectOption.value">
-                                {{ selectOption.label }}
-                            </option>
+                                @update:model-value="setCancelStatusId">
                         </sw-select-field>
 
                         <sw-select-field
-                                v-model:value="refundStatusId"
+                                v-model="refundStatusId"
+                                :options="selectOptions"
                                 :label="$tc('avalara-order-states.state-refund')"
-                                @update:value="setRefundStatusId">
-                            <option v-for="selectOption in selectOptions"
-                                    :value="selectOption.value">
-                                {{ selectOption.label }}
-                            </option>
+                                @update:model-value="setRefundStatusId">
                         </sw-select-field>
                     </sw-card>
                 </sw-card-view>
