@@ -194,6 +194,8 @@ class Form
      * @var string Field name for the vlck plugin custom field
      */
     const CUSTOM_FIELD_PRODUCT_WAREHOUSE = 'vlck_warehouse_id';
+    const CUSTOM_FIELD_AVALARA_CUSTOMER_CODE_FIELDSET = 'avalara_customer_code_fieldset';
+    const CUSTOM_FIELD_AVALARA_CUSTOMER_CODE = 'avalara_customer_code';
 
     /**
      * @var array plugin session keys
@@ -221,4 +223,12 @@ class Form
     const LOG_FILE_EXT = 'zip';
     const LOG_FILE_MIME_TYPE = 'application/zip';
     const LOG_FILE_MAX = 14;
+
+    const CUSTOM_FIELDSET_LIST = [
+        self::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE_FIELDSET => 'getShippingTaxCodeFieldset',
+        self::CUSTOM_FIELD_AVALARA_PRODUCT_TAX_CODE_FIELDSET => 'getProductTaxCodeFieldset',
+        self::CUSTOM_FIELD_AVALARA_CATEGORY_TAX_CODE_FIELDSET => 'getCategoryTaxCodeFieldset',
+        self::CUSTOM_FIELD_AVALARA_CUSTOMER_CODE_FIELDSET => 'getCustomerCodeFieldset',
+    ];
+
 }

@@ -5,6 +5,7 @@ namespace MoptAvalara6\Subscriber;
 use Avalara\CreateTransactionModel;
 use Monolog\Level;
 use MoptAvalara6\Adapter\AvalaraSDKAdapter;
+use MoptAvalara6\Service\GetTax;
 use MoptAvalara6\Service\LogHelper;
 use MoptAvalara6\Service\SessionService;
 use Shopware\Core\Checkout\Cart\Event\CheckoutOrderPlacedEvent;
@@ -89,7 +90,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
             $order = $event->getOrder();
             $customer =  $order->getOrderCustomer()->getCustomer();
 
-            $customerId = $customer->getId();
+            $customerCode = GetTax::getCustomerCode($customer);
             $currencyIso = $order->getCurrency()->getIsoCode();
             $taxIncluded = $this->isTaxIncluded($customer);
             $context = $event->getContext();
@@ -105,7 +106,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
                     $lineItems,
                     $shippingMethod,
                     $shippingPrice,
-                    $customerId,
+                    $customerCode,
                     $currencyIso,
                     $taxIncluded,
                     $this->categoryRepository,

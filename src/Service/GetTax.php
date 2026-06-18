@@ -54,13 +54,13 @@ class GetTax extends AbstractService
             return $session->getValue(Form::SESSION_AVALARA_TAXES_TRANSFORMED, $this->getAdapter());
         }
 
-        $customerId = $customer->getCustomerNumber();
+        $customerCode = self::getCustomerCode($customer);
 
         $taxIncluded = $this->isTaxIncluded($customer, $session);
         $currencyIso = $context->getCurrency()->getIsoCode();
         $avalaraRequest = $this->prepareAvalaraRequest(
             $cart,
-            $customerId,
+            $customerCode,
             $currencyIso,
             $taxIncluded,
             $session,
@@ -88,7 +88,7 @@ class GetTax extends AbstractService
 
     /**
      * @param Cart $cart
-     * @param string $customerId
+     * @param string $customerCode
      * @param string $currencyIso
      * @param bool $taxIncluded
      * @param Session $session
@@ -98,7 +98,7 @@ class GetTax extends AbstractService
      */
     private function prepareAvalaraRequest(
         Cart                $cart,
-        string              $customerId,
+        string              $customerCode,
         string              $currencyIso,
         bool                $taxIncluded,
         Session             $session,
@@ -131,7 +131,7 @@ class GetTax extends AbstractService
                 $lineItems,
                 $shippingMethod,
                 $shippingPrice,
-                $customerId,
+                $customerCode,
                 $currencyIso,
                 $taxIncluded,
                 $categoryRepository,
@@ -236,5 +236,21 @@ class GetTax extends AbstractService
         }
 
         return false;
+    }
+
+    /**
+     * @param CustomerEntity $customer
+     * @return string
+     */
+    public static function getCustomerCode(CustomerEntity $customer): string
+    {
+        if ($customFields = $customer->getCustomFields()) {
+            if (array_key_exists(Form::CUSTOM_FIELD_AVALARA_CUSTOMER_CODE, $customFields)
+                && !empty($customFields[Form::CUSTOM_FIELD_AVALARA_CUSTOMER_CODE])
+            ) {
+                return $customFields[Form::CUSTOM_FIELD_AVALARA_CUSTOMER_CODE];
+            }
+        }
+        return $customer->getCustomerNumber();
     }
 }

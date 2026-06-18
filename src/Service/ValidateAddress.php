@@ -71,7 +71,7 @@ class ValidateAddress extends AbstractService
     /**
      *
      * @param \Avalara\AddressLocationInfo $checkedAddress
-     * @param \stdClass $response
+     * @param $response
      * @return array
      */
     public function parseAvalaraResponse(AddressLocationInfo $checkedAddress, $response): array
