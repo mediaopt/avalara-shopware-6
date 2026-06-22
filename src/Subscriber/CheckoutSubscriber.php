@@ -3,21 +3,19 @@
 namespace MoptAvalara6\Subscriber;
 
 use Avalara\CreateTransactionModel;
+use Monolog\Level;
 use MoptAvalara6\Adapter\AvalaraSDKAdapter;
+use MoptAvalara6\Service\GetTax;
+use MoptAvalara6\Service\LogHelper;
 use MoptAvalara6\Service\SessionService;
-use OpenApi\Context;
-use Shopware\Core\Checkout\Cart\Cart;
 use Shopware\Core\Checkout\Cart\Event\CheckoutOrderPlacedEvent;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
-use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemCollection;
-use Shopware\Core\Checkout\Order\Aggregate\OrderLineItem\OrderLineItemEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Kernel;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Session\Session;
 use MoptAvalara6\Bootstrap\Form;
-use Monolog\Logger;
 use Avalara\DocumentType;
 
 class CheckoutSubscriber implements EventSubscriberInterface
@@ -26,23 +24,19 @@ class CheckoutSubscriber implements EventSubscriberInterface
 
     private Session $session;
 
-    private Logger $logger;
     private EntityRepository $categoryRepository;
 
     /**
      * @param SystemConfigService $systemConfigService
-     * @param Logger $logger
      * @param EntityRepository $categoryRepository
      */
     public function __construct(
         SystemConfigService $systemConfigService,
-        Logger $logger,
         EntityRepository $categoryRepository
     )
     {
         $this->systemConfigService = $systemConfigService;
         $this->categoryRepository = $categoryRepository;
-        $this->logger = $logger;
         $this->session = new SessionService();
     }
 
@@ -63,7 +57,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
     public function makeAvalaraCommitCall(CheckoutOrderPlacedEvent $event): void
     {
         $salesChannelId = $event->getSalesChannelId();
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $salesChannelId);
         if ($adapter->getPluginConfig(Form::SEND_GET_TAX_ONLY)) {
             return;
         }
@@ -82,16 +76,12 @@ class CheckoutSubscriber implements EventSubscriberInterface
             $result = $service->calculate($avalaraRequestModel);
 
             if (!is_object($result)) {
-                $service->log('Unexpected response from Avalara.', Logger::ERROR, $result);
+                LogHelper::addLog(Level::Error, 'Unexpected response from Avalara.', $result);
             } else {
                 if (is_null($result->code)) {
-                    $service->log('Can not get tax document code from Avalara response.', Logger::ERROR, $result);
+                    LogHelper::addLog(Level::Error, 'Can not get tax document code from Avalara response.', $result);
                 } elseif ($result->code != $orderNumber) {
-                    $service->log(
-                        "Tax code ({$result->code}) is not the same as order number {$orderNumber}",
-                        Logger::ERROR,
-                        $result
-                    );
+                    LogHelper::addLog(Level::Error, "Tax code ({$result->code}) is not the same as order number {$orderNumber}", $result);
                 }
             }
 
@@ -100,7 +90,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
             $order = $event->getOrder();
             $customer =  $order->getOrderCustomer()->getCustomer();
 
-            $customerId = $customer->getId();
+            $customerCode = GetTax::getCustomerCode($customer);
             $currencyIso = $order->getCurrency()->getIsoCode();
             $taxIncluded = $this->isTaxIncluded($customer);
             $context = $event->getContext();
@@ -116,7 +106,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
                     $lineItems,
                     $shippingMethod,
                     $shippingPrice,
-                    $customerId,
+                    $customerCode,
                     $currencyIso,
                     $taxIncluded,
                     $this->categoryRepository,

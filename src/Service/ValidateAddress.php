@@ -11,6 +11,7 @@ namespace MoptAvalara6\Service;
 use Avalara\AddressLocationInfo;
 use Avalara\AddressResolutionModel;
 use MoptAvalara6\Adapter\Factory\AddressFactory;
+use Monolog\Level;
 
 /**
  * @author Mediaopt GmbH
@@ -70,7 +71,7 @@ class ValidateAddress extends AbstractService
     /**
      *
      * @param \Avalara\AddressLocationInfo $checkedAddress
-     * @param \stdClass $response
+     * @param $response
      * @return array
      */
     public function parseAvalaraResponse(AddressLocationInfo $checkedAddress, $response): array
@@ -82,8 +83,10 @@ class ValidateAddress extends AbstractService
             'hash' => AddressFactory::getAddressHash($checkedAddress)
         ];
 
+        // In case of bad response from Avalara validateAddresses node not present
         if (null === $response || !is_object($response) || empty($response->validatedAddresses)) {
             $return['code'] = self::VALIDATION_CODE_BAD_RESPONSE;
+            LogHelper::addLog(Level::Error, 'Bad response from Avalara', $response);
             return $return;
         }
 
@@ -99,6 +102,7 @@ class ValidateAddress extends AbstractService
             }
         }
 
+        // Messages node present in case of validation issues ONLY
         if (isset($response->messages)) {
             $return['code'] = self::VALIDATION_CODE_INVALID;
             foreach ($response->messages as $message) {

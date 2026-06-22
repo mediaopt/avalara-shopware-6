@@ -1,0 +1,21 @@
+.sw-extension-config {
+  .sw-system-config:has(.avalara-settings-link) {
+    .mt-card__wrapper, .sw-system-config__global-sales-channel-switch {
+      display: none;
+    }
+
+    .mt-card__wrapper:has(.avalara-settings-link) {
+      display: block;
+    }
+  }
+}
+
+.mopt-avalara-settings-page {
+
+  .mt-card__wrapper, .sw-system-config__global-sales-channel-switch {
+    display: block;
+  }
+  .mt-card__wrapper:has(.avalara-settings-link) {
+    display: none;
+  }
+}

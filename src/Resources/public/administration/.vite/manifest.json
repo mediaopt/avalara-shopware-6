@@ -1,0 +1,11 @@
+{
+  "main.js": {
+    "file": "assets/mopt-avalara6-DDKZwi5R.js",
+    "name": "mopt-avalara6",
+    "src": "main.js",
+    "isEntry": true,
+    "css": [
+      "assets/mopt-avalara6-Cl8ALaw3.css"
+    ]
+  }
+}

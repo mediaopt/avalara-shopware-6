@@ -77,10 +77,6 @@
             <name>logLevel</name>
             <options>
                 <option>
-                    <id>DEBUG</id>
-                    <name>DEBUG</name>
-                </option>
-                <option>
                     <id>ERROR</id>
                     <name>ERROR</name>
                 </option>
@@ -88,23 +84,20 @@
                     <id>INFO</id>
                     <name>INFO</name>
                 </option>
+                <option>
+                    <id>DEBUG</id>
+                    <name>DEBUG</name>
+                </option>
             </options>
             <defaultValue>INFO</defaultValue>
             <label>Choose the loglevel of Avalara non-error messages</label>
         </input-field>
     </card>
     <card>
-        <title>Order statuses</title>
-        <input-field type="single-select">
-            <name>orderCancel</name>
-            <options><option><id>0</id><name>This line should be replaced on plugin installation.</name></option></options>
-            <label>Cancel status</label>
-        </input-field>
-        <input-field type="single-select">
-            <name>orderRefund</name>
-            <options><option><id>0</id><name>This line should be replaced on plugin installation.</name></option></options>
-            <label>Refund status</label>
-        </input-field>
+        <title>Avalara settings</title>
+        <component name="avalara-order-states">
+            <name>orderStatesLink</name>
+        </component>
     </card>
     <card>
         <title>Origin address</title>
@@ -138,7 +131,13 @@
         </input-field>
         <component name="avalara-address-test-button">
             <name>addressTest</name>
-            <label>Test address</label>
+        </component>
+    </card>
+
+    <card>
+        <title>Support form</title>
+        <component name="support-form">
+            <name>supportForm</name>
         </component>
     </card>
 </config>

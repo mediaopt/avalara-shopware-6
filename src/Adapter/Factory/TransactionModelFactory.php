@@ -39,7 +39,7 @@ class TransactionModelFactory extends AbstractTransactionModelFactory
      * @param array $lineItems
      * @param ShippingMethodEntity $shippingMethod
      * @param float|null $shippingPrice
-     * @param string $customerId
+     * @param string $customerCode
      * @param string $currencyIso
      * @param bool $taxIncluded
      * @param EntityRepository $categoryRepository
@@ -54,7 +54,7 @@ class TransactionModelFactory extends AbstractTransactionModelFactory
         array $lineItems,
         ShippingMethodEntity $shippingMethod,
         ?float $shippingPrice,
-        string $customerId,
+        string $customerCode,
         string $currencyIso,
         bool $taxIncluded,
         EntityRepository $categoryRepository,
@@ -67,7 +67,7 @@ class TransactionModelFactory extends AbstractTransactionModelFactory
         $model = new CreateTransactionModel();
         $model->companyCode = $this->getPluginConfig(Form::COMPANY_CODE_FIELD);
         $model->commit = $commit;
-        $model->customerCode = $customerId;
+        $model->customerCode = $customerCode;
         $model->type = DocumentType::C_SALESORDER;
         $model->currencyCode = $currencyIso;
         $model->addresses = $addresses;

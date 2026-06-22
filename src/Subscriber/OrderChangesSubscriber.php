@@ -2,9 +2,9 @@
 
 namespace MoptAvalara6\Subscriber;
 
-use Monolog\Logger;
+use Monolog\Level;
 use MoptAvalara6\Bootstrap\Form;
-use Psr\Log\LogLevel;
+use MoptAvalara6\Service\LogHelper;
 use Shopware\Core\Checkout\Order\OrderEntity;
 use Shopware\Core\Checkout\Order\OrderEvents;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
@@ -21,21 +21,17 @@ class OrderChangesSubscriber implements EventSubscriberInterface
 
     private EntityRepository $orderRepository;
 
-    private Logger $logger;
-
     /**
      * @param SystemConfigService $systemConfigService
-     * @param Logger $logger
+     * @param EntityRepository $orderRepository
      */
     public function __construct(
         SystemConfigService $systemConfigService,
-        EntityRepository $orderRepository,
-        Logger $logger
+        EntityRepository $orderRepository
     )
     {
         $this->systemConfigService = $systemConfigService;
         $this->orderRepository = $orderRepository;
-        $this->logger = $logger;
     }
 
     public static function getSubscribedEvents(): array
@@ -78,7 +74,7 @@ class OrderChangesSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $order->getSalesChannelId());
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $order->getSalesChannelId());
         $cancelStatus = $adapter->getPluginConfig(Form::CANCEL_ORDER_STATUS_FIELD);
         $refundStatus = $adapter->getPluginConfig(Form::REFUND_ORDER_STATUS_FIELD);
 
@@ -113,7 +109,7 @@ class OrderChangesSubscriber implements EventSubscriberInterface
         foreach ($orders->getElements() as $order) {
             return $order;
         }
-        $this->logger->log(LogLevel::ERROR, "There is no order with id = $orderId");
+        LogHelper::addLog(Level::Error, "There is no order with id = $orderId");
         return false;
     }
 
@@ -125,7 +121,7 @@ class OrderChangesSubscriber implements EventSubscriberInterface
      */
     private function processAvalaraTax(string $docCode, string $salesChannelId, string $service)
     {
-        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $this->logger, $salesChannelId);
+        $adapter = new AvalaraSDKAdapter($this->systemConfigService, $salesChannelId);
         $service = $adapter->getService($service);
         $service->processTransaction($docCode);
     }
