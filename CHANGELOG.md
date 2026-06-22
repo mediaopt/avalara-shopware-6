@@ -1,6 +1,5 @@
 # 4.0.1
 - Update from 6.6 version added
-- Field for Customer Code added
 
 # 4.0.0
 - Shopware 6.7 compatibility

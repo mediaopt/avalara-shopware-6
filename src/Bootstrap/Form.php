@@ -228,7 +228,6 @@ class Form
         self::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE_FIELDSET => 'getShippingTaxCodeFieldset',
         self::CUSTOM_FIELD_AVALARA_PRODUCT_TAX_CODE_FIELDSET => 'getProductTaxCodeFieldset',
         self::CUSTOM_FIELD_AVALARA_CATEGORY_TAX_CODE_FIELDSET => 'getCategoryTaxCodeFieldset',
-        self::CUSTOM_FIELD_AVALARA_CUSTOMER_CODE_FIELDSET => 'getCustomerCodeFieldset',
     ];
 
 }
