@@ -1,3 +1,6 @@
+# 4.0.2
+- Reduce Avalara address validation amount
+
 # 4.0.1
 - Update from 6.6 version added
 
