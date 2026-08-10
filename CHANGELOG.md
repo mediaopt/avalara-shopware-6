@@ -1,3 +1,6 @@
+# 3.0.10
+- Reduce Avalara address validation amount
+
 # 3.0.9
 - Fix for settings viewability
 
