@@ -41,6 +41,8 @@ class LineFactory extends AbstractFactory
      * @param bool $taxIncluded
      * @param EntityRepository $categoryRepository
      * @param Context $context
+     * @param bool $discounted
+     * @param int $lineNumber
      * @return LineItemModel|bool
      * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \Doctrine\DBAL\Exception
@@ -51,7 +53,8 @@ class LineFactory extends AbstractFactory
         bool $taxIncluded,
         EntityRepository $categoryRepository,
         Context $context,
-        bool $discounted
+        bool $discounted,
+        int $lineNumber
     )
     {
         if (self::isDiscount($lineItem)) {
@@ -64,7 +67,7 @@ class LineFactory extends AbstractFactory
         [$price, $quantity] = self::getLineItemDetails($lineItem);
 
         $line = new LineItemModel();
-        $line->number = self::getPayloadValue($lineItem, 'productNumber');
+        $line->number = $lineNumber;
         $line->itemCode = self::getPayloadValue($lineItem, 'productNumber');
         $line->amount = $price * $quantity;
         $line->quantity = $quantity;
