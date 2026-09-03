@@ -17,7 +17,7 @@ use MoptAvalara6\Bootstrap\Form;
 class MoptAvalara6 extends Plugin
 {
     const PLUGIN_NAME = 'MoptAvalara6';
-    const PLUGIN_VERSION = '4.0.2';
+    const PLUGIN_VERSION = '4.1.0';
     const AVALARA_APP_VERSION = 'a0n5a00000hvQLaAAM';
 
     /**

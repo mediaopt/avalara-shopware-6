@@ -27,6 +27,12 @@
         "error": "Error!",
         "user-have-no-rights": "Looks like you don’t have permission to create a support account. Reach out to an administrator to gain access."
     },
+    "avalara-company-code-select": {
+        "title": "Firmencode",
+        "placeholder": "Firmencode auswählen",
+        "refresh": "Aktualisieren",
+        "error": "Firmencodes konnten nicht geladen werden. Bitte prüfe deine Avalara-Zugangsdaten."
+    },
     "avalara-order-states": {
         "state-cancel": "Abgebrochen",
         "state-refund": "Erstattet"
