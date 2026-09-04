@@ -33,6 +33,12 @@
         "refresh": "Refresh",
         "error": "Could not load company codes. Please check your Avalara credentials."
     },
+    "avalara-tax-code-select": {
+        "title": "Tax Code",
+        "placeholder": "Select tax code",
+        "refresh": "Refresh",
+        "error": "Could not load tax codes. Please check your Avalara credentials."
+    },
     "avalara-order-states": {
         "state-cancel": "Canceled",
         "state-refund": "Refunded"

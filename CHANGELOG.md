@@ -3,6 +3,7 @@
 - Document date in refund is original order date now
 - New API version header in Avalara calls
 - Company look up code is a dropdown now.
+- TaxCode for category and product is now a dropdown with search
 
 # 4.0.2
 - Reduce Avalara address validation amount

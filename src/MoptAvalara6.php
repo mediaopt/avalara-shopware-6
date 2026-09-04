@@ -152,6 +152,10 @@ class MoptAvalara6 extends Plugin
                     'name' => Form::CUSTOM_FIELD_AVALARA_PRODUCT_TAX_CODE,
                     'type' => CustomFieldTypes::TEXT,
                     'allow_cart_expose' => true,
+                    'config' => [
+                        'componentName' => 'avalara-tax-code-select',
+                        'customFieldType' => 'text',
+                    ],
                 ]
             ],
             'relations' => [
@@ -183,6 +187,10 @@ class MoptAvalara6 extends Plugin
                     'name' => Form::CUSTOM_FIELD_AVALARA_CATEGORY_TAX_CODE,
                     'type' => CustomFieldTypes::TEXT,
                     'allow_cart_expose' => true,
+                    'config' => [
+                        'componentName' => 'avalara-tax-code-select',
+                        'customFieldType' => 'text',
+                    ],
                 ]
             ],
             'relations' => [

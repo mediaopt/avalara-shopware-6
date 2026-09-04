@@ -33,6 +33,12 @@
         "refresh": "Aktualisieren",
         "error": "Firmencodes konnten nicht geladen werden. Bitte prüfe deine Avalara-Zugangsdaten."
     },
+    "avalara-tax-code-select": {
+        "title": "Tax Code",
+        "placeholder": "Tax Code auswählen",
+        "refresh": "Aktualisieren",
+        "error": "Tax Codes konnten nicht geladen werden. Bitte prüfe deine Avalara-Zugangsdaten."
+    },
     "avalara-order-states": {
         "state-cancel": "Abgebrochen",
         "state-refund": "Erstattet"
