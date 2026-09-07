@@ -32,6 +32,7 @@ Component.register('avalara-tax-code-select', {
             isLoading: false,
             taxCodeOptions: [],
             localValue: this.value ?? null,
+            lastSearchTerm: '',
         };
     },
 
@@ -75,8 +76,12 @@ Component.register('avalara-tax-code-select', {
             this.$emit('update:value', value);
         },
 
+        onSearch(term) {
+            this.lastSearchTerm = term;
+        },
+
         onRefresh() {
-            this.fetchTaxCodes();
+            this.fetchTaxCodes(this.lastSearchTerm);
         },
     },
 });
