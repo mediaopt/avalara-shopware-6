@@ -31,9 +31,10 @@ class CancelOrder extends AbstractService
 
     /**
      * @param string $docCode
+     * @param \DateTimeInterface $date
      * @throws \RuntimeException
      */
-    public function processTransaction(string $docCode)
+    public function processTransaction(string $docCode, \DateTimeInterface $date)
     {
         $adapter = $this->getAdapter();
         $logHelper = new LogHelper($adapter);
