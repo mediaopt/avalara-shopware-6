@@ -33,6 +33,12 @@
         "refresh": "Refresh",
         "error": "Could not load company codes. Please check your Avalara credentials."
     },
+    "avalara-exemption-code-select": {
+        "title": "Customer Exemption Code",
+        "placeholder": "Select exemption code",
+        "refresh": "Refresh",
+        "error": "Could not load exemption codes. Please check your Avalara credentials."
+    },
     "avalara-tax-code-select": {
         "title": "Tax Code",
         "placeholder": "Select tax code",

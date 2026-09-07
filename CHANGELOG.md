@@ -4,6 +4,7 @@
 - New API version header in Avalara calls
 - Company look up code is a dropdown now.
 - TaxCode for category and product is now a dropdown with search
+- Exemption code for customer is now a dropdown with search
 
 # 4.0.2
 - Reduce Avalara address validation amount

@@ -10,6 +10,8 @@ import './component/avalara-order-states';
 import './component/avalara-company-code-select';
 import './service/avalaraTaxCodeService';
 import './component/avalara-tax-code-select';
+import './service/avalaraExemptionCodeService';
+import './component/avalara-exemption-code-select';
 
 // module for advanced custom settings
 import './module/mopt-avalara';

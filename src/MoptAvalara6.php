@@ -221,6 +221,10 @@ class MoptAvalara6 extends Plugin
                     'id' => Uuid::randomHex(),
                     'name' => Form::CUSTOM_FIELD_AVALARA_CUSTOMER_CODE,
                     'type' => CustomFieldTypes::TEXT,
+                    'config' => [
+                        'componentName' => 'avalara-exemption-code-select',
+                        'customFieldType' => 'text',
+                    ],
                 ]
             ],
             'relations' => [
