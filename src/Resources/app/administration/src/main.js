@@ -3,9 +3,15 @@ import './component/avalara-api-test-button';
 import './service/avalaraAddressTestService';
 import './service/supportFormService';
 import './service/avalaraOrderStatesService';
+import './service/avalaraCompanyCodeService';
 import './component/avalara-address-test-button';
 import './component/support-form';
 import './component/avalara-order-states';
+import './component/avalara-company-code-select';
+import './service/avalaraTaxCodeService';
+import './component/avalara-tax-code-select';
+import './service/avalaraExemptionCodeService';
+import './component/avalara-exemption-code-select';
 
 // module for advanced custom settings
 import './module/mopt-avalara';

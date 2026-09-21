@@ -55,6 +55,7 @@ class GetTax extends AbstractService
         }
 
         $customerCode = self::getCustomerCode($customer);
+        $entityUseCode = self::getEntityUseCode($customer);
 
         $taxIncluded = $this->isTaxIncluded($customer, $session);
         $currencyIso = $context->getCurrency()->getIsoCode();
@@ -65,7 +66,8 @@ class GetTax extends AbstractService
             $taxIncluded,
             $session,
             $entityRepository,
-            $context
+            $context,
+            $entityUseCode
         );
         if (!$avalaraRequest) {
             return [Form::TAX_REQUEST_STATUS => Form::TAX_REQUEST_STATUS_NOT_NEEDED];
@@ -103,7 +105,8 @@ class GetTax extends AbstractService
         bool                $taxIncluded,
         Session             $session,
         EntityRepository    $categoryRepository,
-        SalesChannelContext $context
+        SalesChannelContext $context,
+        ?string             $entityUseCode = null
     )
     {
         $shippingCountry = $cart->getDeliveries()->getAddresses()->getCountries()->first();
@@ -135,7 +138,9 @@ class GetTax extends AbstractService
                 $currencyIso,
                 $taxIncluded,
                 $categoryRepository,
-                $context->getContext()
+                $context->getContext(),
+                false,
+                $entityUseCode
             );
     }
 
@@ -180,7 +185,7 @@ class GetTax extends AbstractService
             }
             $transformedTax[$line->itemCode] = [
                 'tax' => $line->tax,
-                'rate' => $rate * 100,
+                'rate' => $line->tax != 0 ? $rate * 100 : 0,
             ];
         }
 
@@ -244,6 +249,11 @@ class GetTax extends AbstractService
      */
     public static function getCustomerCode(CustomerEntity $customer): string
     {
+        return $customer->getCustomerNumber();
+    }
+
+    public static function getEntityUseCode(CustomerEntity $customer): ?string
+    {
         if ($customFields = $customer->getCustomFields()) {
             if (array_key_exists(Form::CUSTOM_FIELD_AVALARA_CUSTOMER_CODE, $customFields)
                 && !empty($customFields[Form::CUSTOM_FIELD_AVALARA_CUSTOMER_CODE])
@@ -251,6 +261,6 @@ class GetTax extends AbstractService
                 return $customFields[Form::CUSTOM_FIELD_AVALARA_CUSTOMER_CODE];
             }
         }
-        return $customer->getCustomerNumber();
+        return null;
     }
 }

@@ -82,12 +82,12 @@ class OrderChangesSubscriber implements EventSubscriberInterface
         switch ($newOrderStatus) {
             case $cancelStatus:
             {
-                $this->processAvalaraTax($docCode, $order->getSalesChannelId(), 'CancelOrder');
+                $this->processAvalaraTax($docCode, $order->getSalesChannelId(), 'CancelOrder', $order->getOrderDate());
                 break;
             }
             case $refundStatus:
             {
-                $this->processAvalaraTax($docCode, $order->getSalesChannelId(), 'RefundOrder');
+                $this->processAvalaraTax($docCode, $order->getSalesChannelId(), 'RefundOrder', $order->getOrderDate());
                 break;
             }
             default :
@@ -119,10 +119,10 @@ class OrderChangesSubscriber implements EventSubscriberInterface
      * @param string $service
      * @return void
      */
-    private function processAvalaraTax(string $docCode, string $salesChannelId, string $service)
+    private function processAvalaraTax(string $docCode, string $salesChannelId, string $service, \DateTimeInterface $date)
     {
         $adapter = new AvalaraSDKAdapter($this->systemConfigService, $salesChannelId);
         $service = $adapter->getService($service);
-        $service->processTransaction($docCode);
+        $service->processTransaction($docCode, $date);
     }
 }

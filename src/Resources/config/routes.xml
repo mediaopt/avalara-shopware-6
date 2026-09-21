@@ -8,4 +8,7 @@
     <import resource="../../Controller/OrderStates/OrderStatesController.php" type="attribute"/>
     <import resource="../../Controller/AddressValidationController.php" type="attribute"/>
     <import resource="../../Controller/SupportForm/SupportFormController.php" type="attribute"/>
+    <import resource="../../Controller/CompanyCode/CompanyCodeController.php" type="attribute"/>
+    <import resource="../../Controller/TaxCode/TaxCodeController.php" type="attribute"/>
+    <import resource="../../Controller/ExemptionCode/ExemptionCodeController.php" type="attribute"/>
 </routes>

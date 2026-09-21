@@ -91,6 +91,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
             $customer =  $order->getOrderCustomer()->getCustomer();
 
             $customerCode = GetTax::getCustomerCode($customer);
+            $entityUseCode = GetTax::getEntityUseCode($customer);
             $currencyIso = $order->getCurrency()->getIsoCode();
             $taxIncluded = $this->isTaxIncluded($customer);
             $context = $event->getContext();
@@ -111,7 +112,8 @@ class CheckoutSubscriber implements EventSubscriberInterface
                     $taxIncluded,
                     $this->categoryRepository,
                     $context,
-                    true
+                    true,
+                    $entityUseCode
                 );
         }
     }
