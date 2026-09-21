@@ -201,12 +201,12 @@ class Form
      * @var array plugin session keys
      */
     const SESSION_KEYS = [
-            self::SESSION_AVALARA_TAXES_TRANSFORMED,
-            self::SESSION_AVALARA_MODEL,
-            self::SESSION_AVALARA_MODEL_KEY,
-            self::SESSION_AVALARA_IS_GROSS_PRICE,
-            self::SESSION_AVALARA_ADDRESS_VALIDATION,
-            self::SESSION_AVALARA_CURRENT_ADDRESS_ID,
+        self::SESSION_AVALARA_TAXES_TRANSFORMED,
+        self::SESSION_AVALARA_MODEL,
+        self::SESSION_AVALARA_MODEL_KEY,
+        self::SESSION_AVALARA_IS_GROSS_PRICE,
+        self::SESSION_AVALARA_ADDRESS_VALIDATION,
+        self::SESSION_AVALARA_CURRENT_ADDRESS_ID,
     ];
 
     /**
@@ -225,9 +225,9 @@ class Form
     const LOG_FILE_MAX = 14;
 
     const CUSTOM_FIELDSET_LIST = [
-            self::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE_FIELDSET => 'getShippingTaxCodeFieldset',
-            self::CUSTOM_FIELD_AVALARA_PRODUCT_TAX_CODE_FIELDSET => 'getProductTaxCodeFieldset',
-            self::CUSTOM_FIELD_AVALARA_CATEGORY_TAX_CODE_FIELDSET => 'getCategoryTaxCodeFieldset',
+        self::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE_FIELDSET => 'getShippingTaxCodeFieldset',
+        self::CUSTOM_FIELD_AVALARA_PRODUCT_TAX_CODE_FIELDSET => 'getProductTaxCodeFieldset',
+        self::CUSTOM_FIELD_AVALARA_CATEGORY_TAX_CODE_FIELDSET => 'getCategoryTaxCodeFieldset',
     ];
 
 }
