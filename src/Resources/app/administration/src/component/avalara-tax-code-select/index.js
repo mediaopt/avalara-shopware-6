@@ -81,7 +81,22 @@ Component.register('avalara-tax-code-select', {
         },
 
         onRefresh() {
-            this.fetchTaxCodes(this.lastSearchTerm);
+            const term = this.lastSearchTerm;
+            this.closeResultList();
+            this.fetchTaxCodes(term);
+        },
+
+        closeResultList() {
+            const select = this.$refs.taxCodeSelect;
+            if (!select) {
+                return;
+            }
+
+            if (typeof select.closeResultList === 'function') {
+                select.closeResultList();
+            } else if (select.$refs?.selectBase && typeof select.$refs.selectBase.collapse === 'function') {
+                select.$refs.selectBase.collapse();
+            }
         },
     },
 });

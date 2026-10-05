@@ -1,5 +1,7 @@
-<div class="avalara-tax-code-select">
+<div class="avalara-tax-code-select" style="position: relative;">
+    <sw-loader v-if="isLoading" />
     <sw-single-select
+        ref="taxCodeSelect"
         :value="localValue"
         :label="label || $tc('avalara-tax-code-select.title')"
         :disabled="disabled || isLoading"
