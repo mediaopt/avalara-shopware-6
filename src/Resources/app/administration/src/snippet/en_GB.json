@@ -42,7 +42,7 @@
     "avalara-tax-code-select": {
         "title": "Tax Code",
         "placeholder": "Select tax code",
-        "refresh": "Refresh",
+        "refresh": "Filter",
         "error": "Could not load tax codes. Please check your Avalara credentials."
     },
     "avalara-order-states": {

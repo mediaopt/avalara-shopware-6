@@ -12,6 +12,8 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 #[Route(defaults: ['_routeScope' => ['api']])]
 class TaxCodeController extends AbstractController
 {
+    private const MAX_RESULTS = 500;
+
     private SystemConfigService $systemConfigService;
 
     public function __construct(SystemConfigService $systemConfigService)
@@ -40,7 +42,7 @@ class TaxCodeController extends AbstractController
                 $avalaraFilter = "taxCode startsWith '{$escaped}' OR description contains '{$escaped}'";
             }
 
-            $response = $client->listTaxCodes($avalaraFilter, 500, null, 'taxCode ASC');
+            $response = $client->listTaxCodes($avalaraFilter, self::MAX_RESULTS, null, 'taxCode ASC');
 
             if (is_string($response)) {
                 return new JsonResponse(['success' => false, 'taxCodes' => [], 'message' => $response]);
@@ -49,6 +51,9 @@ class TaxCodeController extends AbstractController
             $taxCodes = [];
             if (!empty($response->value)) {
                 foreach ($response->value as $taxCode) {
+                    if (isset($taxCode->isActive) && $taxCode->isActive === false) {
+                        continue;
+                    }
                     $taxCodes[] = [
                         'value' => $taxCode->taxCode,
                         'label' => $taxCode->taxCode . ' — ' . $taxCode->description,
