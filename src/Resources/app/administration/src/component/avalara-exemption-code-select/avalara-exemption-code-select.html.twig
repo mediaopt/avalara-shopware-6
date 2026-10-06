@@ -1,0 +1,19 @@
+<div class="avalara-exemption-code-select">
+    <sw-single-select
+        :value="localValue"
+        :label="label || $tc('avalara-exemption-code-select.title')"
+        :disabled="disabled || isLoading"
+        :options="exemptionCodeOptions"
+        :is-loading="isLoading"
+        :placeholder="$tc('avalara-exemption-code-select.placeholder')"
+        @update:value="onSelect"
+    />
+    <sw-button
+        size="small"
+        :disabled="isLoading"
+        :is-loading="isLoading"
+        @click="onRefresh"
+    >
+        {{ $tc('avalara-exemption-code-select.refresh') }}
+    </sw-button>
+</div>

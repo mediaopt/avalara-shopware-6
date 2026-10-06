@@ -32,9 +32,10 @@ class ShippingFactory extends AbstractFactory
      * build Line-model based on passed in lineData
      * @param ShippingMethodEntity $shippingMethod
      * @param float $price
+     * @param int $lineNumber
      * @return LineItemModel
      */
-    public function build(ShippingMethodEntity $shippingMethod, float $price)
+    public function build(ShippingMethodEntity $shippingMethod, float $price, int $lineNumber)
     {
         $customFields = $shippingMethod->getCustomFields();
         if (is_array($customFields) && array_key_exists(Form::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE, $customFields)) {
@@ -44,7 +45,7 @@ class ShippingFactory extends AbstractFactory
         }
 
         $line = new LineItemModel();
-        $line->number = self::ARTICLE_ID;
+        $line->number = $lineNumber;
         $line->itemCode = self::ARTICLE_ID;
         $line->amount = $price;
         $line->quantity = 1;

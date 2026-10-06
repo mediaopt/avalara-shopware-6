@@ -59,7 +59,8 @@ class TransactionModelFactory extends AbstractTransactionModelFactory
         bool $taxIncluded,
         EntityRepository $categoryRepository,
         Context $context,
-        bool $commit = false
+        bool $commit = false,
+        ?string $entityUseCode = null
     ): CreateTransactionModel
     {
         $addresses = $this->getAddressesModel($customerAddress);
@@ -71,6 +72,10 @@ class TransactionModelFactory extends AbstractTransactionModelFactory
         $model->type = DocumentType::C_SALESORDER;
         $model->currencyCode = $currencyIso;
         $model->addresses = $addresses;
+
+        if (!empty($entityUseCode)) {
+            $model->entityUseCode = $entityUseCode;
+        }
 
         $discount = $this->calculateDiscount($lineItems);
         $discounted = false;

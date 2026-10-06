@@ -207,8 +207,6 @@ class AddressFactory extends AbstractFactory
                 ];
             }
             $session->set(Form::SESSION_AVALARA_ADDRESS_VALIDATION, $sessionAddresses);
-        } else {
-            $session->set(Form::SESSION_AVALARA_ADDRESS_VALIDATION, null);
         }
     }
 
@@ -239,9 +237,10 @@ class AddressFactory extends AbstractFactory
     /**
      * @param Session $session
      * @param string $addressId
+     * @param AddressLocationInfo $address
      * @return bool
      */
-    public function checkSession(Session $session, string $addressId, $address)
+    public function checkSession(Session $session, string $addressId, AddressLocationInfo $address)
     {
         $sessionAddresses = $session->get(Form::SESSION_AVALARA_ADDRESS_VALIDATION);
 
@@ -249,7 +248,7 @@ class AddressFactory extends AbstractFactory
             return true;
         }
 
-        if (array_key_exists($addressId, $sessionAddresses) && $sessionAddresses[$addressId]['valid']) {
+        if (array_key_exists($addressId, $sessionAddresses)) {
             if ($sessionAddresses[$addressId]['hash'] == self::getAddressHash($address)) {
                 return false;
             }
