@@ -30,9 +30,10 @@ class RefundOrder extends AbstractService
 
     /**
      * @param string $docCode
+     * @param \DateTimeInterface $date
      * @throws \RuntimeException
      */
-    public function processTransaction(string $docCode)
+    public function processTransaction(string $docCode, \DateTimeInterface $date)
     {
         $adapter = $this->getAdapter();
         $logHelper = new LogHelper($adapter);
@@ -50,7 +51,7 @@ class RefundOrder extends AbstractService
             $companyCode = $adapter->getPluginConfig(Form::COMPANY_CODE_FIELD);
             $model = new RefundTransactionModel();
             $model->refundTransactionCode = $docCode;
-            $model->refundDate = date('Y-m-d', time());
+            $model->refundDate = $date->format('Y-m-d');
             $model->refundType = 'Full';
             $model->referenceCode = 'Refund for a committed transaction';
 
