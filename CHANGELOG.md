@@ -1,3 +1,11 @@
+# 3.1.0
+- LineItem id in commited Avalara document is number 1-2-3-etc
+- Document date in refund is original order date now
+- New API version header in Avalara calls
+- Company look up code is a dropdown now.
+- TaxCode for category and product is now a dropdown with search
+- Exemption code for customer is now a dropdown with search
+
 # 3.0.10
 - Reduce Avalara address validation amount
 

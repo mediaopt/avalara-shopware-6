@@ -76,13 +76,15 @@ abstract class AbstractTransactionModelFactory extends AbstractFactory
         $lineFactory = $this->getLineFactory();
         $lines = [];
 
+        $lineNumber = 1;
         foreach ($lineItems as $lineItem) {
-            if ($newLine = $lineFactory->build($lineItem, $deliveryAddress, $taxIncluded, $categoryRepository, $context, $discounted)) {
+            if ($newLine = $lineFactory->build($lineItem, $deliveryAddress, $taxIncluded, $categoryRepository, $context, $discounted, $lineNumber)) {
                 $lines[] = $newLine;
+                $lineNumber++;
             }
         }
 
-        if ($shippingModel = $this->buildShippingModel($shippingMethod, $price)) {
+        if ($shippingModel = $this->buildShippingModel($shippingMethod, $price, $lineNumber)) {
             $lines[] = $shippingModel;
         }
 
@@ -92,15 +94,16 @@ abstract class AbstractTransactionModelFactory extends AbstractFactory
     /**
      * @param ShippingMethodEntity $shippingMethod
      * @param ?float $price
+     * @param int $lineNumber
      * @return LineItemModel
      */
-    protected function buildShippingModel(ShippingMethodEntity $shippingMethod, ?float $price)
+    protected function buildShippingModel(ShippingMethodEntity $shippingMethod, ?float $price, int $lineNumber)
     {
         if (null === $price) {
             return null;
         }
 
-        return $this->getShippingFactory()->build($shippingMethod, $price);
+        return $this->getShippingFactory()->build($shippingMethod, $price, $lineNumber);
     }
 
     /**
