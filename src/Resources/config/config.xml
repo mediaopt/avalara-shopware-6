@@ -20,10 +20,10 @@
             <defaultValue>false</defaultValue>
             <label>Is live mode</label>
         </input-field>
-        <input-field>
+        <component name="avalara-company-code-select">
             <name>companyCode</name>
-            <label>Company Code Lookup</label>
-        </input-field>
+            <label>Company Code</label>
+        </component>
         <input-field type="single-select">
             <name>taxCalculationMode</name>
             <options>
