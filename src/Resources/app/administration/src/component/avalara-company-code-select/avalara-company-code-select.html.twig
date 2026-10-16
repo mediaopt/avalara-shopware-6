@@ -1,12 +1,19 @@
 <div class="avalara-company-code-select">
     <sw-select-field
-        v-model="selectedCode"
+        v-model:value="selectedCode"
         :label="label"
         :disabled="isLoading"
-        :options="companyOptions"
-        :placeholder="$tc('avalara-company-code-select.placeholder')"
-        @update:model-value="onSelect"
-    />
+        @update:value="onSelect"
+    >
+        <option value="" disabled>{{ $tc('avalara-company-code-select.placeholder') }}</option>
+        <option
+            v-for="option in companyOptions"
+            :key="option.value"
+            :value="option.value"
+        >
+            {{ option.label }}
+        </option>
+    </sw-select-field>
     <sw-button
         size="small"
         :disabled="isLoading"

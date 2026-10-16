@@ -12,6 +12,7 @@ import './service/avalaraTaxCodeService';
 import './component/avalara-tax-code-select';
 import './service/avalaraExemptionCodeService';
 import './component/avalara-exemption-code-select';
+import './extension/sw-customer-detail-base';
 
 // module for advanced custom settings
 import './module/mopt-avalara';
