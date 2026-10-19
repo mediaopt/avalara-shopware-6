@@ -50,7 +50,7 @@ class OverwritePriceProcessor implements CartProcessorInterface
 
         if ($this->isTaxesUpdateNeeded()) {
             $service = $adapter->getService('GetTax');
-            $this->avalaraTaxes = $service->getAvalaraTaxes($original, $context, $this->session, $this->categoryRepository);
+            $this->avalaraTaxes = $service->getAvalaraTaxes($original, $context, $this->session, $this->categoryRepository, $data);
 
             $this->validateTaxes($adapter, $toCalculate);
         }
@@ -162,15 +162,6 @@ class OverwritePriceProcessor implements CartProcessorInterface
             return true;
         }
         $currentPage = $_SERVER['REQUEST_URI'];
-
-        $pagesNotForUpdate = [
-            'store-api/'
-        ];
-        foreach ($pagesNotForUpdate as $page) {
-            if (strripos($currentPage, $page)) {
-                return false;
-            }
-        }
 
         $pagesForUpdate = [
             'checkout/cart',

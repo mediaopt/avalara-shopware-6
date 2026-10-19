@@ -13,6 +13,7 @@ use Monolog\Level;
 use MoptAvalara6\Adapter\AdapterInterface;
 use MoptAvalara6\Bootstrap\Form;
 use Shopware\Core\Checkout\Cart\Cart;
+use Shopware\Core\Checkout\Cart\LineItem\CartDataCollection;
 use Shopware\Core\Checkout\Cart\LineItem\LineItem;
 use Shopware\Core\Checkout\Customer\CustomerEntity;
 use Shopware\Core\Kernel;
@@ -38,6 +39,8 @@ class GetTax extends AbstractService
      * @param Cart $cart
      * @param SalesChannelContext $context
      * @param Session $session
+     * @param EntityRepository $entityRepository
+     * @param CartDataCollection|null $data
      * @return array|null
      * @throws \Doctrine\DBAL\Driver\Exception
      * @throws \Doctrine\DBAL\Exception
@@ -46,7 +49,8 @@ class GetTax extends AbstractService
         Cart                $cart,
         SalesChannelContext $context,
         Session             $session,
-        EntityRepository    $entityRepository
+        EntityRepository    $entityRepository,
+        ?CartDataCollection $data = null
     )
     {
         $customer = $context->getCustomer();
@@ -74,15 +78,30 @@ class GetTax extends AbstractService
         }
 
         $avalaraRequestKey = md5(json_encode($avalaraRequest));
+        $dataCollectionKey = 'mopt_avalara_taxes_' . $avalaraRequestKey;
+
+        // Within-request cache: prevents duplicate Avalara calls when process() runs
+        // multiple times in a single request (works for both Storefront and Store API).
+        if ($data !== null && $data->has($dataCollectionKey)) {
+            $cached = $data->get($dataCollectionKey);
+            if (!is_array($cached) || $cached[Form::TAX_REQUEST_STATUS] !== Form::TAX_REQUEST_STATUS_FAILED) {
+                return $cached;
+            }
+        }
+
         $sessionAvalaraRequestKey = $session->getValue(Form::SESSION_AVALARA_MODEL_KEY, $this->getAdapter());
         $sessionTaxes = $session->getValue(Form::SESSION_AVALARA_TAXES_TRANSFORMED, $this->getAdapter());
 
         if ($avalaraRequestKey != $sessionAvalaraRequestKey
-            || $sessionTaxes[Form::TAX_REQUEST_STATUS] == Form::TAX_REQUEST_STATUS_FAILED
+            || (is_array($sessionTaxes) && $sessionTaxes[Form::TAX_REQUEST_STATUS] == Form::TAX_REQUEST_STATUS_FAILED)
         ) {
             $session->setValue(Form::SESSION_AVALARA_MODEL, serialize($avalaraRequest), $this->getAdapter());
             $session->setValue(Form::SESSION_AVALARA_MODEL_KEY, $avalaraRequestKey, $this->getAdapter());
-            return $this->makeAvalaraCall($avalaraRequest, $session, $cart);
+            $result = $this->makeAvalaraCall($avalaraRequest, $session, $cart);
+            if ($data !== null) {
+                $data->set($dataCollectionKey, $result);
+            }
+            return $result;
         }
 
         return $sessionTaxes;
