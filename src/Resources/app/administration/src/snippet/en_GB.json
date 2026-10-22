@@ -43,7 +43,8 @@
         "title": "Tax Code",
         "placeholder": "Select tax code",
         "refresh": "Filter",
-        "error": "Could not load tax codes. Please check your Avalara credentials."
+        "error": "Could not load tax codes. Please check your Avalara credentials.",
+        "noTaxCode": "Default Taxable"
     },
     "avalara-order-states": {
         "state-cancel": "Canceled",

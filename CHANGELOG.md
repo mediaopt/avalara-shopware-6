@@ -1,3 +1,7 @@
+# 4.1.1
+- Tax code dropdown now correctly displays a previously saved value that falls outside the initial 500-result window
+- Added "Default Taxable" as the first option in the tax code dropdown (shown as "Standard steuerpflichtig" in German)
+
 # 4.1.0
 - LineItem id in commited Avalara document is number 1-2-3-etc
 - Document date in refund is original order date now
