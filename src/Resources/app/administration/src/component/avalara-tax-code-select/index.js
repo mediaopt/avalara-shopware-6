@@ -47,18 +47,42 @@ Component.register('avalara-tax-code-select', {
     },
 
     methods: {
+        getNoTaxCodeOption() {
+            return { value: null, label: this.$tc('avalara-tax-code-select.noTaxCode') };
+        },
+
         fetchTaxCodes(filter = '') {
             this.isLoading = true;
 
             this.avalaraTaxCode.list({ filter })
                 .then((res) => {
-                    this.taxCodeOptions = res.taxCodes ?? [];
                     if (!res.success) {
                         this.createNotificationError({
                             title: this.$tc('avalara-tax-code-select.title'),
                             message: this.$tc('avalara-tax-code-select.error'),
                         });
                     }
+
+                    const taxCodes = res.taxCodes ?? [];
+
+                    // On initial load (no active filter), ensure the saved value is present in the options.
+                    // The API returns at most 500 results; a previously saved code may fall outside that window.
+                    if (!filter && this.localValue) {
+                        const alreadyPresent = taxCodes.some(opt => opt.value === this.localValue);
+                        if (!alreadyPresent) {
+                            return this.avalaraTaxCode.list({ filter: this.localValue })
+                                .then((savedRes) => {
+                                    const savedOption = (savedRes.taxCodes ?? []).find(opt => opt.value === this.localValue);
+                                    this.taxCodeOptions = [
+                                        this.getNoTaxCodeOption(),
+                                        ...(savedOption ? [savedOption] : []),
+                                        ...taxCodes,
+                                    ];
+                                });
+                        }
+                    }
+
+                    this.taxCodeOptions = [this.getNoTaxCodeOption(), ...taxCodes];
                 })
                 .catch(() => {
                     this.createNotificationError({

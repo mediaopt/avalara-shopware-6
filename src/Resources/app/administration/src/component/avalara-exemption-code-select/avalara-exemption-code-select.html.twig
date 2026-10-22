@@ -1,19 +1,13 @@
 <div class="avalara-exemption-code-select">
-    <sw-select-field
-        v-model:value="localValue"
+    <sw-single-select
+        :value="localValue"
         :label="label || $tc('avalara-exemption-code-select.title')"
         :disabled="disabled || isLoading"
+        :options="exemptionCodeOptions"
+        :is-loading="isLoading"
+        :placeholder="$tc('avalara-exemption-code-select.placeholder')"
         @update:value="onSelect"
-    >
-        <option value="" disabled>{{ $tc('avalara-exemption-code-select.placeholder') }}</option>
-        <option
-            v-for="option in exemptionCodeOptions"
-            :key="option.value"
-            :value="option.value"
-        >
-            {{ option.label }}
-        </option>
-    </sw-select-field>
+    />
     <sw-button
         size="small"
         :disabled="isLoading"
