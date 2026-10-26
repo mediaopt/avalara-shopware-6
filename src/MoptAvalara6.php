@@ -7,6 +7,7 @@ use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\ActivateContext;
 use Shopware\Core\Framework\Plugin\Context\InstallContext;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
+use Shopware\Core\Framework\Plugin\Context\UpdateContext;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\CustomField\CustomFieldTypes;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
@@ -17,8 +18,9 @@ use MoptAvalara6\Bootstrap\Form;
 class MoptAvalara6 extends Plugin
 {
     const PLUGIN_NAME = 'MoptAvalara6';
+    const PLUGIN_VERSION = '3.1.0';
+    const AVALARA_APP_VERSION = 'a0n5a00000hvQLaAAM';
 
-    const PLUGIN_VERSION = '3.0.10';
 
     /**
      * @param InstallContext $installContext
@@ -27,8 +29,13 @@ class MoptAvalara6 extends Plugin
     public function install(InstallContext $installContext): void
     {
         parent::install($installContext);
+        $this->addCustomFields($installContext->getContext());
+    }
 
-        $this->addCustomFields($installContext);
+    public function update(UpdateContext $updateContext): void
+    {
+        parent::update($updateContext);
+        $this->addCustomFields($updateContext->getContext());
     }
 
     /**
@@ -55,24 +62,14 @@ class MoptAvalara6 extends Plugin
         parent::activate($activateContext);
     }
 
-    /**
-     * @param InstallContext $installContext
-     * @return void
-     */
-    private function addCustomFields(InstallContext $installContext)
+    private function addCustomFields(Context $context): void
     {
-        $fieldIds = $this->customFieldsExist($installContext->getContext());
-
-        if ($fieldIds) {
-            return;
-        }
-
         $customFieldSetRepository = $this->container->get('custom_field_set.repository');
-        $customFieldSetRepository->upsert([
-            $this->getShippingTaxCodeFieldset(),
-            $this->getProductTaxCodeFieldset(),
-            $this->getCategoryTaxCodeFieldset(),
-        ], $installContext->getContext());
+        foreach (Form::CUSTOM_FIELDSET_LIST as $fieldSet => $method) {
+            if (!$this->customFieldsExist($context, $fieldSet)) {
+                $customFieldSetRepository->upsert([$this->$method()], $context);
+            }
+        }
     }
 
     /**
@@ -82,35 +79,28 @@ class MoptAvalara6 extends Plugin
     private function removeCustomField(UninstallContext $uninstallContext)
     {
         $customFieldSetRepository = $this->container->get('custom_field_set.repository');
-
-        $fieldIds = $this->customFieldsExist($uninstallContext->getContext());
-
-        if ($fieldIds) {
-            $customFieldSetRepository->delete(array_values($fieldIds->getData()), $uninstallContext->getContext());
+        foreach (Form::CUSTOM_FIELDSET_LIST as $fieldSet => $method) {
+            if ($fieldId = $this->customFieldsExist($uninstallContext->getContext(), $fieldSet)) {
+                $customFieldSetRepository->delete([['id' => $fieldId]], $uninstallContext->getContext());
+            }
         }
     }
 
     /**
      * @param Context $context
-     * @return mixed
+     * @param string $fieldsetName
+     * @return null|string
      */
-    private function customFieldsExist(Context $context)
+    private function customFieldsExist(Context $context, string $fieldsetName)
     {
         $customFieldSetRepository = $this->container->get('custom_field_set.repository');
 
         $criteria = new Criteria();
-        $criteria->addFilter(new EqualsAnyFilter(
-            'name',
-            [
-                Form::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE_FIELDSET,
-                Form::CUSTOM_FIELD_AVALARA_PRODUCT_TAX_CODE_FIELDSET,
-                Form::CUSTOM_FIELD_AVALARA_CATEGORY_TAX_CODE_FIELDSET,
-            ]
-        ));
+        $criteria->addFilter(new EqualsAnyFilter('name', [$fieldsetName]));
 
         $ids = $customFieldSetRepository->searchIds($criteria, $context);
 
-        return $ids->getTotal() > 0 ? $ids : null;
+        return current($ids->getIds());
     }
 
     /**
@@ -132,6 +122,7 @@ class MoptAvalara6 extends Plugin
                     'id' => Uuid::randomHex(),
                     'name' => Form::CUSTOM_FIELD_AVALARA_SHIPPING_TAX_CODE,
                     'type' => CustomFieldTypes::TEXT,
+                    'allow_cart_expose' => true,
                 ]
             ],
             'relations' => [
@@ -162,6 +153,11 @@ class MoptAvalara6 extends Plugin
                     'id' => Uuid::randomHex(),
                     'name' => Form::CUSTOM_FIELD_AVALARA_PRODUCT_TAX_CODE,
                     'type' => CustomFieldTypes::TEXT,
+                    'allow_cart_expose' => true,
+                    'config' => [
+                        'componentName' => 'avalara-tax-code-select',
+                        'customFieldType' => 'text',
+                    ],
                 ]
             ],
             'relations' => [
@@ -192,12 +188,51 @@ class MoptAvalara6 extends Plugin
                     'id' => Uuid::randomHex(),
                     'name' => Form::CUSTOM_FIELD_AVALARA_CATEGORY_TAX_CODE,
                     'type' => CustomFieldTypes::TEXT,
+                    'allow_cart_expose' => true,
+                    'config' => [
+                        'componentName' => 'avalara-tax-code-select',
+                        'customFieldType' => 'text',
+                    ],
                 ]
             ],
             'relations' => [
                 [
                     'id' => Uuid::randomHex(),
                     'entityName' => 'category'
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    private function getCustomerCodeFieldset(): array
+    {
+        return [
+            'id' => Uuid::randomHex(),
+            'name' => Form::CUSTOM_FIELD_AVALARA_CUSTOMER_CODE_FIELDSET,
+            'config' => [
+                'label' => [
+                    'de-DE' => 'Avalara Kundencode',
+                    'en-GB' => 'Avalara Customer Code'
+                ]
+            ],
+            'customFields' => [
+                [
+                    'id' => Uuid::randomHex(),
+                    'name' => Form::CUSTOM_FIELD_AVALARA_CUSTOMER_CODE,
+                    'type' => CustomFieldTypes::TEXT,
+                    'config' => [
+                        'componentName' => 'avalara-exemption-code-select',
+                        'customFieldType' => 'text',
+                    ],
+                ]
+            ],
+            'relations' => [
+                [
+                    'id' => Uuid::randomHex(),
+                    'entityName' => 'customer'
                 ]
             ]
         ];

@@ -1,0 +1,22 @@
+<div class="avalara-tax-code-select" style="position: relative;">
+    <sw-loader v-if="isLoading" />
+    <sw-single-select
+        ref="taxCodeSelect"
+        :value="localValue"
+        :label="label || $tc('avalara-tax-code-select.title')"
+        :disabled="disabled || isLoading"
+        :options="taxCodeOptions"
+        :is-loading="isLoading"
+        :placeholder="$tc('avalara-tax-code-select.placeholder')"
+        @update:value="onSelect"
+        @search="onSearch"
+    />
+    <sw-button
+        size="small"
+        :disabled="isLoading"
+        :is-loading="isLoading"
+        @click="onRefresh"
+    >
+        {{ $tc('avalara-tax-code-select.refresh') }}
+    </sw-button>
+</div>
