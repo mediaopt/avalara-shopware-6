@@ -43,7 +43,8 @@
         "title": "Tax Code",
         "placeholder": "Tax Code auswählen",
         "refresh": "Filtern",
-        "error": "Tax Codes konnten nicht geladen werden. Bitte prüfe deine Avalara-Zugangsdaten."
+        "error": "Tax Codes konnten nicht geladen werden. Bitte prüfe deine Avalara-Zugangsdaten.",
+        "noTaxCode": "Standard steuerpflichtig"
     },
     "avalara-order-states": {
         "state-cancel": "Abgebrochen",

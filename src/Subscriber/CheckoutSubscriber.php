@@ -88,7 +88,8 @@ class CheckoutSubscriber implements EventSubscriberInterface
             $this->cleanSession($adapter);
         } else {
             $order = $event->getOrder();
-            $customer =  $order->getOrderCustomer()->getCustomer();
+            $orderNumber = $order->getOrderNumber();
+            $customer = $order->getOrderCustomer()->getCustomer();
 
             $customerCode = GetTax::getCustomerCode($customer);
             $entityUseCode = GetTax::getEntityUseCode($customer);
@@ -101,7 +102,7 @@ class CheckoutSubscriber implements EventSubscriberInterface
             $shippingMethod = $order->getDeliveries()->first()->getShippingMethod();
             $shippingPrice = $order->getShippingCosts()->getUnitPrice();
 
-            $adapter->getFactory('TransactionModelFactory')
+            $avalaraRequestModel = $adapter->getFactory('TransactionModelFactory')
                 ->build(
                     $customerAddress,
                     $lineItems,
@@ -115,6 +116,22 @@ class CheckoutSubscriber implements EventSubscriberInterface
                     true,
                     $entityUseCode
                 );
+
+            $avalaraRequestModel->code = $orderNumber;
+            $avalaraRequestModel->type = DocumentType::C_SALESINVOICE;
+
+            $service = $adapter->getService('GetTax');
+            $result = $service->calculate($avalaraRequestModel);
+
+            if (!is_object($result)) {
+                LogHelper::addLog(Level::Error, 'Unexpected response from Avalara.', $result);
+            } else {
+                if (is_null($result->code)) {
+                    LogHelper::addLog(Level::Error, 'Can not get tax document code from Avalara response.', $result);
+                } elseif ($result->code != $orderNumber) {
+                    LogHelper::addLog(Level::Error, "Tax code ({$result->code}) is not the same as order number {$orderNumber}", $result);
+                }
+            }
         }
     }
 
